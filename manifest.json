@@ -1,0 +1,24 @@
+{
+  "name": "우리 가계부",
+  "short_name": "가계부",
+  "description": "가족 공유 가계부",
+  "start_url": "./우리_가계부_firebase.html",
+  "display": "standalone",
+  "background_color": "#F4F1EB",
+  "theme_color": "#C4793A",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
