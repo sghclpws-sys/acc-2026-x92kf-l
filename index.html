@@ -2,7 +2,7 @@
 <!-- saved from url=(0101)file:///C:/Users/skb.2854/Downloads/%EA%B0%80%EA%B3%84%EB%B6%80_0403_interest_mobilefix_v2%20(1).html -->
 <html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>우리 가계부</title>
 
 <!-- PWA -->
@@ -482,11 +482,15 @@
   @media (max-width: 768px) {
     /* 사이드바 숨기기 */
     .sidebar { display: none !important; }
+    .app { display: block !important; }
 
     /* 메인 영역 전체 너비 */
     .main {
       margin-left: 0 !important;
       padding: 16px 14px 90px !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
     }
 
     /* 하단 탭바 */
@@ -503,13 +507,24 @@
     .chart-row { grid-template-columns: 1fr !important; }
     .chart-row-3 { grid-template-columns: 1fr !important; }
 
-    /* 테이블 가로 스크롤 */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { min-width: 600px; }
-
+    /* 테이블 모바일 최적화 */
+    .table-wrap { overflow-x: hidden; }
+    table { min-width: unset; width: 100%; table-layout: fixed; }
+    th, td { padding: 8px 6px; font-size: 12px; }
+    /* 날짜/금액 컬럼 고정폭, 나머지는 가변 */
+    th:nth-child(1), td:nth-child(1) { width: 28px; } /* 체크박스 */
+    th:nth-child(2), td:nth-child(2) { width: 82px; } /* 날짜 */
+    th:nth-child(3), td:nth-child(3) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* 가맹점 */
+    th:nth-child(4), td:nth-child(4) { width: 72px; text-align: right; } /* 금액 */
+    /* 카드사/메모/카테고리 컬럼 숨김 */
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6),
+    th:nth-child(7), td:nth-child(7),
+    th:nth-child(8), td:nth-child(8) { display: none; }
+    .amount-cell { font-size: 12px; }
     /* 필터 영역 줄바꿈 */
     .filter-bar { flex-wrap: wrap; gap: 6px; }
-    .filter-bar input, .filter-bar select { font-size: 13px; }
+    .filter-bar input, .filter-bar select { font-size: 12px; height: 34px; padding: 6px 10px; }
 
     /* 모달 전체화면 */
     .modal-content {
@@ -3405,7 +3420,6 @@ function _showSyncStatus(msg, color) {
 }
 
 async function loadData() {
-  const FB_MIGRATION_KEY = 'gaegebu_fb_migration_2026_1_3_v1';
   // Firebase에서 로드 시도
   if (window._fbReady) {
     const fbData = await window._fbLoadData();
@@ -3414,31 +3428,6 @@ async function loadData() {
       rules = fbData.rules || [];
       cashData = fbData.cashData || {};
       incomeData = fbData.incomeData || JSON.parse(JSON.stringify(INIT_INCOME));
-
-      // 마이그레이션: Firebase 데이터가 구버전이면 최신으로 덮어쓰기
-      const fbMigrated = localStorage.getItem(FB_MIGRATION_KEY);
-      if (fbMigrated !== 'done') {
-        // 1. TX: _INIT_TX 기준으로 병합 (settlement, 3월 데이터 반영)
-        const initTxMap = new Map((window._INIT_TX||[]).map(t => [t.id, t]));
-        const mergedTx = (window._INIT_TX||[]).slice(); // INIT_TX 전체 사용
-        // FB에만 있는 추가 데이터 (INIT_TX에 없는 id) 보존
-        (fbData.transactions||[]).forEach(t => {
-          if (!initTxMap.has(t.id)) mergedTx.push(t);
-        });
-        transactions = mergedTx;
-
-        // 2. INCOME: INIT_INCOME 기준으로 덮어쓰기 (이자비용 실제값 반영)
-        incomeData = JSON.parse(JSON.stringify(INIT_INCOME));
-
-        // 3. Rules: INIT_RULES로 덮어쓰기
-        rules = JSON.parse(JSON.stringify(INIT_RULES));
-
-        // Firebase에 마이그레이션된 데이터 저장
-        await window._fbSaveData(transactions, rules, cashData, incomeData);
-        localStorage.setItem(FB_MIGRATION_KEY, 'done');
-        _showSyncStatus('✅ 데이터 마이그레이션 완료', '#3AA87D');
-      }
-
       _startRealtimeSync();
       return;
     }
