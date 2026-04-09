@@ -2,7 +2,7 @@
 <!-- saved from url=(0101)file:///C:/Users/skb.2854/Downloads/%EA%B0%80%EA%B3%84%EB%B6%80_0403_interest_mobilefix_v2%20(1).html -->
 <html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>우리 가계부</title>
 
 <!-- PWA -->
@@ -471,6 +471,41 @@
   }
   .sortable-th:hover { color: var(--accent); }
   .sort-icon { font-size: 11px; margin-left: 3px; }
+
+  /* ===== 강제 모바일/PWA 클래스 ===== */
+  body.mobile-app .sidebar { display: none !important; }
+  body.mobile-app .main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+    overflow-x: hidden !important;
+  }
+  body.mobile-app .mobile-tabbar { display: flex !important; }
+  body.mobile-app .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  body.mobile-app .chart-row,
+  body.mobile-app .chart-row-3,
+  body.mobile-app .summary-grid { grid-template-columns: 1fr !important; }
+  body.mobile-app .table-wrap { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+  body.mobile-app table { min-width: 0 !important; width: 100% !important; table-layout: fixed; }
+  body.mobile-app th,
+  body.mobile-app td { padding: 8px 6px; font-size: 11px; }
+  body.mobile-app th:nth-child(n+5),
+  body.mobile-app td:nth-child(n+5) { display: none; }
+  body.mobile-app .page-header h2 { font-size: 20px; }
+  body.mobile-app .page-header p { font-size: 12px; }
+  body.mobile-app .filter-bar { flex-wrap: wrap; gap: 6px; }
+  body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
+  body.mobile-app .stat-value { font-size: 18px !important; }
+  body.mobile-app .stat-card { padding: 14px 12px !important; }
+  body.mobile-app #donutSvg { width: 120px !important; height: 120px !important; }
+  body.mobile-app #donutLegend > div > div[style*="min-width:68px"],
+  body.mobile-app #donutLegend > div > div[style*="min-width: 68px"],
+  body.mobile-app .legend-diff { display: none !important; }
+  body.mobile-app .donut-wrap { flex-direction: column; align-items: flex-start; gap: 12px; }
+  body.mobile-app .bar-row { grid-template-columns: 64px 1fr 62px; gap: 8px; }
+  body.mobile-app .bar-label,
+  body.mobile-app .bar-amount { font-size: 10px !important; }
 
   @media (max-width: 1100px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -6369,10 +6404,19 @@ function saveAdd() {
 async function _init() {
   // PWA/홈화면 모드 포함 모바일 강제 적용
   function applyMobileLayout() {
-    const isMobile = window.innerWidth <= 768;
+    const ua = navigator.userAgent || '';
+    const isIOSPhone = /iPhone|iPod/i.test(ua);
+    const isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isNarrow = window.innerWidth <= 768;
+    const isMobile = isNarrow || isIOSPhone || isAndroidPhone || isStandalone;
+
     const sidebar = document.querySelector('.sidebar');
     const main = document.querySelector('.main');
     const tabbar = document.getElementById('mobileTabbar');
+
+    document.body.classList.toggle('mobile-app', isMobile);
+
     if (sidebar) sidebar.style.display = isMobile ? 'none' : '';
     if (main) {
       if (isMobile) {
@@ -6393,6 +6437,8 @@ async function _init() {
   }
   applyMobileLayout();
   window.addEventListener('resize', applyMobileLayout);
+  window.addEventListener('orientationchange', applyMobileLayout);
+  window.addEventListener('pageshow', applyMobileLayout);
 
   await loadData();
   initSummaryFilters();
