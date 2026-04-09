@@ -480,6 +480,18 @@
 
   /* ===== 모바일 반응형 ===== */
   @media (max-width: 768px) {
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     /* 사이드바 숨기기 */
     .sidebar { display: none !important; }
 
@@ -487,17 +499,19 @@
     #donutSvg { width: 120px !important; height: 120px !important; }
     #donutLegend > div > div[style*="min-width:68px"],
     #donutLegend > div > div[style*="min-width: 68px"] { display: none !important; }
-    .bar-amount { font-size: 11px !important; min-width: 55px !important; }
-    .bar-label { font-size: 11px !important; }
+    .bar-amount { font-size: 10px !important; min-width: 55px !important; }
+    .bar-label { font-size: 10px !important; }
     .stat-value { font-size: 18px !important; }
     .stat-card { padding: 14px 12px !important; }
-    /* 도넛 범례 전월대비 숨김 */
     .legend-diff { display: none !important; }
 
     /* 메인 영역 전체 너비 */
     .main {
+      width: 100% !important;
+      max-width: 100% !important;
       margin-left: 0 !important;
-      padding: 16px 14px 90px !important;
+      padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+      overflow-x: hidden !important;
     }
 
     /* 하단 탭바 */
@@ -509,18 +523,77 @@
     .page-header h2 { font-size: 20px; }
     .page-header p { font-size: 12px; }
 
-    /* 카드/테이블 모바일 최적화 */
-    .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-    .chart-row { grid-template-columns: 1fr !important; }
-    .chart-row-3 { grid-template-columns: 1fr !important; }
+    /* 카드/레이아웃 모바일 최적화 */
+    .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+    .chart-row,
+    .chart-row-3,
+    .summary-grid { grid-template-columns: minmax(0, 1fr) !important; }
 
-    /* 테이블 가로 스크롤 */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { min-width: 600px; }
+    .card,
+    .stat-card,
+    .insight-card,
+    .upload-zone,
+    .page,
+    .page > div {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .donut-wrap {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .bar-row {
+      grid-template-columns: 64px minmax(0, 1fr) 62px;
+      gap: 8px;
+    }
+
+    /* 테이블 모바일 최적화: 강제 최소폭 제거 */
+    .table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100% !important;
+      min-width: 0 !important;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 8px 6px;
+      font-size: 11px;
+    }
+
+    .amount-cell { font-size: 11px; }
+    .note-edit, td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 모바일에서는 핵심 열 위주 노출 */
+    th:nth-child(n+6),
+    td:nth-child(n+6) {
+      display: none;
+    }
 
     /* 필터 영역 줄바꿈 */
-    .filter-bar { flex-wrap: wrap; gap: 6px; }
-    .filter-bar input, .filter-bar select { font-size: 13px; }
+    .filter-bar {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-bar > * { max-width: 100%; }
+    .filter-bar input,
+    .filter-bar select,
+    .filter-bar .btn {
+      min-width: 0;
+      font-size: 13px;
+    }
 
     /* 모달 전체화면 */
     .modal-content {
@@ -6302,11 +6375,19 @@ async function _init() {
     const tabbar = document.getElementById('mobileTabbar');
     if (sidebar) sidebar.style.display = isMobile ? 'none' : '';
     if (main) {
-      main.style.marginLeft = isMobile ? '0' : '';
-      main.style.width = isMobile ? '100%' : '';
-      main.style.maxWidth = isMobile ? '100vw' : '';
-      main.style.overflowX = isMobile ? 'hidden' : '';
-      main.style.padding = isMobile ? '16px 14px 90px' : '';
+      if (isMobile) {
+        main.style.marginLeft = '0';
+        main.style.width = '100%';
+        main.style.maxWidth = '100%';
+        main.style.overflowX = 'hidden';
+        main.style.padding = 'calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px';
+      } else {
+        main.style.marginLeft = '';
+        main.style.width = '';
+        main.style.maxWidth = '';
+        main.style.overflowX = '';
+        main.style.padding = '';
+      }
     }
     if (tabbar) tabbar.style.display = isMobile ? 'flex' : 'none';
   }
