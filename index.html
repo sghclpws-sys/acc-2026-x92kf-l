@@ -3405,6 +3405,7 @@ function _showSyncStatus(msg, color) {
 }
 
 async function loadData() {
+  const FB_MIGRATION_KEY = 'gaegebu_fb_migration_2026_1_3_v1';
   // Firebase에서 로드 시도
   if (window._fbReady) {
     const fbData = await window._fbLoadData();
@@ -3413,6 +3414,31 @@ async function loadData() {
       rules = fbData.rules || [];
       cashData = fbData.cashData || {};
       incomeData = fbData.incomeData || JSON.parse(JSON.stringify(INIT_INCOME));
+
+      // 마이그레이션: Firebase 데이터가 구버전이면 최신으로 덮어쓰기
+      const fbMigrated = localStorage.getItem(FB_MIGRATION_KEY);
+      if (fbMigrated !== 'done') {
+        // 1. TX: _INIT_TX 기준으로 병합 (settlement, 3월 데이터 반영)
+        const initTxMap = new Map((window._INIT_TX||[]).map(t => [t.id, t]));
+        const mergedTx = (window._INIT_TX||[]).slice(); // INIT_TX 전체 사용
+        // FB에만 있는 추가 데이터 (INIT_TX에 없는 id) 보존
+        (fbData.transactions||[]).forEach(t => {
+          if (!initTxMap.has(t.id)) mergedTx.push(t);
+        });
+        transactions = mergedTx;
+
+        // 2. INCOME: INIT_INCOME 기준으로 덮어쓰기 (이자비용 실제값 반영)
+        incomeData = JSON.parse(JSON.stringify(INIT_INCOME));
+
+        // 3. Rules: INIT_RULES로 덮어쓰기
+        rules = JSON.parse(JSON.stringify(INIT_RULES));
+
+        // Firebase에 마이그레이션된 데이터 저장
+        await window._fbSaveData(transactions, rules, cashData, incomeData);
+        localStorage.setItem(FB_MIGRATION_KEY, 'done');
+        _showSyncStatus('✅ 데이터 마이그레이션 완료', '#3AA87D');
+      }
+
       _startRealtimeSync();
       return;
     }
