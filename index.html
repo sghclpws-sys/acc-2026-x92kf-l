@@ -94,18 +94,18 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
   
   :root {
-    --bg: #F4F1EB;
+    --bg: #F2F4F6;
     --surface: #FFFFFF;
-    --surface2: #FAF8F4;
-    --border: #E4DDD0;
-    --text: #1A1714;
-    --text-muted: #8A7F74;
+    --surface2: #F8F9FA;
+    --border: #E2E5E9;
+    --text: #1A1D23;
+    --text-muted: #7C8490;
     --accent: #C4793A;
-    --accent-light: #F5E6D8;
+    --accent-light: #FFF0E6;
     --accent2: #3A7DC4;
-    --accent2-light: #D8E8F5;
-    --danger: #C43A3A;
-    --success: #3AA87D;
+    --accent2-light: #E8F1FB;
+    --danger: #E03A3A;
+    --success: #2FA87D;
     --cat-외식: #E8734A;
     --cat-생필품: #5B8DD9;
     --cat-여행: #7B62B8;
@@ -117,14 +117,14 @@
     --cat-통신렌탈: #B87B4A;
     --cat-세금기타: #9B9B9B;
     --cat-미분류: #CCCCCC;
-    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    --shadow: 0 1px 8px rgba(0,0,0,0.06);
     --radius: 12px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -136,7 +136,7 @@
   
   .sidebar {
     width: 220px;
-    background: var(--text);
+    background: #1E2128;
     color: white;
     padding: 28px 0;
     position: fixed;
@@ -223,7 +223,7 @@
   
   .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
   .stat-value { font-size: 24px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: -1px; }
-  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.6; }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
   /* Filter bar */
   .filter-bar {
@@ -422,12 +422,6 @@
     color: white; border-radius: var(--radius); padding: 20px;
     box-shadow: var(--shadow);
   }
-  /* 요약 하단 인사이트 카드 심플화 */
-  #insightCards .insight-card { padding:14px 16px !important; min-height:0 !important; }
-  #insightCards .insight-label { font-size:11px !important; margin-bottom:4px !important; }
-  #insightCards .insight-value { font-size:16px !important; font-weight:700 !important; margin-bottom:2px !important; }
-  #insightCards .insight-sub { font-size:10px !important; line-height:1.4 !important; }
-  body.mobile-app #insightCards { grid-template-columns:repeat(3,1fr) !important; }
   
   .insight-card.blue {
     background: linear-gradient(135deg, var(--accent2) 0%, #5A9DE0 100%);
@@ -485,7 +479,7 @@
     margin-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px !important;
     overflow-x: hidden !important;
   }
   body.mobile-app .mobile-tabbar { display: flex !important; }
@@ -573,20 +567,35 @@
   }
   body.mobile-app .mobile-summary-donut {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  body.mobile-app .mobile-summary-donut .mobile-donut-svg {
+    flex-shrink: 0;
+    width: 140px;
   }
   body.mobile-app .mobile-summary-donut svg {
-    width: 180px;
-    height: 180px;
+    width: 140px;
+    height: 140px;
     flex-shrink: 0;
   }
   body.mobile-app .mobile-summary-donut .mobile-donut-legend {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
+    padding-top: 4px;
+  }
+  /* 레전드 아이템 폰트 축소 */
+  body.mobile-app .mobile-donut-legend > div {
+    font-size: 11px !important;
+  }
+  body.mobile-app .mobile-donut-legend > div > div:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   body.mobile-app .mobile-summary-stack .bar-row {
     grid-template-columns: minmax(0, 84px) 1fr minmax(0, 74px);
@@ -667,7 +676,7 @@
       width: 100% !important;
       max-width: 100% !important;
       margin-left: 0 !important;
-      padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+      padding: calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px !important;
       overflow-x: hidden !important;
     }
 
@@ -801,25 +810,26 @@
     display: none;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 64px;
-    background: var(--text);
+    height: calc(64px + env(safe-area-inset-bottom));
+    background: #1E2128;
     border-top: 1px solid rgba(255,255,255,0.08);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
+    align-items: flex-start;
   }
   .mobile-tabbar-item {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 10px;
     gap: 3px;
     cursor: pointer;
     color: rgba(255,255,255,0.45);
     font-size: 10px;
     font-weight: 500;
     transition: color 0.2s;
-    padding: 8px 0;
   }
   .mobile-tabbar-item .tab-icon { font-size: 20px; line-height: 1; }
   .mobile-tabbar-item.active { color: var(--accent); }
@@ -1337,8 +1347,8 @@
     </div></div>
       </div>
 
-      <!-- Row 3: 인사이트 미니 카드 -->
-      <div id="insightCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:0">
+      <!-- Row 3: 기존 인사이트 카드 3개 -->
+      <div class="chart-row-3" id="insightCards">
     <div class="insight-card">
       <div class="insight-label">🏠 고정 지출</div>
       <div class="insight-value">514,901원</div>
@@ -1368,36 +1378,43 @@
         <button class="btn btn-primary" onclick="openAddModal()" style="margin-top:4px">＋ 거래 추가</button>
       </div>
       
-      <!-- 필터: 기간 (연도+월 한 줄) -->
-      <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
+      <!-- 필터 1행: 기간 -->
+      <div class="filter-bar" style="margin-bottom:10px">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 기간</span>
-        <select id="detailYear" onchange="onYearChange()" style="flex:0 0 auto"><option value="">전체 연도</option><option value="2026">2026년</option></select>
-        <select id="detailMonth" onchange="onMonthChange()" style="flex:0 0 auto"><option value="">전체 월</option><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-        <select id="detailDay" style="display:none"><option value="">전체 일</option></select>
-        <input type="date" id="dateFrom" onchange="applyDetailFilter()" style="display:none">
-        <input type="date" id="dateTo" onchange="applyDetailFilter()" style="display:none">
-        <input type="number" id="amountMin" style="display:none">
-        <input type="number" id="amountMax" style="display:none">
+        <select id="detailYear" onchange="onYearChange()"><option value="">전체 연도</option><option value="2026">2026년</option></select>
+        <select id="detailMonth" onchange="onMonthChange()"><option value="">전체 월</option><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+        <select id="detailDay" onchange="applyDetailFilter()"><option value="">전체 일</option><option value="1">1일</option><option value="2">2일</option><option value="3">3일</option><option value="4">4일</option><option value="5">5일</option><option value="6">6일</option><option value="7">7일</option><option value="8">8일</option><option value="9">9일</option><option value="10">10일</option><option value="11">11일</option><option value="12">12일</option><option value="13">13일</option><option value="14">14일</option><option value="15">15일</option><option value="16">16일</option><option value="17">17일</option><option value="18">18일</option><option value="19">19일</option><option value="20">20일</option><option value="21">21일</option><option value="22">22일</option><option value="23">23일</option><option value="24">24일</option><option value="25">25일</option><option value="26">26일</option><option value="27">27일</option><option value="28">28일</option><option value="29">29일</option><option value="30">30일</option><option value="31">31일</option></select>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+          <span style="font-size:12px;color:var(--text-muted)">또는 직접 입력</span>
+          <input type="date" id="dateFrom" onchange="applyDetailFilter()" style="height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text)">
+          <span style="font-size:12px;color:var(--text-muted)">~</span>
+          <input type="date" id="dateTo" onchange="applyDetailFilter()" style="height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text)">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="resetDateFilters()" style="margin-left:4px">초기화</button>
       </div>
-      <!-- 필터: 카테고리+카드사 한 줄 -->
-      <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
+      
+      <!-- 필터 2행: 카테고리·검색·결과수 -->
+      <div class="filter-bar">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
         <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option></select>
-      </div>
-      <!-- 검색 + 선택/삭제 + 건수 한 줄 -->
-      <div class="filter-bar" style="margin-bottom:6px;gap:6px;align-items:center;flex-wrap:nowrap">
-        <div class="search-box" style="flex:1;min-width:0">
-          <input type="text" id="detailSearch" placeholder="가맹점명, 메모 검색..." oninput="applyDetailFilter()" style="width:100%">
+        <div class="search-box">
+          <input type="text" id="detailSearch" placeholder="가맹점명, 메모 검색..." oninput="applyDetailFilter()" style="width:200px">
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)" style="white-space:nowrap;flex-shrink:0">전체선택</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()" style="white-space:nowrap;flex-shrink:0">선택해제</button>
-        <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger);white-space:nowrap;flex-shrink:0">삭제</button>
-        <div id="detailSelectedInfo" style="font-size:12px;color:var(--danger);white-space:nowrap;flex-shrink:0"></div>
-        <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;flex-shrink:0" id="detailCount">0건</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted)">금액</span>
+          <input type="number" id="amountMin" placeholder="최소" onchange="applyDetailFilter()" style="width:90px;height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px">
+          <span style="font-size:12px;color:var(--text-muted)">~</span>
+          <input type="number" id="amountMax" placeholder="최대" onchange="applyDetailFilter()" style="width:90px;height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)">현재 페이지 전체선택</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()">선택해제</button>
+        <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger)">선택 삭제</button>
+        <div id="detailSelectedInfo" style="font-size:13px;color:var(--danger);white-space:nowrap"></div>
+        <div style="margin-left:auto;font-size:13px;color:var(--text-muted);white-space:nowrap" id="detailCount">115건</div>
+        <div id="detailTotal" style="font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;font-family:&#39;DM Mono&#39;,monospace">카드총액: ₩3,147,393 (정산 입력 합계: -₩467,130)</div>
       </div>
-      <div id="detailTotal" style="font-size:12px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:10px">-</div>
-            
+      
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table id="detailTable">
@@ -2614,19 +2631,19 @@
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 추이</div>
         <div style="overflow-x:auto">
-          <svg id="trendSvg" style="width:100%;display:block" viewBox="0 0 800 200">
-    <text x="52" y="174" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">0만</text>
-    <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">67만</text>
-    <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">134만</text>
-    <line x1="60" y1="95" x2="780" y2="95" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="61.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">201만</text>
-    <line x1="60" y1="57.5" x2="780" y2="57.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="24" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">268만</text>
+          <svg id="trendSvg" style="width:100%;min-width:600px;height:220px" viewBox="0 0 800 200">
+    <text x="52" y="174" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">0만</text>
+    <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">67만</text>
+    <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">134만</text>
+    <line x1="60" y1="95" x2="780" y2="95" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="61.5" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">201만</text>
+    <line x1="60" y1="57.5" x2="780" y2="57.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="24" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">268만</text>
     <line x1="60" y1="20" x2="780" y2="20" stroke="#E4DDD0" stroke-width="0.5"></line>
     <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0 L780,170 L60,170 Z" fill="var(--accent)" opacity="0.1"></path>
     <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
     <circle cx="60.0" cy="62.6" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="420.0" cy="46.9" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="780.0" cy="20.0" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle>
   </svg>
         </div>
-        <div id="trendXLabels" style="position:relative;height:20px;font-size:10px;color:var(--text-muted);padding-top:4px;font-family:'DM Mono',monospace;overflow:visible">
+        <div id="trendXLabels" style="display: flex; font-size: 10px; color: var(--text-muted); overflow-x: auto; min-width: 600px; padding-top: 4px; font-family: &quot;DM Mono&quot;, monospace; padding-left: 60px;">
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.01</span>
   
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.02</span>
@@ -2639,7 +2656,7 @@
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">🗓 분기별 지출 히트맵</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악 — 색이 진할수록 지출이 많은 달</p>
-        <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Noto Sans KR&#39;,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="DM Mono">'2601월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최대</text></svg></div>
+        <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Noto Sans KR&#39;,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="DM Mono">'2601월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">최대</text></svg></div>
       </div>
 
       <!-- 상위 카테고리 집중 분석 (전체 너비) -->
@@ -2865,9 +2882,9 @@
       </div>
     </div>
   </div>
-        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:nowrap;align-items:center">
-          <button class="btn btn-primary" onclick="saveIncomeFromUpload()" style="white-space:nowrap">💾 저장</button>
-          <button class="btn btn-ghost" onclick="clearIncomeFromUpload()" style="white-space:nowrap">초기화</button>
+        <div style="margin-top:16px;display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="saveIncomeFromUpload()">💾 월 수익 저장</button>
+          <button class="btn btn-ghost" onclick="clearIncomeFromUpload()">초기화</button>
         </div>
       </div>
 
@@ -2937,10 +2954,10 @@
           <div id="claimPreviewContent"></div>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
-          <button class="btn btn-primary" onclick="submitClaim()" style="white-space:nowrap">🧾 정산 등록</button>
-          <button class="btn btn-ghost" onclick="resetClaim()" style="white-space:nowrap">초기화</button>
-          <span style="font-size:11px;color:var(--text-muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">거래내역 탭에서 확인</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="submitClaim()">🧾 정산 청구 등록</button>
+          <button class="btn btn-ghost" onclick="resetClaim()">초기화</button>
+          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인 가능합니다</span>
         </div>
 
         <!-- 최근 등록된 청구 내역 -->
@@ -3947,7 +3964,7 @@ function renderSummary() {
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
       <div class="stat-value">${fmt(totalExpense)}원</div>
-      <div class="stat-sub" style="line-height:1.7">카드 ${fmt(cardExpense)}원${interestExpense > 0 ? `<br>이자 ${fmt(interestExpense)}원` : ''}</div>
+      <div class="stat-sub">카드 ${fmt(cardExpense)}원${interestExpense > 0 ? ` · 이자비용 ${fmt(interestExpense)}원` : ''}${totalSettlement > 0 ? ` · 정산 -${fmt(totalSettlement)}원` : ''}</div>
     </div>
     <div class="stat-card ${diff > 0 ? 'red' : 'green'}">
       <div class="stat-label">전월 대비</div>
@@ -4924,7 +4941,7 @@ function renderDetailPage() {
       <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
         <input type="checkbox" ${selectedTxIds.has(t.id) ? 'checked' : ''} onchange="toggleTxSelection(${t.id}, this.checked)">
       </td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${t.date}</td>
+      <td style="font-family:'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;font-size:12px;white-space:nowrap">${t.date.slice(2).replace(/-/g,'.')}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="${t.store}">${t.store}</td>
       <td class="amount-cell">
         ${hasSettlement
@@ -5372,7 +5389,7 @@ function renderHeatmap() {
   let legendSvg = `<svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text>`;
   legendSteps.forEach((op, i) => {
     legendSvg += `<rect x="${55 + i * 26}" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="${op}"/>`;
-    if (legendLabels[i]) legendSvg += `<text x="${55 + i * 26 + 11}" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">${legendLabels[i]}</text>`;
+    if (legendLabels[i]) legendSvg += `<text x="${55 + i * 26 + 11}" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">${legendLabels[i]}</text>`;
   });
   legendSvg += '</svg>';
 
@@ -5513,67 +5530,56 @@ function getMonthRange() {
 function renderTrendChart(monthlyData) {
   const svg = document.getElementById('trendSvg');
   const labelsEl = document.getElementById('trendXLabels');
-  if (!monthlyData.length) { svg.innerHTML = ''; labelsEl.innerHTML = ''; return; }
-
-  // SVG는 viewBox 800x200 고정, CSS로 width:100% → 자동 스케일
+  
+  if (!monthlyData.length) { svg.innerHTML = ''; return; }
+  
   const W = 800, H = 200;
-  const pad = {top:20, right:20, bottom:10, left:60};
+  const pad = {top:20, right:20, bottom:30, left:60};
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
-
+  
   const maxVal = Math.max(...monthlyData.map(m => m.total), 1);
-  const n = monthlyData.length;
-  const step = n > 1 ? plotW / (n - 1) : 0;
-
+  const step = plotW / (monthlyData.length - 1 || 1);
+  
   const points = monthlyData.map((m, i) => ({
     x: pad.left + i * step,
     y: pad.top + plotH - (m.total / maxVal * plotH),
     ...m
   }));
-
+  
   const pathD = points.map((p,i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const areaD = n > 1
-    ? pathD + ` L${points[n-1].x},${pad.top+plotH} L${points[0].x},${pad.top+plotH} Z`
-    : '';
-
-  // Y축 레이블 + 가이드라인
+  const areaD = pathD + ` L${points[points.length-1].x},${pad.top+plotH} L${points[0].x},${pad.top+plotH} Z`;
+  
+  // Y axis labels
+  const ySteps = 4;
   let yLabels = '';
-  for (let i=0; i<=4; i++) {
-    const val = maxVal * i / 4;
-    const y = pad.top + plotH - (val / maxVal * plotH);
-    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>`;
-    yLabels += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
+  for (let i=0;i<=ySteps;i++) {
+    const val = maxVal * i/ySteps;
+    const y = pad.top + plotH - (val/maxVal*plotH);
+    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>
+    <line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
-
+  
+  // Dots
+  const dots = points.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${selectedTrendCat==='전체'?'var(--accent)':CAT_COLORS[selectedTrendCat]||'var(--accent)'}" stroke="white" stroke-width="1.5"/>`).join('');
+  
   const color = selectedTrendCat==='전체' ? 'var(--accent)' : (CAT_COLORS[selectedTrendCat]||'var(--accent)');
-  const dots = points.map(p =>
-    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`
-  ).join('');
-
+  
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.style.width = '100%';
-  svg.style.display = 'block';
-  svg.innerHTML = yLabels +
-    (areaD ? `<path d="${areaD}" fill="${color}" opacity="0.1"/>` : '') +
-    `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` +
-    dots;
-
-  // X축 라벨: SVG 비율에 맞게 절대위치
-  // 라벨 컨테이너 너비 = SVG 실제 렌더폭 (CSS 100%)
-  // pad.left 만큼 margin-left, 그 뒤 plotW 폭에서 각 점 위치
-  const showEvery = Math.max(1, Math.ceil(n / 12));
-  labelsEl.style.position = 'relative';
-  labelsEl.style.height = '20px';
-  labelsEl.style.display = 'block';
-  labelsEl.style.overflow = 'visible';
-  // 퍼센트 기반 left 계산: pad.left/W 와 step/W 를 %로
-  const padLeftPct = (pad.left / W * 100).toFixed(3);
-  const stepPct = (step / W * 100).toFixed(3);
-  labelsEl.innerHTML = monthlyData.map((m, i) => {
-    if (i % showEvery !== 0) return '';
-    const leftPct = (pad.left / W * 100 + i * step / W * 100).toFixed(3);
-    return `<span style="position:absolute;left:${leftPct}%;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:var(--text-muted)">${m.label}</span>`;
-  }).join('');
+  svg.innerHTML = `
+    ${yLabels}
+    <path d="${areaD}" fill="${color}" opacity="0.1"/>
+    <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  `;
+  
+  // X labels (show every N)
+  const showEvery = Math.ceil(monthlyData.length / 20);
+  const labelW = plotW / monthlyData.length;
+  labelsEl.style.paddingLeft = pad.left + 'px';
+  labelsEl.innerHTML = monthlyData.map((m, i) => `
+    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:10px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
+  `).join('');
 }
 
 // ===== UPLOAD PAGE =====
@@ -6171,7 +6177,7 @@ function updateGithubPageUrl() {
 function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
   var CSS = [
     "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');",
-    ":root{--bg:#F4F1EB;--surface:#FFFFFF;--surface2:#FAF8F4;--border:#E4DDD0;--text:#1A1714;--muted:#8A7F74;--accent:#C4793A;--accent2:#3A7DC4;--success:#3AA87D;--danger:#C43A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
+    ":root{--bg:#F2F4F6;--surface:#FFFFFF;--surface2:#F8F9FA;--border:#E2E5E9;--text:#1A1D23;--muted:#7C8490;--accent:#C4793A;--accent2:#3A7DC4;--success:#2FA87D;--danger:#E03A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
     "*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}",
     "html,body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}",
     ".bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--safe-bottom));z-index:100}",
@@ -6638,7 +6644,7 @@ async function _init() {
         main.style.width = '100%';
         main.style.maxWidth = '100%';
         main.style.overflowX = 'hidden';
-        main.style.padding = 'calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px';
+        main.style.padding = 'calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px';
       } else {
         main.style.marginLeft = '';
         main.style.width = '';
