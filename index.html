@@ -94,12 +94,12 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
   
   :root {
-    --bg: #F4F1EB;
+    --bg: #F2F4F6;
     --surface: #FFFFFF;
-    --surface2: #FAF8F4;
-    --border: #E4DDD0;
-    --text: #1A1714;
-    --text-muted: #8A7F74;
+    --surface2: #F8F9FA;
+    --border: #E2E5E9;
+    --text: #1A1D23;
+    --text-muted: #7C8490;
     --accent: #C4793A;
     --accent-light: #F5E6D8;
     --accent2: #3A7DC4;
@@ -117,7 +117,7 @@
     --cat-통신렌탈: #B87B4A;
     --cat-세금기타: #9B9B9B;
     --cat-미분류: #CCCCCC;
-    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    --shadow: 0 1px 8px rgba(0,0,0,0.06);
     --radius: 12px;
   }
 
@@ -136,7 +136,7 @@
   
   .sidebar {
     width: 220px;
-    background: var(--text);
+    background: #1E2128;
     color: white;
     padding: 28px 0;
     position: fixed;
@@ -567,20 +567,34 @@
   }
   body.mobile-app .mobile-summary-donut {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  body.mobile-app .mobile-summary-donut .mobile-donut-svg {
+    flex-shrink: 0;
+    width: 140px;
   }
   body.mobile-app .mobile-summary-donut svg {
-    width: 180px;
-    height: 180px;
+    width: 140px !important;
+    height: 140px !important;
     flex-shrink: 0;
   }
   body.mobile-app .mobile-summary-donut .mobile-donut-legend {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
+    padding-top: 4px;
+  }
+  body.mobile-app .mobile-donut-legend > div {
+    font-size: 11px !important;
+  }
+  body.mobile-app .mobile-donut-legend > div > div:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   body.mobile-app .mobile-summary-stack .bar-row {
     grid-template-columns: minmax(0, 84px) 1fr minmax(0, 74px);
@@ -796,7 +810,7 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: calc(64px + env(safe-area-inset-bottom));
-    background: var(--text);
+    background: #1E2128;
     border-top: 1px solid rgba(255,255,255,0.08);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
@@ -5541,7 +5555,7 @@ function renderTrendChart(monthlyData) {
   for (let i=0;i<=ySteps;i++) {
     const val = maxVal * i/ySteps;
     const y = pad.top + plotH - (val/maxVal*plotH);
-    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>
+    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>
     <line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
   
@@ -5563,7 +5577,7 @@ function renderTrendChart(monthlyData) {
   const labelW = plotW / monthlyData.length;
   labelsEl.style.paddingLeft = pad.left + 'px';
   labelsEl.innerHTML = monthlyData.map((m, i) => `
-    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
+    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:10px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
   `).join('');
 }
 
@@ -6162,7 +6176,7 @@ function updateGithubPageUrl() {
 function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
   var CSS = [
     "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');",
-    ":root{--bg:#F4F1EB;--surface:#FFFFFF;--surface2:#FAF8F4;--border:#E4DDD0;--text:#1A1714;--muted:#8A7F74;--accent:#C4793A;--accent2:#3A7DC4;--success:#3AA87D;--danger:#C43A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
+    ":root{--bg:#F2F4F6;--surface:#FFFFFF;--surface2:#F8F9FA;--border:#E2E5E9;--text:#1A1D23;--muted:#7C8490;--accent:#C4793A;--accent2:#3A7DC4;--success:#3AA87D;--danger:#C43A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
     "*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}",
     "html,body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}",
     ".bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--safe-bottom));z-index:100}",
