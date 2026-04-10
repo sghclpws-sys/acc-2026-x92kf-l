@@ -90,6 +90,20 @@
   // Firebase 준비 완료 이벤트
   document.dispatchEvent(new Event('firebase-ready'));
 </script>
+<script>
+(function() {
+  try {
+    var ua = navigator.userAgent || '';
+    var isIOSPhone = /iPhone|iPod/i.test(ua);
+    var isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
+    var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    var isNarrow = Math.min(window.innerWidth || 9999, screen.width || 9999) <= 820;
+    var isCoarse = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    var forceMobile = isStandalone || isIOSPhone || isAndroidPhone || (isNarrow && isCoarse);
+    if (forceMobile) document.documentElement.classList.add('mobile-app');
+  } catch (e) {}
+})();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
   
@@ -474,7 +488,9 @@
   .sort-icon { font-size: 11px; margin-left: 3px; }
 
   /* ===== 강제 모바일/PWA 클래스 ===== */
+  html.mobile-app .sidebar,
   body.mobile-app .sidebar { display: none !important; }
+  html.mobile-app .main,
   body.mobile-app .main {
     margin-left: 0 !important;
     width: 100% !important;
@@ -482,24 +498,38 @@
     padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
     overflow-x: hidden !important;
   }
+  html.mobile-app .mobile-tabbar,
   body.mobile-app .mobile-tabbar { display: flex !important; }
+  html.mobile-app .stats-row {
   body.mobile-app .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  html.mobile-app .chart-row,
   body.mobile-app .chart-row,
   body.mobile-app .chart-row-3,
   body.mobile-app .summary-grid { grid-template-columns: 1fr !important; }
+  html.mobile-app .table-wrap {
   body.mobile-app .table-wrap { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
   body.mobile-app table { min-width: 0 !important; width: 100% !important; table-layout: fixed; }
   body.mobile-app th,
   body.mobile-app td { padding: 8px 6px; font-size: 11px; }
   body.mobile-app th:nth-child(n+5),
   body.mobile-app td:nth-child(n+5) { display: none; }
+  html.mobile-app .page-header h2 {
   body.mobile-app .page-header h2 { font-size: 20px; }
+  html.mobile-app .page-header p {
   body.mobile-app .page-header p { font-size: 12px; }
+  html.mobile-app .filter-bar {
   body.mobile-app .filter-bar { flex-wrap: wrap; gap: 6px; }
+  html.mobile-app .filter-bar > * {
   body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
+  html.mobile-app .stat-value {
   body.mobile-app .stat-value { font-size: 18px !important; }
+  html.mobile-app .stat-card {
   body.mobile-app .stat-card { padding: 14px 12px !important; }
+  html.mobile-app #donutSvg {
   body.mobile-app #donutSvg { width: 120px !important; height: 120px !important; }
+  html.mobile-app #donutLegend > div > div[style*="min-width:68px"],
+  html.mobile-app #donutLegend > div > div[style*="min-width: 68px"],
+  html.mobile-app .legend-diff,
   body.mobile-app #donutLegend > div > div[style*="min-width:68px"],
   body.mobile-app #donutLegend > div > div[style*="min-width: 68px"],
   body.mobile-app .legend-diff { display: none !important; }
@@ -622,6 +652,76 @@
     font-size: 11px !important;
   }
 
+
+
+
+  /* ===== iPhone 홈화면/PWA 강제 모바일 레이아웃 ===== */
+  html.mobile-app, html.mobile-app body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  html.mobile-app .app {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  html.mobile-app .sidebar {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+  html.mobile-app .main {
+    display: block !important;
+    position: relative !important;
+    left: 0 !important;
+    margin-left: 0 !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+  }
+  html.mobile-app .mobile-tabbar {
+    display: flex !important;
+  }
+  html.mobile-app .page-header,
+  html.mobile-app .card,
+  html.mobile-app .stat-card,
+  html.mobile-app .insight-card,
+  html.mobile-app .summary-grid,
+  html.mobile-app .chart-row,
+  html.mobile-app .chart-row-3,
+  html.mobile-app .table-wrap,
+  html.mobile-app .donut-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  html.mobile-app .summary-grid,
+  html.mobile-app .chart-row,
+  html.mobile-app .chart-row-3 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  html.mobile-app .donut-wrap {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  html.mobile-app [style*="grid-template-columns: 1fr 1fr"],
+  html.mobile-app [style*="grid-template-columns:1fr 1fr"],
+  html.mobile-app [style*="grid-template-columns: repeat(2"],
+  html.mobile-app [style*="grid-template-columns:repeat(2"] {
+    grid-template-columns: 1fr !important;
+  }
 
   @media (max-width: 1100px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -6612,13 +6712,15 @@ async function _init() {
     const isIOSPhone = /iPhone|iPod/i.test(ua);
     const isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isNarrow = window.innerWidth <= 768;
-    const isMobile = isNarrow || isIOSPhone || isAndroidPhone || isStandalone;
+    const isNarrow = Math.min(window.innerWidth || 9999, screen.width || 9999) <= 820;
+    const isCoarse = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const isMobile = isStandalone || isIOSPhone || isAndroidPhone || (isNarrow && isCoarse);
 
     const sidebar = document.querySelector('.sidebar');
     const main = document.querySelector('.main');
     const tabbar = document.getElementById('mobileTabbar');
 
+    document.documentElement.classList.toggle('mobile-app', isMobile);
     document.body.classList.toggle('mobile-app', isMobile);
 
     if (sidebar) sidebar.style.display = isMobile ? 'none' : '';
