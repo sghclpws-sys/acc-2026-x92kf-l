@@ -94,18 +94,18 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
   
   :root {
-    --bg: #F2F4F6;
+    --bg: #F4F1EB;
     --surface: #FFFFFF;
-    --surface2: #F8F9FA;
-    --border: #E2E5E9;
-    --text: #1A1D23;
-    --text-muted: #7C8490;
+    --surface2: #FAF8F4;
+    --border: #E4DDD0;
+    --text: #1A1714;
+    --text-muted: #8A7F74;
     --accent: #C4793A;
-    --accent-light: #FFF0E6;
+    --accent-light: #F5E6D8;
     --accent2: #3A7DC4;
-    --accent2-light: #E8F1FB;
-    --danger: #E03A3A;
-    --success: #2FA87D;
+    --accent2-light: #D8E8F5;
+    --danger: #C43A3A;
+    --success: #3AA87D;
     --cat-외식: #E8734A;
     --cat-생필품: #5B8DD9;
     --cat-여행: #7B62B8;
@@ -117,7 +117,7 @@
     --cat-통신렌탈: #B87B4A;
     --cat-세금기타: #9B9B9B;
     --cat-미분류: #CCCCCC;
-    --shadow: 0 1px 8px rgba(0,0,0,0.06);
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
     --radius: 12px;
   }
 
@@ -136,7 +136,7 @@
   
   .sidebar {
     width: 220px;
-    background: #1E2128;
+    background: var(--text);
     color: white;
     padding: 28px 0;
     position: fixed;
@@ -567,35 +567,20 @@
   }
   body.mobile-app .mobile-summary-donut {
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  body.mobile-app .mobile-summary-donut .mobile-donut-svg {
-    flex-shrink: 0;
-    width: 140px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
   body.mobile-app .mobile-summary-donut svg {
-    width: 140px;
-    height: 140px;
+    width: 180px;
+    height: 180px;
     flex-shrink: 0;
   }
   body.mobile-app .mobile-summary-donut .mobile-donut-legend {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding-top: 4px;
-  }
-  /* 레전드 아이템 폰트 축소 */
-  body.mobile-app .mobile-donut-legend > div {
-    font-size: 11px !important;
-  }
-  body.mobile-app .mobile-donut-legend > div > div:first-child {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    gap: 8px;
   }
   body.mobile-app .mobile-summary-stack .bar-row {
     grid-template-columns: minmax(0, 84px) 1fr minmax(0, 74px);
@@ -811,7 +796,7 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: calc(64px + env(safe-area-inset-bottom));
-    background: #1E2128;
+    background: var(--text);
     border-top: 1px solid rgba(255,255,255,0.08);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
@@ -2632,11 +2617,11 @@
         <div class="card-title">월별 추이</div>
         <div style="overflow-x:auto">
           <svg id="trendSvg" style="width:100%;min-width:600px;height:220px" viewBox="0 0 800 200">
-    <text x="52" y="174" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">0만</text>
-    <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">67만</text>
-    <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">134만</text>
-    <line x1="60" y1="95" x2="780" y2="95" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="61.5" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">201만</text>
-    <line x1="60" y1="57.5" x2="780" y2="57.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="24" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">268만</text>
+    <text x="52" y="174" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">0만</text>
+    <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">67만</text>
+    <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">134만</text>
+    <line x1="60" y1="95" x2="780" y2="95" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="61.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">201만</text>
+    <line x1="60" y1="57.5" x2="780" y2="57.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="24" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">268만</text>
     <line x1="60" y1="20" x2="780" y2="20" stroke="#E4DDD0" stroke-width="0.5"></line>
     <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0 L780,170 L60,170 Z" fill="var(--accent)" opacity="0.1"></path>
     <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
@@ -2656,7 +2641,7 @@
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">🗓 분기별 지출 히트맵</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악 — 색이 진할수록 지출이 많은 달</p>
-        <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Noto Sans KR&#39;,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="DM Mono">'2601월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">최대</text></svg></div>
+        <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Noto Sans KR&#39;,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="DM Mono">'2601월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="DM Mono">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="DM Mono" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="DM Mono" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최대</text></svg></div>
       </div>
 
       <!-- 상위 카테고리 집중 분석 (전체 너비) -->
@@ -5389,7 +5374,7 @@ function renderHeatmap() {
   let legendSvg = `<svg width="200" height="24" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text>`;
   legendSteps.forEach((op, i) => {
     legendSvg += `<rect x="${55 + i * 26}" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="${op}"/>`;
-    if (legendLabels[i]) legendSvg += `<text x="${55 + i * 26 + 11}" y="30" text-anchor="middle" font-size="10" fill="#8A7F74">${legendLabels[i]}</text>`;
+    if (legendLabels[i]) legendSvg += `<text x="${55 + i * 26 + 11}" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">${legendLabels[i]}</text>`;
   });
   legendSvg += '</svg>';
 
@@ -5556,7 +5541,7 @@ function renderTrendChart(monthlyData) {
   for (let i=0;i<=ySteps;i++) {
     const val = maxVal * i/ySteps;
     const y = pad.top + plotH - (val/maxVal*plotH);
-    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>
+    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">${Math.round(val/10000)}만</text>
     <line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
   
@@ -5578,7 +5563,7 @@ function renderTrendChart(monthlyData) {
   const labelW = plotW / monthlyData.length;
   labelsEl.style.paddingLeft = pad.left + 'px';
   labelsEl.innerHTML = monthlyData.map((m, i) => `
-    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:10px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
+    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
   `).join('');
 }
 
@@ -6177,7 +6162,7 @@ function updateGithubPageUrl() {
 function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
   var CSS = [
     "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');",
-    ":root{--bg:#F2F4F6;--surface:#FFFFFF;--surface2:#F8F9FA;--border:#E2E5E9;--text:#1A1D23;--muted:#7C8490;--accent:#C4793A;--accent2:#3A7DC4;--success:#2FA87D;--danger:#E03A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
+    ":root{--bg:#F4F1EB;--surface:#FFFFFF;--surface2:#FAF8F4;--border:#E4DDD0;--text:#1A1714;--muted:#8A7F74;--accent:#C4793A;--accent2:#3A7DC4;--success:#3AA87D;--danger:#C43A3A;--r:16px;--safe-bottom:env(safe-area-inset-bottom,16px)}",
     "*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}",
     "html,body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}",
     ".bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(8px + var(--safe-bottom));z-index:100}",
