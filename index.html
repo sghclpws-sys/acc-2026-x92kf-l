@@ -124,7 +124,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -223,7 +223,7 @@
   
   .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
   .stat-value { font-size: 24px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: -1px; }
-  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Filter bar */
   .filter-bar {
@@ -235,7 +235,7 @@
     padding: 9px 14px; border-radius: 8px;
     border: 1.5px solid var(--border);
     background: var(--surface); font-size: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;
     color: var(--text); outline: none;
     transition: border-color 0.2s;
     height: 38px;
@@ -248,7 +248,7 @@
     font-size: 13px; font-weight: 600;
     cursor: pointer; border: none;
     transition: all 0.2s; height: 38px;
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;
     display: inline-flex; align-items: center; gap: 6px;
   }
   
@@ -311,7 +311,7 @@
   .cat-select {
     font-size: 11px; border-radius: 20px; border: 1.5px solid var(--border);
     padding: 3px 8px; background: var(--surface);
-    font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+    font-family: 'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif; cursor: pointer;
     outline: none; color: var(--text); font-weight: 600;
   }
   
@@ -449,20 +449,10 @@
     padding: 8px 16px; border-radius: 8px; cursor: pointer;
     font-size: 13px; font-weight: 500; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text-muted);
-    transition: all 0.2s; white-space: nowrap;
+    transition: all 0.2s;
   }
   .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
   .tab-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
-  /* 모바일: 카테고리 탭 버튼 소형화 */
-  body.mobile-app .tab-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-  }
-  body.mobile-app #trendTabs {
-    gap: 5px !important;
-    margin-bottom: 14px !important;
-  }
 
   .page { display: none; }
   .page.active { display: block; }
@@ -489,7 +479,7 @@
     margin-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px !important;
     overflow-x: hidden !important;
   }
   body.mobile-app .mobile-tabbar { display: flex !important; }
@@ -505,6 +495,8 @@
   body.mobile-app td:nth-child(n+5) { display: none; }
   body.mobile-app .page-header h2 { font-size: 20px; }
   body.mobile-app .page-header p { font-size: 12px; }
+  body.mobile-app .filter-bar { flex-wrap: wrap; gap: 6px; }
+  body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
   body.mobile-app .stat-value { font-size: 18px !important; }
   body.mobile-app .stat-card { padding: 14px 12px !important; }
   body.mobile-app #donutSvg { width: 120px !important; height: 120px !important; }
@@ -515,155 +507,6 @@
   body.mobile-app .bar-row { grid-template-columns: 64px 1fr 62px; gap: 8px; }
   body.mobile-app .bar-label,
   body.mobile-app .bar-amount { font-size: 10px !important; }
-
-  /* ===== [수정1] 공금정산 버튼 2줄 방지 ===== */
-  body.mobile-app .claim-btn-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: 8px;
-  }
-  body.mobile-app .claim-btn-row .btn {
-    white-space: nowrap;
-    flex-shrink: 0;
-    font-size: 13px;
-    padding: 8px 12px;
-  }
-  body.mobile-app .claim-btn-row span {
-    font-size: 11px !important;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  /* 월 수익 저장 / 초기화 버튼 행 */
-  body.mobile-app .income-btn-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 8px;
-    align-items: center;
-  }
-  body.mobile-app .income-btn-row .btn {
-    white-space: nowrap;
-    font-size: 13px;
-    padding: 8px 12px;
-  }
-
-  /* ===== [수정2] 추이 그래프 스크롤 - 컨테이너 너비에 맞게 ===== */
-  body.mobile-app #trendSvg {
-    min-width: 0 !important;
-    width: 100% !important;
-  }
-  body.mobile-app #trendXLabels {
-    min-width: 0 !important;
-    overflow-x: hidden !important;
-  }
-  /* 추이 SVG wrapper: 스크롤 허용 (내용이 있을 때만) */
-  body.mobile-app .trend-chart-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-  }
-  /* 히트맵은 스크롤 허용 */
-  body.mobile-app #heatmapChart {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-  }
-
-  /* ===== [수정3] 거래내역 필터바 완전 개선 ===== */
-  body.mobile-app .filter-bar {
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-  }
-  body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
-  /* select: 2열 균등 */
-  body.mobile-app .filter-bar select {
-    flex: 1 1 calc(50% - 4px);
-    min-width: 80px;
-    max-width: calc(50% - 4px);
-    font-size: 13px;
-    height: 36px;
-    padding: 0 6px;
-    box-sizing: border-box;
-  }
-  /* 직접 날짜 입력 div - 모바일 숨김 */
-  body.mobile-app #dateDirectInput {
-    display: none !important;
-  }
-  /* 검색창 전체폭 */
-  body.mobile-app .search-box {
-    width: 100% !important;
-    flex: 1 1 100% !important;
-  }
-  body.mobile-app .search-box input,
-  body.mobile-app #detailSearch {
-    width: 100% !important;
-    font-size: 13px;
-    height: 36px;
-  }
-  /* 금액 입력란 */
-  body.mobile-app #amountMin,
-  body.mobile-app #amountMax {
-    width: 70px !important;
-    min-width: 0 !important;
-    font-size: 12px !important;
-    padding: 4px 6px !important;
-  }
-  /* 버튼 */
-  body.mobile-app .filter-bar .btn {
-    font-size: 12px;
-    padding: 6px 10px;
-    height: 34px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  /* 결과 카운트/합계 전체폭 */
-  body.mobile-app #detailCount {
-    margin-left: 0 !important;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-  body.mobile-app #detailTotal {
-    flex: 1 1 100%;
-    margin-left: 0 !important;
-    white-space: normal !important;
-    font-size: 12px !important;
-    line-height: 1.4;
-  }
-
-  /* ===== [추가] 공금정산 그리드 모바일 1열 ===== */
-  body.mobile-app .claim-grid-2 {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-  /* 항목 행 모바일 최적화 */
-  body.mobile-app #claimItems > div {
-    grid-template-columns: 1fr 80px 28px !important;
-    gap: 6px !important;
-    padding: 8px 10px !important;
-  }
-  /* action-btn-row: 전체선택/선택해제/삭제 한 줄 */
-  body.mobile-app .action-btn-row {
-    flex-wrap: nowrap !important;
-    width: 100%;
-  }
-  body.mobile-app .action-btn-row .btn {
-    font-size: 12px;
-    padding: 5px 8px;
-    height: 32px;
-  }
-  /* detailTotal 전체폭 표시 */
-  body.mobile-app #detailTotal {
-    display: block;
-    width: 100%;
-    white-space: normal !important;
-    font-size: 12px !important;
-    line-height: 1.5;
-    margin-top: 2px;
-  }
 
 
   .summary-dual-row {
@@ -818,7 +661,7 @@
       width: 100% !important;
       max-width: 100% !important;
       margin-left: 0 !important;
-      padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
+      padding: calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px !important;
       overflow-x: hidden !important;
     }
 
@@ -918,40 +761,18 @@
       display: none;
     }
 
-    /* 필터 영역 */
+    /* 필터 영역 줄바꿈 */
     .filter-bar {
       flex-wrap: wrap;
       gap: 6px;
-      align-items: center;
     }
-    .filter-bar > * { max-width: 100%; min-width: 0; }
-    .filter-bar select {
-      flex: 1 1 calc(50% - 4px);
-      min-width: 80px;
-      max-width: calc(50% - 4px);
-      font-size: 13px;
-      height: 36px;
-      padding: 0 6px;
-    }
+    .filter-bar > * { max-width: 100%; }
     .filter-bar input,
+    .filter-bar select,
     .filter-bar .btn {
       min-width: 0;
       font-size: 13px;
     }
-    /* 추이 차트 모바일 */
-    #trendSvg { min-width: 0 !important; width: 100% !important; }
-    #trendXLabels { min-width: 0 !important; overflow-x: hidden !important; }
-    .trend-chart-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-    /* 공금정산 그리드 1열 */
-    .claim-grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
-    /* 거래내역 action 버튼 */
-    .action-btn-row { flex-wrap: nowrap !important; }
-    .action-btn-row .btn { font-size: 12px; padding: 5px 8px; }
-    /* 날짜 직접입력 숨김 */
-    #dateDirectInput { display: none !important; }
-    /* detailTotal 전체폭 */
-    #detailTotal { white-space: normal !important; font-size: 12px !important; }
 
     /* 모달 전체화면 */
     .modal-content {
@@ -974,25 +795,27 @@
     display: none;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 64px;
+    height: calc(64px + env(safe-area-inset-bottom));
     background: var(--text);
     border-top: 1px solid rgba(255,255,255,0.08);
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
+    align-items: flex-start;
+    padding-top: 0;
   }
   .mobile-tabbar-item {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 10px;
     gap: 3px;
     cursor: pointer;
     color: rgba(255,255,255,0.45);
     font-size: 10px;
     font-weight: 500;
     transition: color 0.2s;
-    padding: 8px 0;
   }
   .mobile-tabbar-item .tab-icon { font-size: 20px; line-height: 1; }
   .mobile-tabbar-item.active { color: var(--accent); }
@@ -1541,45 +1364,36 @@
         <button class="btn btn-primary" onclick="openAddModal()" style="margin-top:4px">＋ 거래 추가</button>
       </div>
       
-      <!-- 필터 1행: 기간 -->
-      <div class="filter-bar" style="margin-bottom:10px">
+      <!-- 필터: 기간(연도+월 한줄) -->
+      <div class="filter-bar" style="margin-bottom:8px;align-items:center;gap:8px">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 기간</span>
-        <select id="detailYear" onchange="onYearChange()"><option value="">전체 연도</option><option value="2026">2026년</option></select>
-        <select id="detailMonth" onchange="onMonthChange()"><option value="">전체 월</option><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-        <select id="detailDay" onchange="applyDetailFilter()"><option value="">전체 일</option><option value="1">1일</option><option value="2">2일</option><option value="3">3일</option><option value="4">4일</option><option value="5">5일</option><option value="6">6일</option><option value="7">7일</option><option value="8">8일</option><option value="9">9일</option><option value="10">10일</option><option value="11">11일</option><option value="12">12일</option><option value="13">13일</option><option value="14">14일</option><option value="15">15일</option><option value="16">16일</option><option value="17">17일</option><option value="18">18일</option><option value="19">19일</option><option value="20">20일</option><option value="21">21일</option><option value="22">22일</option><option value="23">23일</option><option value="24">24일</option><option value="25">25일</option><option value="26">26일</option><option value="27">27일</option><option value="28">28일</option><option value="29">29일</option><option value="30">30일</option><option value="31">31일</option></select>
-        <div id="dateDirectInput" style="display:flex;align-items:center;gap:6px;margin-left:8px">
-          <span style="font-size:12px;color:var(--text-muted)">또는 직접 입력</span>
-          <input type="date" id="dateFrom" onchange="applyDetailFilter()" style="height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text)">
-          <span style="font-size:12px;color:var(--text-muted)">~</span>
-          <input type="date" id="dateTo" onchange="applyDetailFilter()" style="height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text)">
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="resetDateFilters()" style="margin-left:4px">초기화</button>
+        <select id="detailYear" onchange="onYearChange()" style="flex:0 0 auto"><option value="">전체 연도</option><option value="2026">2026년</option></select>
+        <select id="detailMonth" onchange="onMonthChange()" style="flex:0 0 auto"><option value="">전체 월</option><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+        <select id="detailDay" style="display:none"><option value="">전체 일</option></select>
+        <input type="date" id="dateFrom" onchange="applyDetailFilter()" style="display:none">
+        <input type="date" id="dateTo" onchange="applyDetailFilter()" style="display:none">
+        <input type="number" id="amountMin" style="display:none">
+        <input type="number" id="amountMax" style="display:none">
       </div>
-      
-      <!-- 필터 2행: 카테고리·검색·결과수 -->
-      <div class="filter-bar">
+      <!-- 필터: 카테고리+카드사 한줄 -->
+      <div class="filter-bar" style="margin-bottom:8px;align-items:center;gap:8px">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
         <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option></select>
-        <div class="search-box">
-          <input type="text" id="detailSearch" placeholder="가맹점명, 메모 검색..." oninput="applyDetailFilter()" style="width:200px">
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:12px;font-weight:600;color:var(--text-muted)">금액</span>
-          <input type="number" id="amountMin" placeholder="최소" onchange="applyDetailFilter()" style="width:90px;height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px">
-          <span style="font-size:12px;color:var(--text-muted)">~</span>
-          <input type="number" id="amountMax" placeholder="최대" onchange="applyDetailFilter()" style="width:90px;height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px">
-        </div>
-        <div class="action-btn-row" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
-          <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)" style="white-space:nowrap">전체선택</button>
-          <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()" style="white-space:nowrap">선택해제</button>
-          <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger);white-space:nowrap">삭제</button>
-          <div id="detailSelectedInfo" style="font-size:13px;color:var(--danger);white-space:nowrap"></div>
-          <div style="margin-left:auto;font-size:13px;color:var(--text-muted);white-space:nowrap" id="detailCount">115건</div>
-        </div>
-        <div id="detailTotal" style="font-size:13px;font-weight:700;color:var(--accent);font-family:&#39;DM Mono&#39;,monospace">카드총액: ₩3,147,393 (정산 입력 합계: -₩467,130)</div>
       </div>
-      
+      <!-- 검색+선택/삭제+건수 한줄 -->
+      <div class="filter-bar" style="margin-bottom:6px;align-items:center;gap:6px;flex-wrap:nowrap">
+        <div class="search-box" style="flex:1;min-width:0">
+          <input type="text" id="detailSearch" placeholder="가맹점명, 메모 검색..." oninput="applyDetailFilter()" style="width:100%">
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)" style="white-space:nowrap;flex-shrink:0">전체선택</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()" style="white-space:nowrap;flex-shrink:0">선택해제</button>
+        <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger);white-space:nowrap;flex-shrink:0">삭제</button>
+        <div id="detailSelectedInfo" style="font-size:12px;color:var(--danger);white-space:nowrap;flex-shrink:0"></div>
+        <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;flex-shrink:0" id="detailCount">115건</div>
+      </div>
+      <div id="detailTotal" style="font-size:12px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:10px;padding:2px 0">카드총액: ₩3,147,393 (정산 입력 합계: -₩467,130)</div>
+            
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table id="detailTable">
@@ -2795,8 +2609,8 @@
       <!-- 월별 추이 라인차트 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 추이</div>
-        <div class="trend-chart-wrap" style="overflow-x:auto">
-          <svg id="trendSvg" style="width:100%;height:220px" viewBox="0 0 800 200">
+        <div style="overflow-x:auto">
+          <svg id="trendSvg" style="width:100%;min-width:600px;height:220px" viewBox="0 0 800 200">
     <text x="52" y="174" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">0만</text>
     <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">67만</text>
     <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">134만</text>
@@ -2808,7 +2622,7 @@
     <circle cx="60.0" cy="62.6" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="420.0" cy="46.9" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="780.0" cy="20.0" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle>
   </svg>
         </div>
-        <div id="trendXLabels" style="display: flex; font-size: 10px; color: var(--text-muted); overflow-x: hidden; padding-top: 4px; font-family: &quot;DM Mono&quot;, monospace; padding-left: 60px;">
+        <div id="trendXLabels" style="display: flex; font-size: 10px; color: var(--text-muted); overflow-x: auto; min-width: 600px; padding-top: 4px; font-family: &quot;DM Mono&quot;, monospace; padding-left: 60px;">
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.01</span>
   
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.02</span>
@@ -3047,7 +2861,7 @@
       </div>
     </div>
   </div>
-        <div class="income-btn-row" style="margin-top:16px;display:flex;gap:10px;">
+        <div style="margin-top:16px;display:flex;gap:10px;">
           <button class="btn btn-primary" onclick="saveIncomeFromUpload()">💾 월 수익 저장</button>
           <button class="btn btn-ghost" onclick="clearIncomeFromUpload()">초기화</button>
         </div>
@@ -3059,14 +2873,14 @@
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">한 달간 개인이 선결제한 공금 항목들을 묶어서 총 청구액으로 등록합니다. 거래내역에 하나의 항목으로 추가됩니다.</p>
 
         <!-- 청구 월 선택 -->
-        <div class="claim-month-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
           <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 청구 기준 월</span>
           <select id="claimYear" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026년</option></select>
           <select id="claimMonth" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
 
         <!-- 청구인 / 카테고리 -->
-        <div class="claim-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="input-group">
             <div class="input-label">👤 청구인</div>
             <input type="text" id="claimPerson" placeholder="예: 예진, 기혁..." style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Noto Sans KR&#39;,sans-serif;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
@@ -3095,14 +2909,14 @@
           <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:.5px">📋 포함 항목 (여러 건 묶기)</div>
           <div id="claimItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"><div id="claimItem_1" style="display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border);">
     <input type="text" placeholder="항목명 (예: 마트, 약국, 주유소...)" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Noto Sans KR&#39;,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%" oninput="updateClaimTotal()" id="claimItemName_1">
-    <input type="number" placeholder="금액" min="0" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none;width:90px;text-align:right" oninput="updateClaimTotal()" id="claimItemAmt_1">
+    <input type="number" placeholder="금액" min="0" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none;width:110px;text-align:right" oninput="updateClaimTotal()" id="claimItemAmt_1">
     <button onclick="removeClaimItem(1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:2px 6px;border-radius:4px;transition:color .15s" onmouseover="this.style.color=&#39;var(--danger)&#39;" onmouseout="this.style.color=&#39;var(--text-muted)&#39;">✕</button>
   </div></div>
           <button class="btn btn-ghost btn-sm" onclick="addClaimItem()" style="width:100%;justify-content:center">＋ 항목 추가</button>
         </div>
 
         <!-- 합계 + 메모 -->
-        <div class="claim-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="input-group">
             <div class="input-label">💰 총 청구 금액 (원)</div>
             <input type="number" id="claimTotal" placeholder="자동 합산 또는 직접 입력" style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
@@ -3119,10 +2933,10 @@
           <div id="claimPreviewContent"></div>
         </div>
 
-        <div class="claim-btn-row" style="display:flex;gap:10px;align-items:center">
-          <button class="btn btn-primary" onclick="submitClaim()">🧾 정산</button>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="submitClaim()">🧾 정산 청구 등록</button>
           <button class="btn btn-ghost" onclick="resetClaim()">초기화</button>
-          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인</span>
+          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인 가능합니다</span>
         </div>
 
         <!-- 최근 등록된 청구 내역 -->
@@ -4129,7 +3943,7 @@ function renderSummary() {
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
       <div class="stat-value">${fmt(totalExpense)}원</div>
-      <div class="stat-sub">카드 ${fmt(cardExpense)}원${interestExpense > 0 ? ` · 이자비용 ${fmt(interestExpense)}원` : ''}${totalSettlement > 0 ? ` · 정산 -${fmt(totalSettlement)}원` : ''}</div>
+      <div class="stat-sub">${fmt(cardExpense + interestExpense)}원${totalSettlement > 0 ? ` · 정산 -${fmt(totalSettlement)}원` : ''}</div>
     </div>
     <div class="stat-card ${diff > 0 ? 'red' : 'green'}">
       <div class="stat-label">전월 대비</div>
@@ -5106,7 +4920,7 @@ function renderDetailPage() {
       <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
         <input type="checkbox" ${selectedTxIds.has(t.id) ? 'checked' : ''} onchange="toggleTxSelection(${t.id}, this.checked)">
       </td>
-      <td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap">${t.date}</td>
+      <td style="font-family:'Malgun Gothic','맑은 고딕','Noto Sans KR',sans-serif;font-size:12px;white-space:nowrap">${t.date.slice(2).replace(/-/g,'.')}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="${t.store}">${t.store}</td>
       <td class="amount-cell">
         ${hasSettlement
@@ -5697,20 +5511,9 @@ function renderTrendChart(monthlyData) {
   const labelsEl = document.getElementById('trendXLabels');
   
   if (!monthlyData.length) { svg.innerHTML = ''; return; }
-
-  // 모바일에서는 컨테이너 너비에 맞게, PC는 800 고정
-  const isMob = document.body.classList.contains('mobile-app');
-  const container = svg.parentElement;
-  const containerW = container ? container.clientWidth : 800;
-  const W = isMob ? Math.max(containerW, 300) : 800;
-  const H = isMob ? 180 : 200;
-  svg.style.minWidth = '0';
-  svg.style.width = '100%';
-  svg.style.height = H + 'px';
-  labelsEl.style.minWidth = '0';
-  labelsEl.style.overflowX = 'hidden';
   
-  const pad = {top:20, right:16, bottom:30, left:isMob?44:60};
+  const W = 800, H = 200;
+  const pad = {top:20, right:20, bottom:30, left:60};
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
   
@@ -5752,12 +5555,17 @@ function renderTrendChart(monthlyData) {
   // X labels (show every N)
   const showEvery = Math.ceil(monthlyData.length / 20);
   const labelW = plotW / monthlyData.length;
-  labelsEl.style.paddingLeft = pad.left + 'px';
-  // 모바일에서는 라벨 간격도 W 기준으로
-  const labelStep = plotW / (monthlyData.length - 1 || 1);
-  labelsEl.innerHTML = monthlyData.map((m, i) => `
-    <span style="width:${labelStep.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
-  `).join('');
+  labelsEl.style.paddingLeft = '0px';
+  labelsEl.style.marginLeft = pad.left + 'px';
+  labelsEl.style.width = plotW + 'px';
+  labelsEl.style.position = 'relative';
+  labelsEl.style.height = '16px';
+  labelsEl.style.display = 'block';
+  labelsEl.innerHTML = monthlyData.map((m, i) => {
+    if (i % showEvery !== 0) return '';
+    const xPos = i * step;
+    return `<span style="position:absolute;left:${xPos.toFixed(1)}px;transform:translateX(-50%);font-size:9px;white-space:nowrap">${m.label}</span>`;
+  }).join('');
 }
 
 // ===== UPLOAD PAGE =====
@@ -6822,7 +6630,7 @@ async function _init() {
         main.style.width = '100%';
         main.style.maxWidth = '100%';
         main.style.overflowX = 'hidden';
-        main.style.padding = 'calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px';
+        main.style.padding = 'calc(12px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom)) 12px';
       } else {
         main.style.marginLeft = '';
         main.style.width = '';
