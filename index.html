@@ -1,56 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<!-- saved from url=(0101)file:///C:/Users/skb.2854/Downloads/%EA%B0%80%EA%B3%84%EB%B6%80_0403_interest_mobilefix_v2%20(1).html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>우리 가계부</title>
 
-<!-- PWA Apple 메타태그 -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="가계부">
-<meta name="mobile-web-app-capable" content="yes">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#C4793A">
-
-<!-- manifest.json을 inline Blob으로 생성 (외부 파일 불필요) -->
-<script>
-(function() {
-  var manifest = {
-    name: "우리 가계부",
-    short_name: "가계부",
-    start_url: "./",
-    display: "standalone",
-    background_color: "#F4F1EB",
-    theme_color: "#C4793A",
-    orientation: "portrait",
-    icons: [
-      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E", sizes: "any", type: "image/svg+xml" }
-    ]
-  };
-  var blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-  var url = URL.createObjectURL(blob);
-  var link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = url;
-  document.currentScript.parentNode.insertBefore(link, document.currentScript.nextSibling);
-})();
-</script>
-
-<!-- ★ 핵심: body 렌더 전 즉시 모바일 감지 → PC 레이아웃 flash 완전 방지 -->
-<script>
-(function() {
-  var ua = navigator.userAgent || '';
-  var isIOS = /iPhone|iPod/i.test(ua);
-  var isAndroid = /Android/i.test(ua) && /Mobile/i.test(ua);
-  // iOS 홈화면 앱: window.navigator.standalone === true (가장 확실)
-  var isStandalone = (window.navigator.standalone === true) ||
-    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  var isNarrow = window.screen.width <= 768; // innerWidth 대신 screen.width 사용 (standalone에서 더 신뢰)
-  if (isIOS || isAndroid || isStandalone || isNarrow) {
-    document.documentElement.setAttribute('data-mobile', 'true');
-  }
-})();
-</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="가계부">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAA0tklEQVR42u29ebylZ1Um+jxrvd/eZ6o6qSGpJGQgVBIThoRZCLOIMbZMNmKrLbZeHBGnFi8tGoQrV8UB9QoqSisKqNDY0HpxbEDmICQYomHIRBKSVFJJTWfc3/uup/94v10JGWs4wz5V+/vVL4RTO/vs/X3Pu8ZnPYsRgfE1vo70svEtWIVLYwBtlAeg0Xt4Oq4wlDb45+ch/GTdP9LYAq32mZW+9siu8TPQSryDVuj9NarfcWQBJJHre3C5Eu/AlXh/rQRE7ovmVfSnIwAg8ngz+6sDZT4wmrl6MDpKAI1CqKjR/l06zP+KqwZNrsa9Sut3YjZi0MqNeYtW8cOMSBq/dj57fK0lgLRW6OEhHJQxqlY7VdQR3GobAfPLQ/vcPO6f8aqGQUeYyhymC5NW6DbdL2LGudgqJaSHa1oO4zMcZhBNrtBtGl/rEjsfa0H0ONY5xoPoNUu7xvZpdMIwrWAQvXomYYySI77Vq2yhD7MxkFb0a49hsQbnarRuclqJTzzGzTgGGiETPQrvOfq/epWin1EHEI+7p7IqqNW6PZyjA5D0NSAVRud7jG7IsuIm7eiLjQ/EA179SjRH8UlzXY3BRvwuK8kDtsP7xRwF0IyOjxtnDxtyrIdrAs1jKRTTGEBrD00eo99rha+0JvAfm/oVtyJc21/NdQTQGD0b6DbqcEPssQsbX/dAz+EHS/YAMBxX88Zm7sgBNHY6YwQdbRa2Lhgam72Nd9mGhv/4Wvf7n8a3bW2j1AAAGkAogAAI+gYG3VihbK3AI9gD2PuKqg1jgL8m1R9boLW66WYoA33l/bj1bzF/PcoiejPY8iic8i085eIhjDYEhng8WKBRKn8rYIb5r+KD36M7PgKTKnfLAAIGnvFSe+qfwPsbMRBMo3731y0eX7mbQCJK/PMrcNsnOLVDkcECDISgA8nwlXdr9lxe8P8g8oaLh0awDqTRqGSu0E1QAU23fhI3fBjpRA0KQghBpAJRGIGmp+vfjuU9sLThJBbHrYzVj50B7fq8BlmZCCJchQhABhEh0DG4AwtfOfj69TvDhw3cEQyij8VqUGkRQDhQAIGOCBAARYEgJQU34M1Pa4hrrsobCw/YBeRwmJ8j8GDkkCEcCFr9vCSKahJjggKKDVeOTxvPqAQkEYATdv8A0b3+X1EXE5NrByYJCkSBN0AiEuBSYVD1w/hQnlZEFKap+xQYbaWxrwfWI+AoA2jlcOOk342C2NfG7kHsXsZ81nyrpdbcGMKMc9q5pc8dk9jSR7pHqJdj1ZFU3ZM5YPAEgIMDQqMwyGEACGZAUIKhjrvEbZ+iT7O/Dc0MMMzFIgM4utRMh6DOcbg6stxIdSDVJ+6svmpwzeLi5/bnqw7ENQfi9iXbn7mUXUEUKMhwhDOIwgRucmxNdtZmv2ArLzwR521FP92NJMMKjwlEgaXu9u7fpRs/i9uuwC2f055rFQsw0YIuKcACK7ICy7AMZFjLqVlObIvpc7Hl8XbyRdz+JPRmh8asjGaGP9IAuid0Fq9dnPvw/rn/vad8eU5zg2SR+rIkN7jJTDQZRcgUhmIojIyckVu22UrhBHjGNJ94Cp99Jp5wCvq+kjBSgFZLPrjmE/rXv9F1n8LCLvTEXk80MZgKTDSJAQZYxCy0ZIYXJMELlFGWKLABNp2FU56L07+TJ38DOKIwGlUACQpZMgBzn13Y9a7dBz6+3w7kJkXqwxs5qz8I5uwIMogwkxktsiGcBSiIbCZSUEEeMLfMGcls5xY+7yz8h3NxyswQRkfs1IQQ3CHp8g/gE3+BXV8As3o9pIQUTFK0QKYLXmQgQxZAkTKQwRYecIEBE50wkVlYpIoAnHiRnfuTOOMlIBH5MGOj1S0LjyKAFKCD4Ny/L93yB7v3f/QASmmmmagUgVLMKoAimVwFCoMMBSxGJhSDyEK1jGKUUVJGZHpY3yBxaaDFAbZP+Au+Di99DE6eAYASMB7ew5BAgsR1n9Pf/YGuvxyNYWKKFkILBlx0iRkosGCSTEABA1DnyFRfGWDAAhZkkQkuOsCCWESA25+GC9/AHc/qfCXtGLZAR563q8ASy2J85a177nj3vtg/SNNKJouwUKJMQRSjHOEWBhlFylGoDEWSzEQEUdzkzFSRAipkAcIIuGBimzm3iJM38dsehe98DDb1UeIw4usIuCO3+sAf4WPvBrMmp6ECZlpIRS46aBIKWOAFDjgULVCYhGoaLVThZQILvHq3AitggEEnHIgFmOPhP2qP+xWkqRHpe6wegI4cPXNfXv7CL+6e+/xibzMNwUE2DX2WlAzGQsmoxEJEosxkiNoccAQRxmLVSnlQBQioIFpCNJEBihQsGEVzSzpjq/3E0/jssw7NFAFR4El37Yo/eQOuv5ybZ0EBuQY3cAEhFDZdjUcMWEESKamAhQkwgRILUIRCBh3wADOsgPWHgmW42CRZaHGBW5/Mp72Lm3aOAoZGyIVV9Nz2wfl/f91uzJdmmmyDEEumlKCEcMgMyWUKKpwyhKsYwigqoEguovuJKRuL1SBJQbVk9SCiBRVCoUMJmB8wB178KHvlRZjpIxe4PQR6brxGb30d7vqqNs0AmSZQsAIKLKpgSoQJJjCAAht6JaoGPWLQAgypEAUGWaELFmAZIinDQhQM7CUsH8DE6faM92LbkxAtmMYA6tBz4/vmP/+LdzYTkXqwLKNMQoQjEuUIizAoOZyggiguWGRXJlVDH080yCBjIYqV1hD0MIShkNWXBSwQBbUlTpEBReyZ185t6ZcuwXknPSCGIuCu676o370U7Tx6jfIyXGwqVoIMMRCtLJDs7szLAih0wKvtiera6CAlFCnAAHL3mpqdWYYVMSsyKPaNZshz8q327A9w+9evrx0aCQBV9Hzlfy3862v39KZEyqUEETLEQWPjhEVxyCA3GGGlGMKimLIxjLCaiw3BZAwr2WuIikgoZBiCXY5WkSQYqEBkOTS/xJ7z0ov5jefcD4YUMNctN8cbX812Dv0GZaCaPZng9wAQQixIlfdTM6xS/xZOGMAiBFhDnwAOgixA0QQrcMEzLIsFGsAKGhKSGcoCm2323I9h9tx1jKltRNBz60eXr/ilAzZjQSgQQg4VqYgZCDACEYI3YV7EKFCgq//QgingEgNJMgWjSFkqgCd5AhzwYCOlgEeYCgGTiCKEBIQMmTY9qSjlVe+Ld3wWyVH0tTmXaWE+3vIbODAvn0QWuuq4A0OrV4uaAuTIRDWOMIQxTDXWL6gGEUEVKlNBwolEJsIRhmigBqVRbhAN0SebLm0oQZ9kewc++R0Y7AO5Qhrwh335a1/72vXN2C1x3/X5oz+5TyhmQlFtNXQNIwIgSYKkIQKgsRb+BIFdO0zmtGRGs/rXtVFGMlQDYkpQ1zurJUrRUNuXBkr1IShnGNH3+OCXzcEnnYlQV2mUYKa3/T7/7XOc2cQo0NfyOw9KcBH1MwOAscvszFj7vhry6mu2wdr4ctCGb0gBgAh2hngoraMo6DoxQm8Cczdi6Vae/uJKPFr7hHpdGYkCibwUH/uFPYtzZWKa7SCcCDBR5gyJpACJMkiKCFIyFpgqC4KKQs1HKTmZeZRQMRRj0GU9xARBGmpWFGEwN8IFER1qLCBq2MgkRKNp65Te/DGa4eVPRQlAcI9//nB88EPcNsu2gA4LCIjOmquCrHZKIZiYElAQAboi1Jn8ggIKosEqlYBYXoITTR90KEOQIMmSE0Sw9szAgHL378rqTfO6t/O0F+O0F65LMJSOrrV2dPgRzHn5Ww/sujJPb2NuZeRQqFhg2PAgilDlYJEUCHjDWNRgrm2cE6dNNI+d7J3eNKf0vQ8qUAJ3LsdXF8o1c7pjuewZqEefdJhQoK7R7fWNAVMIFKrlcpOKojCArTN688f5yJNx0VmIwP79ePd70ZvEIGCEWWXLk8OJHcMQT0K1lwfm0O9h0zTKIktEAEbSOo9TbaQoFey4AIP92H8j2iX0+kgNBERAJE0qCNUD00XfVq00ZB6f+79txzcgzazC4ecRAGitnJdz11WDf/3zhf4WtgWJNDIkA6LzQpAiQLJGKSQtHCyhu3L/JN98ydatzz1h6rFTPnv/J68sl7hxsf3U7vyR23HlnljMPmnVewmV1eU8yP5QwCBVoA45RnR84GpcdBbM4v0fwK7dnJ1maTv7KUfJIdANIApgFEAzLs/LFY98un/jd+Oaf8E//L6mN0GiSi0mKgJunUcry/ym13L72brt8/riP+HLf4t917M/DW8UZRjiOKRavhIyWESwAD6Bu76oG/8Hd34fIq9xVp8O0x2uHFmdgPDptyy1rbxBEsPYHV11cp6ihbpgQApBvX4a7GmbTTrth7fveOmW3kmps2Uhhe59Xgjrm58z05wzo+95eFy5Z/mvvtL+zU2aDz8hmaIGUTQDCRHoYhp2/yMYAWo5COjOPfrwJzk5YyIsCVEZP4IjINQCDxGFbpjbj7PPxwv/r3T2hQDimsu1HJg0M+tiN6H+V5AksRhyi9TjaU/gaU/Q036YV75bl/0BFu/CzGZpQJHw6D6nU1llgBA8KIrUrf/Ind+39ty5tbdAPJh5ffmDSzd+enlixpUjDCEUwI0SIupdkWhdoEIjtXRnOfFZUztftX3qzB6AyMEuSu2a9vep2UAKCDD6BVumLtiSv/3Mwdu+nD90qzl9IrG0kskFCBEGkJQ5wEo3RTguPg+A/vmTuGs/ZqcUGTAQYCBIUtWMRcAMbljYw+e+mP/xB+kJ7QApKSQZ5SoFZmDQTIBy0AWaNIypSwbIiVk8+Qew8zn4+5/DbZ/R9GbEQCjoPhsIsDpNZlAI4cBtANY+mbcVdIeH8UaGyPrsny0r1UDSBBYpR5RQiQioVP5wbTq4gRzs11k/tvUxv3vq1Jm9yKEQnXA+xMZt616jEiqRHrVl8jefPPnrT+JJ/bK3hSfJVIBChAsONAhXuOSxdxk/9Ux+49ka5PKRz8AbFKKyRaKWqAwia+ctCCTMLfD538uX/ijM0cHFwEpSMiKh0ghk3beSQRVA6FiI5lCgtNx2Nl/6Z9p5Meb2RvSUiQxmIhtKQiSgQfRUGmTCprq4cr0BtOqfIApovO5T7S1Xh09bqc6L7Ho/UedeqFr+AYMshe2CznvttrN+6ISo1SE/fPaFEUaVQInmuadOvuPZzfN26K6lMIMMUctCSXIoEY47l/ijT+H3XghBN92Km+5AM9E1/mEKRiZKJTs7wsEGB+b57G/ht34XSrnnLDPhUOoYiXLIVCnSqERpY/i9FRotITJSn9/62zj9GZzbKyUUoQgFKkSk7o8mtCyd8LgujFtvAK26E61W9or3LReLMIoMWtBgBrMgxa4PJDBA0Ab7y/mvPuH0/7gp2qAdXfmzwigHt/b7b7rIf+T8smc5ZGAtcXflZOwf2M8+zV7+BAwyCHz+WlsSrQc4wu6mkMgQTjk8YTnjtIfzO74fER3H4x71NqqBrHbtqgFT7ePJTWZM95OB0xGF3vPn/w637OTyAn1y+Eur5XOgx5wxsYPnvqxL/TZ+JVoPkXwZdt9QbrpSzbSV6PwUzMIszMNYyALmQBugs92Ls79/9syXbo5WTCuEbyciVKL3ykf3Ln18LOQoppSQHIU4kPHzT+PLLkAOVCrtv93QzVRkUzYUI4yWgAS5wihjCbzoO9H0oLgXxbGGwAzvHGUxZaI4ww1db+xBnD0mt9iL/8BmH8bFfUSfNmHoUQ2ROFhEWfLn/L5tOQcRqwAgrT2A+OC1H4Bf+lhenCcaD1oxVtpLLaDQPMhqh+RWFn3bk/rnv3JTFK1wkYwEqRz9/3R2/1efHIjYM4i7BiD8V59pLz2voym6oQS/uofer5bDrDHroZhaMhxIYMJSi7POscc9sdYn7vOthdq7kCOIQmQiQ53/ItpAKQ/wOR1RsO1svOQdeMQ3Mi9z4S4s3MWFu7i4T1On4Zv+HGe96KHaYVqNp7kOWZg5FPriZZkTiJpCRwgq6poPRTAwABokLUd+9M9stmRRWxwrDnWncqRLzrBzZ+ODt8Dozz6VOzd3tkcCLPbNafcCrX93TQ+1t5W7TE2GpcAjL4QbcsH95IOG4irEMKkEiKjpoUuh8qCMWhqi8IQz8eK3addVuPVfsLBLzSS2n2+nPQPN5KqhZx3S+AerFdXDeftNccu10fRRVMmERAzL+d2YINwIw+KdZeeL0tZH9iNrFWv0TpSwnbO+c7a72aXzXPXOa/9izBdvUsdXhNPYNepUEEAEcuLDTnugE6sClZpwRSfJUYd7JARBQOkhznrXBwR3PBo7Hn3frGRt0ud1tkDVf11/ZczPYXZW0XZVwhBcByu/XWOgFPa2+mNfPrsWrTkjStw9lv61dEQut9YKqXZeBUFmMBACpCLQGQ0mJh7sWAVRG+kctnRBhpDrQ/B79WXv3+dWuEh3txJp60uOTqvgFR6iiHj9VaUQWYBUm+E0KroU1AiBMA326vwXT86e0YuitbhFD8JhdScdOhg2taq6Pg6ANNKJDO2Zp+5/yJrmYIJMhXAjDQpFbZcELVGHbGBpI6UesKbgNUMEbr4uI6kEIlDqyUTHIKzRQaVUseEjLumv86h4fVT9JGuUTZnKXRoFOWBgzcVc9PjMVSDvO1ddC+KIWgFyFVZKHMNYrI6QKKiNKfS1dgCqAzAH9mjvbnqPOZSlUKdNQVJmYZ6BcA6WtOkR2HFhqpSH9UUQt0xrehoDY0kIB5JZpfYPCdmZnN5kn7kaV12DlJDLvSrCddSRMjKRCepG5TvGZTYMxM6fr2lMsaEskABg724tLQS9JjQUWVsZAQQ7CyRiMMCOCxtvLMp6W6AQZyZx8olcRqULKhzRQPVfEiq5MQxi/Maf4Orr0CSYQbWsHpWqWlsfXSZfuYty1CZLBsq6SIjw6HFma4sf7r0zBhld78grdVl1bOJgB16CaCdfMDESNjoCgJ1/KgYOJChBjgIVo1KHiYxoI+jYOxeXvkVvf79uvQNmSI5eDyTMhtJS3dR1h7mgwoYlIqwXLfVocJbW2AId2ItMVwoVSZVNxY7W0BUSEQHv2ezphhXTPjiKRI4EwCefqXd8VtlglUYmFMGcInKpBDgVIPUI6D3/pH/4BM49nY/ayZ2ncceJmF8AkkqtHkkSfFixMMJcYfBe1wDRQTlpjsj46egUEjW/QJF0C+8mQoI0qU5RqGMCWepj4gSuzRl6aABJvOBUnbZVt+7RlFtUxjahUqlLgNcDoAJzcGaabdHlX9Rnr8KEabKRiZMzyAGzWnlER3smRNAQSbtu4YmnoOmh6X2NZygZ4ANqTB9nAMLyQNlQSJJhrOzRg+dcUiEUmpjxiRkDtP4pK4ES6CdcfH68+eOYdOUiGBJISgUdUd4q/Z3ujBANkxPwCRiQW7DAHSQUrPe8kqwhlYCANBFv/92YmMLUtG0/ETtO5hmP4JnnYMfpSM3dSKoCIMczgNqCLBSAhBsgU0RAJgVI0oEg0cCaVa6hHlaJSOJLHoO/ugr7F9D0gIxQbV4qxMoQqA+3JgJVFi2ERFW+WBFZ5y4KZKjUbhrhKIJcJh7Yr/17dduNuirTZJN9bd+BnY/hBU/heY+vWlUdx+i4BRApEWE0o4I1ja88ZKqy6EkgR6fNNRKS1SRCPGHCf+DJ5XUfwol9FgPqYCvIZrjPulZFNSwpCxGqI0GC6uxOsjoj0IXnJjB1/Gh5R0t0MlUWeMauW3Hzdfjo+3X6Tjz1Yn79xZicqXH9iJiiFcGyDvlFbPqVvzGs7BNRdcVYZzkVUFDLSzFYHCXpfyNK2IsfxW86W3ta9CYqi0OVR6aG6lG9Orw/5Ou4VBOuu8esu4IpDHTBDiaiqPzLTLVSWzAoakPFkCY5swXTs7rlhnjXm/QrP4TL/q4Sp7BGI8WrSOfQYYWo9UUzmxmoI6MKq2J07EYNKoVDoKNdxtL+tS+sPdQXkNKrn4mvOzEOFHlTOawqjqjpfUI0aF2toWpcRUI4whSuyhzKVIVUVIWjg/yyOj3olYHb1eOrWkSWWilNYdN27d0df/IGvflV2H0L3LG6VbJD0uixNbA990CQTthmbKwIhchAVselj5poeJeatAPuv2PUqiFECFun0hufZ6fMYG+h9znER0RSNIoUral1hZOJ1kBOGZGkyiYz1Z4GHEiIKmlEyAkzunuPqPXu2jKjspQ7cjjSFDefqKsv05tegS98Gp5WE0OHZBdstX/Bva5t29lMqKgKrlSJgypLgYOmKIy56I7rC0attGZECTxs1v6/S3jeVu0tsB66cqKrmIpBDcOBBmoUzvBO9lMNkCBjOOTDMfimQ1L9wwaWhiwzQyEz2cmvVTESqS2c3qalRf3eq/Xpfzg6DK1/K4OHdYABbN2OmVm00UlqD3U0EFCJyBFFyIIMN16ZgdErpFUMnbLZfv8FfNG5sW9JcwH2jMlkDDc50Kh41QuBkpRMjVXEyClSQ+eFBtYnG7IBGsq6qY+Ode+QgwlMQHVzhAxF8EmlSbzzV3XFR+DpSOMhrgaAVmvXSS2xzsxw2w62eXivUEMFhqFAWZGhErC+bvq3mLsrzEavvl8xNNXYa57NX78EjzxZe4v2F4TRGqABGkbV5RiOYcCGbZBmKFnf/SGcbIjESCiJtVUSDnmHoSqoripz56QBCVlgUjOhP/4l3fgluK/cPMbhPf37ncrgKqU/lfV72hm2nG2Yl6jSOYLdCFhFlfW4//a47rJclTRG7jJWqQZ/xsPTH73Ifvl5euJpysRdy5oLDEg0tF4HmnBFVUGrimoJxYfTYbWT2vXFUGWqDi5F6LRg2DFAYIB3ETccQVgfEXrHGzFYOsjnXInQ5zCe/prKu0gw4949+eMfyRMTdWyUiqBkVSZD3WCKkygoAzzm4t7IlDzue5+JEIzcudW+5Tw+/RE4aZNKwZ5F7FvGYsu2sIRKyBIPjsF35F3r+n+12B5DtloEaezm9at8CAXCnMMVG5UZQzdKbCa46yZOTuGcC9dFZmrFFcoeLPerANp1W/npH1u0YENayCOq6lMq8kAd5GyAhtCyvv8tk6ee36wRKfHITatgQDf3Dty6T9fdiRt248Y7cMse7J3TgQXklmkovGoBq2zWjCpjTaEM4OqWaiDqBCERoOSoMlpgCFHlgmmVw1kQLZqGr34LtuzoWFdreK24BXowA1jDoE2bePnl+Zavqt8nVIWYun/Wr18lo8yxtMAyiEc+q1nz23L4Hq1aowiC3DzBM7bwgofxGefyWy7g8x8XixmXXY+pHqJWoTvBqc4a0Qhy6yxpWFjE/KKykBK949FWYSpEp1rVTSB0fTHBE+b2sNfHeU9YeyO01q2MCJjxCU9OV1yRNxnrDS00g8KAUAgBkWjF3ib+2z+XZ3x3OekRadSNUIVRPTx1Xqd2aUJoEqb6KsZwVPmzyqI3dGNilJYzX/EynrYDN98W116vKz5vX/oyFpc03YeCIRCBQAHhBilCIL1W8QsnZnTlJ3jxd2Fiao2X9675JKwB0NOe3syekJYzqqik2C0rkDOchah6mUhaWsJH3p6xsdZokd1EYiccAxTenXlVZnRVS+/GUl0FMMfmGT7ybH/+89KlP21v+Dk+9zlcbDkIKUFGDPmaMsIZtcYotZJP4I5d+MLlHXzX8oGu/b0tBTtO4gUXYm4eQWQhd4NTVeCg1kogqWT1Z3nlh/I1n8zuXGd661F4dcqQHcXIHpBQHFVtFg0tkQlV7UpCm5ELInDm6fzBl/Fnf4JTMxhkyCuretgD6gT7EabaIRmErvrsYVZ3VqBes15egc99ngUlVn12C7KQxSyAqghYSNFKqHj5wJvb5XmNYk3oUB23lNn1X3NCSQjrkvlwyoyp07mqCkMkIpAzH3cBXvXj6E8O2yBVG6S+D1XzeSWJSD3dfA1KXluyh9YBQGaQ9PjH+Tlfx4WWTDZcfkEZi1lhHXRBMYDWn7Zbb8h//5ZBNz62EW0Qk9BTGdYD5Squ7MhES2VnpHsPFpJwR848+xH8L9+t+VZMKKZcbU/9YwgSQIGsjzv3YN+ew5H8PfqC3zrFpaUgJb7ghc2gsHIZgpBZmNX+j8xQdeqNJTixGZ963+Dz/zTwtDEdmYYl6WKKpHCUhGLIlVFPtagSfffJkh0leNGTce45WMxkqsZZ3RtWtQaDCDnmF7Xvrq5ecqzGQAdvSwSe+XQ/5xzOL0HOjhJkyFSApbI7wFbKQBF8Qu/71aXbryueRs0OPfTTUghyoCdV3NRmRUK4iuPgmOIDVc9IPuVJXCp1rKyWqlU7G3Baw6p932bMza21P1m3uy40Db7927wtQNUEqrmYWzFmoZUq2SOAArLBwqLe/bqlpQPB0QqGeAh/m4Ae4FLdnFqXmFVrlFASOUFPD/YGZ5wKaxCo3XvWNoiMdNCJxNonaQdHdxI0IgB66I9SKXVPfSof9RgeWAScWcgVLqw64ZViVt9LEexv4levKf/zlwddNW2DBNSsqsGyKFV6MQkuJDHVPrzkaol40O8z0RMTMq2QWZ0qXlDVhYVBiXKGju6TckQAdEgfRYI7/8v3JDpCKkLuivOVsmfRjZBX/qtyYHIbP/+R/Le/tWy+sQLqe0QtSETlBiWJQ0dmD6HOcWARrVTV0KKSYDrOkIqpG26E+pPHiwurRqgUPOqRdsnFftd+IEFElopQgGIoFT3eJWgy5oyJE/Thv1j6yJ8ubaiA2oRGOEhHTFBSqXTYYWnxgSxq/fF1t2CpdMxXOYK1CKmWaIFCtZIc05uPIwDVXDUC3/Nd6dRTbGGZYZaBGg9lKBPtcHI8iCAr3WxqO//+D9sr/iavNYaqlNpBy1c7nofgNKJuT0USE+DREfJNkRhOq0NMD2CBjJD06avZNJX7oY7aYZIpgExWncDpzdy6tbutowEgrQGAJGzahB98uS8sKUstWJzFmIEM5M4mKepKiW69jvU283/++vK/f7D1xDoAtPrVQNFoybrlCJVQkQwGPFTkoVAOBCy8CWsirOSqB+ClCrV6j3Z/EkElYKbLv8Qv3IipGUStj6HijzFcJAVHFk8+FbOza9yQT0eRXxxZcM37dWQXPdVe+AL7678pJ2xClG6rYJUDA+HGqEt76mLSCAc5ofe8Yek/T3Pn16eSZb7K6HEre9v97901uHyv9izB2ZwyMfm0rZP/4WQmUyd4yAc6KBHdSKBoqPs24WAgoDY0EOI+tyYCblpcjrf9Pa1HEWzAAqC2V9GpZQcAtIFzzgNtjScP02pg4nARWR3ZD3xf+uKX8JUbNZ3U5jqJx3pfMyDJAUFpuFY5JQr4y0uX/9Pr8YhVxVCIbgv/su+Wn/tC3LycerREUww+t2/+r2/t/+VNsz981sQzT0Snxqr7rqCXLOQhItfM0mRetQBIWCiWwnLmPW9qBJKjFL3xfbz+Dm6aUMldrwMHyXcOZYkMwfq48HHrENytchXkMBxZv8+f+DHv9S2LMmYwA+EebtmttuhlVvv2AZQAE1rqna9ZvOZT7WrFQwEYl7+ydPNPfbHc0dr2BjNJk47pxC09bOsvXHVg1ys+d8cPfXbxI3eQZDJW+k4dbR7uq5IsYFFXKYIBL9ERVaUEpK7ZHup2RifH7v3lNX+Bj16NmZnauidrNtGJU7Fy7EUttTr9dHzd2feUxz/kEqjWF0ArmZGd/Qj7sR+2+WUyMbpxTWZaBnLd4z1ET9SINsRGxfHnr1m65uOrElMLInn7W27Kd2bb3FfLCCpQCiIzsjDhnOktfmLP7h/93J0v+8z8X96Uv7pAI5PRDQ27Q1YtR12sqrrg2dW1Ql1sugUujSM5Fgf6X58rP/Kn/JcbOTPDlkADNkKj2gAZrhBWIZgwKHzO09kc7ngGj94EJIzMZYZc8Oxn2I036R3vii2blQe1hAjUPZdR11ZWFQNlIRG5IDUM6M9/Yeklv9A//znNSvoywdzaPe38ZQewqSmZZHKq2pZOECsE0jZPMGLhc/sWPnNXs73Xv3Bb70knNI+a9jOm/cQ++16VkGSEXIjKgBUYKnXnpZJxqY0v3BGX3cCPXYsbbseEYXp6GDoJZoisIUSo4dKe5RY7TuYzn4L1IG6O0N74roAdcMf/++v5Qx8q22YZrVxqgCR5yIuaQCK8hAvu9LotmVKGFvGiV0089vlNyaoH/uj9F50LX1y44WVfhCtCRiVjtyqXYMBUJ0q67aY0ISKWgm1YL9K2fnP6RMwtxw3zbGBUVZdwlLowGKWt6+Jt52YsLmjXAVta5iQ5QUQBwxywKsOQFW3datR9bRQlaO9d/InvtEueuS7CHSNkgTpjSkTgv/54umsPrroytmyiMksEIqLTuBBJukEyo8DIioJk8km+71cWBwt68nf0omilCiJRog2515W5UeoqOpGoKTxZt3hXgeISoHHa6gaxvK+NOxfpYM8Qd+toFnVNUvMEuSHHF+5CA0722XMoImd0K2ODdfISFK1bMhwhBRM5N4/HPsq+6WndtrINGESvSmWo38NrfsZPOVXzy7QeC1m7QMWsuGUiU4XMte+BIpUcENFsxv//O8sf+r2B+UrswiYA9B/Wt9kUuS5TpGABL0xgEup0drdYqEgiobrYWxJg0ESDXiO4wFJ3ocFEF0wFEZQ8kNjv0xu0iEFlZ9ape8RBQcW7l/045PSEgtI0/JFvR6Xfr0vgMYplf0Mp2LKFb/jFZtuJmF8GEwsZlXTmFslKsjAWqQYFUcloQBH6W/ShPxv8zRuWI8uOkoNGRIlmtpl91gntXEFiRLf3VrSCujzaQQ9YiEJtCavbNC0GLApKQIGIGjjXTeZW2dBU3RTmoW4XnboMq3tBVSFVGCIxXLmKgTjCNd/yld/OM3eglAcTSj/eAHQQQ6ee4pf+N5+Z0fwy0LDQhvsCWdyKo9TmBlhoMNY5z9xicmtc9tfLf/5Ti0v7w46OTE1S0o7v3+Fb0mBearzGI1I1RZR51H1OMMFCDFBEXXUvepBVaAqkjOoSMXaJWJUtg0lW5CIFi0qlU+UMJWio3FAcxSRXJN2xwO+/xL/h8cgrEvocIT96NdZLaaUwlLPOOtNe+5o0NaOlAZmQxUEV9AhldCTGODgTTYAMoB1ochuuuaK845WLe26Oo0rvCYX6D+uf9esPx4y1+0NmAVMnOWZCRyUoRATqjsu6qwrJRKiWDc1kJjCqL6YJhrrnSvXdTEwRCTIFI0zqlIck18H2GRpkYu8if/hifsczUAp8RR7iEdJbDzEL02Fy/VfMnFby6zXX5l94XV6Y41QPLEiQl7BQQzbqMrJhl1JGWohgL6HMcctWe/6lvdMfe1Sl6rqkfOnGpa/+3m17P7CXYm+TGSJyMUjD1al19MYUJOgwCgqLbhF1LYUyCp1OWKiT11IQMhddQli0jMwuUA8oGwJeU76MNpPZfvzZfNFju5Lj+sasI5XGPwiGvvTlfOnr28V5m+kJhYzwEonogSlkoSSlGApY1Lqv1EvMi2rMv+Vneo/+5hRlKGd4JBiSuQHY9/F9u952+9y/HDDJp92satHLhipZVutDjNrSYK0Z14CZMgWdMFjIEe51AU+Yw6s5i2yRq+RfJfrSYA2oHHsPxOkz6ecvtsefhrxStudYB9AQQ7jhhnjdL7W379IJ01QL7zbkduwsL0rRrTx1VYEdmphMDLYH9MzvbZ71Q5OAjnz8t2ohOAHs+dCe3e+8ff7yeS6HT9B7JACFWa12BlTM4FZV+9CJQSIsRBPdDLLu9S0jKm+xKtfXYacOQD1QYfOLTOKLzsPLn2hbpkYEPfcLIAGjOIZeAsl5y63lta9vb/6Ktm4iCqrhaYhEpICHrMhDHuHdQiZWwQKjlvfqwov73/yz/d4USsZRuDORpBHA3JVzez+wZ+4jewc3LiGUJsz7pAM1ioHMRIm1fCUZpCgGuMMIRG1o5bqup+q4EGEmmKjCdmDtsk01fMop9p8fbY89ubsXNirPaGNYoK6gF3Dnnr3xutcPrr5a22eJVgY13bZ3NIJFeJGHKHioqe4M5lKTtLyPp53XvOC1/S1n8GgwdC8Y5bk899kDBz66Z+mKuXzzQPPFIEu0CdACEeagAMlNtZFem6I1tjEGUKqWHSOQs+Wi5ZYIP32iee7D/Ft38vxtHXQ4Wmo3GwlAQwxhaUm//Gv5Ux+PE0+Aslyq48GpyKVUZNHxJ1xwqtb9k7HfYHk/Zmbs+b8w8fCnprqH9ageR0CSpc6bRFsGNywvfX5+4cq5dtdSvmGJe1pZbXoIkS0ZKItghBmTkRIQxsDcMpaz98gZs4dNNI87MV20wx63lZt7HXSA0TE8Iwugh3agFUOl4Dd/e/BP/6jts0CGV+24ApesKAk1sq4ycSYkIdES4YZYgsOe9fL+E7+7OaqQ6B6fuo4FMvEgFWjxSwu3vvo63bIkDyOoUM6WAIAqFjKDmTHCTWxz7+lb0+O3NmdO28OneeqUGbuuR477buEcA+jonpe6QtHb/7T9i78sW6bNKStKAZdYwqPDUJU/rZF1U9d0qdMZLPvx6Of2vuFVvYlZW6kGvoroJLn7L2+//bduZhtsZCFaEKJkVYlNMhUjzY0Qc06TvvX9F/nmBsNFv8jqTA5H+lmk0bA6OFzBVwml4Htf1mzdhj98a0wkTDiKSFYhpirMVJdsU6FuPasgRSWP9k7gVf97sOtL7TdfOnnKo1OUGuoeFXosWd6fb/nNW/e8b7dP0nqmQVFttXaqL1VhXkXGTkoB7Z2LE5ec7JsbLZdKLAN5f7vDxxZohQB0r7D6k5fl3/rNtl3A7DTQktFN7yUh1RC7BkMApKaESQl00g15Phrac3968tEv6gnSEbkzRV3txQNXLlx36fXttYP+9oY5mKO2wdxkDHZVorpkQzR6IrPIctK7nticMaXQCLiqw3scG9KF3bfMeN11+dfeONh1s83OgBkMpVCqUrlFHjUGgku1SsRhxSgRytI8L3xh/1k/3W+mDtudVcMD4Ktvv+vWt93BQU59qA1GWIgEVayqRVQpjSgkqDDCehZ3LG9//XkzLzlZh5Gcj1CpZcMDCEApSon79sVvvyl/9tPYMhNW0I0Qh6jwUBNMlUBKWIglTHCQgSQ1jnYvTn2kP+/np7ef64eYnR00PPPXDa5/4+37PnWgd4L1kmtQSm4twusG8whj10h1hKKAMMAb4M7lqReceNIvP1KjVNo5GgCNaBXxENN7CW//4/K+9+ZNk5pgx+OzEqZoVJN89AzMgSKvyqqiSwnoNWjnNDXpz/zxqfNf+NDZmQosUaEb37n3hrfu1lyZ2GzV5CCEXBjZoOQ0sFtorui2qhDeI+5qp56x+aQ3nY/EI/XhYwCtXLY/TM34j/9Q/vD3B73AdB9qWavSXntnQg+0LJSwjmsz9G5AY0BGzPujv7X/tJ/s9WcZWbwPNVZRFwdy3xeXrn7jnXs/tdDfzNTAC6zy/YsYoooxmmRWCa/SQfJrcnFPnn7WlhN/bScnbaMd26/5uCPowg7ldj7ga2pYfdVV+c2/0e69HZungYwkWARLNECvLhDMdZsXOBTLcCiRLnhCmcOJp/nTfmrytKemr4msBQnmjIGu/bP91/73vbEQk5uIEkY6AlG7XUAMh/oTGJ1kKEu4wxvG7UubL96y41fPZp+IjWp7jp0Y6H7D6jt3x+/9dv7XT8eWTarMU5NcaiSTmoAHXGiMyIVRFzCpIZ1MJi3Lwh7zwt4Tf3QiTTKyBHgigDs+s/xvv7N3/5WDiU00BvKQVC8xhnv0FIxwKjm8ykJLpkiE9udt33XiSf/tdBg2Ono2FoAOw9DXkCgC7/zj9gPvzVM9TjZEVgo5YIoUSAELNUbLYRGIcKDnVtO01NCE5d1x8nnpov86dfLjE4CFXfmqtx746t8uU9GblLViJa6iMhSjAsgro6MUIhqva1FhFljKMd+e8hOnnfwjp3SCdtzwx3XdAbRa/l/DpbaXfbz97787WNpnm6cQrRrAJY+a0kcjealE+TCgT5rkpBtdcESeQ9Ozcy9J07N2498tzt20PDVrhNBmlDAhOevaC6rqGbFqF0KBUhxyQ9Mg9g9sgg9//RlbLj4hSpCrWmI+8tLaxgLQqn/PKPDEW27Of/im/OWrsHkqksBQqhiCUiDp7vpQpYLQLJENxNJtEsxzkQomptGkYBuIgigo4YAbCblVI6Rk9AiSlFCyU8lV9gxmzuvt/OUzpr5uMnJwLarMOh4AtCYZfoEn5Iz3/ln+u/cMeoappoZEqC0zExooVS57yCIS4eDdjVjS/e6KgEtUIGQKJ01BwIyOUAmvG2Qqt5VhJdo9y6e8ZPPOnzs1TftaoWcDu7BRTEmHiTeuuKy883fbfbdpdhMjhxUlkBFJaOputyAjemCSEGEcpmaACYwwlSrIQ1UaSafPw0rliahZfyKaBuVAbqZw5itmT//ObSvT9h/HQOvoLSPgiXftjne9ub3iw4OpKfXMTGSJJDRUAl20EjVOsqiFonCgSqEaUAcm6iBF7YR4JRZ2mZcIgWqc2J+3XNg//9ITp89ujr5TOwbQCBWsAf79exb/6o+WPaeZGcZAJlUvlqqKruAhCziBUuoPjXTCFF6HeqRKDqHCACNMMKlJaA+0iHLOyzaf88ot3rNjz20dvwCq2RkEc153dX7Xby1/5d+1eTMSwKw0FOpJoMeQlh/y6rCqho/C1f3TAdW+LFH1V43Q3pg+NR7zmhNOfua0pOo9N5itPixqzfEGoHtmZ4Nl/fUfL3/k/WE5JntiRiJtaIpqPm9FDjBUW2aAqvlJgEEMdBqFLi2ElrDz2yYe/ZMz/RP8ftsgYwt0DLqza68q7/mtpa9enTfPuhtQkDoyNRyyUokf8oBZHSaVheqeHBMaA6B2T8yebo//qZnTv3ECUGTQj4vbePwC6J6R9fJifOCPBx/7H60TU5NEO1xFoY710WFomH9RXWMkOWIhMNAjLuk/8aenp7b7MRwvjwH04KYIV1/Wvu/NS3dci82z5iSyrNZ1BKv1a4iCETVBs1LafXHSub0nv3Lq9Gc2I2N41rSSMgZQF1kr4IlLC/FPb1/+xF9lhk1NSgO4MJQ+6HyWGxLRHghTPPbbe0/6keneNFdgQujBAIH10iYYA+hIoqLrP5//4Q+XbvicpvrWS0An2QKvk4EDlAWcdqFd9Ir+aY9bG8MzuoyhMYDu3xRFxKff3378nWXvLTE5STMgpOXI89p+ij3l+/oXfltjzlFKtVYbZPf//kcDIB2rseJBzuH+3eWT72m//PGytE/ImJrVo57VPOElvZkTbWPWeEYLQIfioVcQZGtHUbhHrQgA2+WY3yMC09uYGgN0lHP1xwqeUHc4xMZ6risHzYd+h6FHu/snJXd92fE1joEOGYK6xykZQ+drr7TRnvcKGjwe+gvHsHmgawMFgVw56KxllHBsx0DYiFkENwhieOwCSxvRhR0zyOax9E1t/Ng3yIkfUbs1BtDYcd/XMWkMoDF6jua3cD0AJI2f83GY39noHZJ7+fsxLkc6DE+j9614zOUsx/I1joHG1yoCaPXcx/o6prFbXLEwwx7Km6zSvea64mPsFo/+8fEQXRg35tcbZ0zjGOiQHonGaB4DaPUO9DjWWaX7o43bjb/X0B7Hsc56WMf7b6ZuzPOqcdVxPcFnK31e17xvPOYnr6vjtlUAJo/6q+ooj8XYNhwnQTSPhzM6zsKOPWCNDdVqAUijepTHNmPDWCCN6lEeWQwd1+BOqwyIlRrjGuVJjI2y3+hwb+MhfbXVjoG4caZwVg/Zo2CijuBBHNLrj2c+EI+5X7QOB2yjA+h4jj+0Jr9CRwAgHV2bbYyhY8Ow8YhjIK5Im21NHjMPPzAcXysJU1srS8Dj49Qed9eYVD++RgVAR68XdpzEpxoDaJWcy/EQoBxr33GkXBiPxU+ilUtQjhEAjROZcdh+VAAaJzLj67ABNLY649DnqAA0tjrr6Mg0yvizETtYY1N3v+DjsQogjtJJHV/r4H/HlejxdVSnegygcfC+ni5sfB3DwfsYQONr9a//A0DcCziHmdKtAAAAAElFTkSuQmCC">
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAEK0lEQVR42uVWS2xVVRRda997X9/j9bWvhdISoGANiASoNiVgNEJAKhNajKGoEzAhDoghkYSoDCTxAxHiAAeiE8UBmBoSCEYjWJWkUSOfAAEUhRalthRs4fVz29d37znbQQFLP9BKSEjc43PO2nuts/detNbiXobgHsd9DqAW0Nsfce8uPQcAVP8TgEKtEgBvZCkE++dO9DRBoogkAQXdUVCkCgjEFbpCR+AKXIEQVgHAGogDGrvnMVu3AuJCPKgdcQUKEWpgr311TY+3ZnV2RRKBU5rLJQ8gOwvGwHHR/JueqEHKVVtvf14nU6tQuPh6WbcGB/SBKoTouWJPbWjBkas5aT+Brmy0x6IdzswI18/n4w/qoS/1i/eUl1CUQy+l5hzzwbINnPMu1AxgZSAAFGpR+/LVzjq/IGmmLokkZ3luykftn+6JeicZcNOjunc7nA6Ul2rTD8iPyfRyrd+tbJCln3Hqc7BBfz1uocgaOC7P/xicPaYFOZGS1xKTlsWv474wOdgcQzILjef1opEXn+fyZ83GKuaNZ8VbODkLJ7YhUtiX9B00OHMkvNor056MTVoWt6ECSgBjXO/teQDslgvozmPeFLgCPxuZbAAsXcnZ1RBCFXSG/UUkAFxOsVskvzRLLRSgQziEVQQGqpxWAr/QfnLQvvMRgjxt7tXv9qPxdwgx1Fhzb+UfAGycXQ59XynAzSsEHIGClbP4S5sePIymBkzOwZWU3fEBCxxWLGPVS1C9nuaQFfS1ZFGJdER55rAxgVL6zQICBDyRNxbJjtVcs4J+ktFillVoZpzu34OjhyACa4YFEAGg859w3EneuQtatzsjQmMGfGwQytlFrJqrHUm4RfL6ei5Zru1xPXl8sMgDNTAGE4q4uNJr8ZwDuzKnvw9cjybsdyiwYWMPAdKG6XHozgHARAH8bGRid+5kEtZiZbVz9lf3j59szda0EDMXeiZUQsWV5m2N3bsujq0uiDycnbFxdNOrOY69Rxjmo3TeYAAO3mh9zZzqwJubMm2ngym0lWuj5c9EbGgp0ravtWXLRbelM5YbRnNtDGmvrcUd48uqGbLu6cEic8iVaS0cB6l23bo5aD4aTAzMouqsRWujFFUwuJzx61KpnX/J352xiE0sTESeGi8Lioec2xxuJ/dhpHvx4fvBqa8zhT3hI+XO0lfH5Ex0gi7b9HFrZ80lr7Vrwsbi3FWTte8COQqAm1yB2P95+O2nmfjl4KEpnFPhXattTx/ryk0E018ZW7C6UAMLAg6HfIS3dxWqgEIcnj1p9m1Pd58KxxkT7w2LZ6BsQ2Ls/Jgavf3a5UhsS98QTPtau7O34ZuwbIHMXRPLStCGlsMkPjqAm5IATPs2GhdArQFHYBk4cuN1gy5YA3Lw7rprgH8nIkdjPEZtVThKZ/M/t473A8A/9RXkr0kCIt8AAAAASUVORK5CYII=">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -131,21 +91,6 @@
   document.dispatchEvent(new Event('firebase-ready'));
 </script>
 <style>
-  /* ★ 즉시 적용: JS 실행 전 모바일 레이아웃 flash 방지
-     data-mobile 속성은 body 렌더 전 <head>에서 이미 설정됨 */
-  html[data-mobile='true'] .sidebar { display: none !important; }
-  html[data-mobile='true'] .main {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: calc(12px + env(safe-area-inset-top)) 12px calc(84px + env(safe-area-inset-bottom)) 12px !important;
-  }
-  html[data-mobile='true'] .mobile-tabbar { display: flex !important; }
-  html[data-mobile='true'] .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-  html[data-mobile='true'] .chart-row,
-  html[data-mobile='true'] .chart-row-3,
-  html[data-mobile='true'] .summary-grid { grid-template-columns: 1fr !important; }
-
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
   
   :root {
@@ -504,10 +449,20 @@
     padding: 8px 16px; border-radius: 8px; cursor: pointer;
     font-size: 13px; font-weight: 500; border: 1.5px solid var(--border);
     background: var(--surface); color: var(--text-muted);
-    transition: all 0.2s;
+    transition: all 0.2s; white-space: nowrap;
   }
   .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
   .tab-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+  /* 모바일: 카테고리 탭 버튼 소형화 */
+  body.mobile-app .tab-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  body.mobile-app #trendTabs {
+    gap: 5px !important;
+    margin-bottom: 14px !important;
+  }
 
   .page { display: none; }
   .page.active { display: block; }
@@ -550,8 +505,6 @@
   body.mobile-app td:nth-child(n+5) { display: none; }
   body.mobile-app .page-header h2 { font-size: 20px; }
   body.mobile-app .page-header p { font-size: 12px; }
-  body.mobile-app .filter-bar { flex-wrap: wrap; gap: 6px; }
-  body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
   body.mobile-app .stat-value { font-size: 18px !important; }
   body.mobile-app .stat-card { padding: 14px 12px !important; }
   body.mobile-app #donutSvg { width: 120px !important; height: 120px !important; }
@@ -562,6 +515,155 @@
   body.mobile-app .bar-row { grid-template-columns: 64px 1fr 62px; gap: 8px; }
   body.mobile-app .bar-label,
   body.mobile-app .bar-amount { font-size: 10px !important; }
+
+  /* ===== [수정1] 공금정산 버튼 2줄 방지 ===== */
+  body.mobile-app .claim-btn-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 8px;
+  }
+  body.mobile-app .claim-btn-row .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  body.mobile-app .claim-btn-row span {
+    font-size: 11px !important;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 월 수익 저장 / 초기화 버튼 행 */
+  body.mobile-app .income-btn-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+    align-items: center;
+  }
+  body.mobile-app .income-btn-row .btn {
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  /* ===== [수정2] 추이 그래프 스크롤 - 컨테이너 너비에 맞게 ===== */
+  body.mobile-app #trendSvg {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  body.mobile-app #trendXLabels {
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+  /* 추이 SVG wrapper: 스크롤 허용 (내용이 있을 때만) */
+  body.mobile-app .trend-chart-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  /* 히트맵은 스크롤 허용 */
+  body.mobile-app #heatmapChart {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  /* ===== [수정3] 거래내역 필터바 완전 개선 ===== */
+  body.mobile-app .filter-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  body.mobile-app .filter-bar > * { max-width: 100%; min-width: 0; }
+  /* select: 2열 균등 */
+  body.mobile-app .filter-bar select {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 80px;
+    max-width: calc(50% - 4px);
+    font-size: 13px;
+    height: 36px;
+    padding: 0 6px;
+    box-sizing: border-box;
+  }
+  /* 직접 날짜 입력 div - 모바일 숨김 */
+  body.mobile-app #dateDirectInput {
+    display: none !important;
+  }
+  /* 검색창 전체폭 */
+  body.mobile-app .search-box {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+  body.mobile-app .search-box input,
+  body.mobile-app #detailSearch {
+    width: 100% !important;
+    font-size: 13px;
+    height: 36px;
+  }
+  /* 금액 입력란 */
+  body.mobile-app #amountMin,
+  body.mobile-app #amountMax {
+    width: 70px !important;
+    min-width: 0 !important;
+    font-size: 12px !important;
+    padding: 4px 6px !important;
+  }
+  /* 버튼 */
+  body.mobile-app .filter-bar .btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    height: 34px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  /* 결과 카운트/합계 전체폭 */
+  body.mobile-app #detailCount {
+    margin-left: 0 !important;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  body.mobile-app #detailTotal {
+    flex: 1 1 100%;
+    margin-left: 0 !important;
+    white-space: normal !important;
+    font-size: 12px !important;
+    line-height: 1.4;
+  }
+
+  /* ===== [추가] 공금정산 그리드 모바일 1열 ===== */
+  body.mobile-app .claim-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  /* 항목 행 모바일 최적화 */
+  body.mobile-app #claimItems > div {
+    grid-template-columns: 1fr 80px 28px !important;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+  }
+  /* action-btn-row: 전체선택/선택해제/삭제 한 줄 */
+  body.mobile-app .action-btn-row {
+    flex-wrap: nowrap !important;
+    width: 100%;
+  }
+  body.mobile-app .action-btn-row .btn {
+    font-size: 12px;
+    padding: 5px 8px;
+    height: 32px;
+  }
+  /* detailTotal 전체폭 표시 */
+  body.mobile-app #detailTotal {
+    display: block;
+    width: 100%;
+    white-space: normal !important;
+    font-size: 12px !important;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
 
 
   .summary-dual-row {
@@ -816,18 +918,40 @@
       display: none;
     }
 
-    /* 필터 영역 줄바꿈 */
+    /* 필터 영역 */
     .filter-bar {
       flex-wrap: wrap;
       gap: 6px;
+      align-items: center;
     }
-    .filter-bar > * { max-width: 100%; }
+    .filter-bar > * { max-width: 100%; min-width: 0; }
+    .filter-bar select {
+      flex: 1 1 calc(50% - 4px);
+      min-width: 80px;
+      max-width: calc(50% - 4px);
+      font-size: 13px;
+      height: 36px;
+      padding: 0 6px;
+    }
     .filter-bar input,
-    .filter-bar select,
     .filter-bar .btn {
       min-width: 0;
       font-size: 13px;
     }
+    /* 추이 차트 모바일 */
+    #trendSvg { min-width: 0 !important; width: 100% !important; }
+    #trendXLabels { min-width: 0 !important; overflow-x: hidden !important; }
+    .trend-chart-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* 공금정산 그리드 1열 */
+    .claim-grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
+    /* 거래내역 action 버튼 */
+    .action-btn-row { flex-wrap: nowrap !important; }
+    .action-btn-row .btn { font-size: 12px; padding: 5px 8px; }
+    /* 날짜 직접입력 숨김 */
+    #dateDirectInput { display: none !important; }
+    /* detailTotal 전체폭 */
+    #detailTotal { white-space: normal !important; font-size: 12px !important; }
 
     /* 모달 전체화면 */
     .modal-content {
@@ -1423,7 +1547,7 @@
         <select id="detailYear" onchange="onYearChange()"><option value="">전체 연도</option><option value="2026">2026년</option></select>
         <select id="detailMonth" onchange="onMonthChange()"><option value="">전체 월</option><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         <select id="detailDay" onchange="applyDetailFilter()"><option value="">전체 일</option><option value="1">1일</option><option value="2">2일</option><option value="3">3일</option><option value="4">4일</option><option value="5">5일</option><option value="6">6일</option><option value="7">7일</option><option value="8">8일</option><option value="9">9일</option><option value="10">10일</option><option value="11">11일</option><option value="12">12일</option><option value="13">13일</option><option value="14">14일</option><option value="15">15일</option><option value="16">16일</option><option value="17">17일</option><option value="18">18일</option><option value="19">19일</option><option value="20">20일</option><option value="21">21일</option><option value="22">22일</option><option value="23">23일</option><option value="24">24일</option><option value="25">25일</option><option value="26">26일</option><option value="27">27일</option><option value="28">28일</option><option value="29">29일</option><option value="30">30일</option><option value="31">31일</option></select>
-        <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+        <div id="dateDirectInput" style="display:flex;align-items:center;gap:6px;margin-left:8px">
           <span style="font-size:12px;color:var(--text-muted)">또는 직접 입력</span>
           <input type="date" id="dateFrom" onchange="applyDetailFilter()" style="height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text)">
           <span style="font-size:12px;color:var(--text-muted)">~</span>
@@ -1446,12 +1570,14 @@
           <span style="font-size:12px;color:var(--text-muted)">~</span>
           <input type="number" id="amountMax" placeholder="최대" onchange="applyDetailFilter()" style="width:90px;height:36px;padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:12px">
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)">현재 페이지 전체선택</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()">선택해제</button>
-        <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger)">선택 삭제</button>
-        <div id="detailSelectedInfo" style="font-size:13px;color:var(--danger);white-space:nowrap"></div>
-        <div style="margin-left:auto;font-size:13px;color:var(--text-muted);white-space:nowrap" id="detailCount">115건</div>
-        <div id="detailTotal" style="font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;font-family:&#39;DM Mono&#39;,monospace">카드총액: ₩3,147,393 (정산 입력 합계: -₩467,130)</div>
+        <div class="action-btn-row" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)" style="white-space:nowrap">전체선택</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()" style="white-space:nowrap">선택해제</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger);white-space:nowrap">삭제</button>
+          <div id="detailSelectedInfo" style="font-size:13px;color:var(--danger);white-space:nowrap"></div>
+          <div style="margin-left:auto;font-size:13px;color:var(--text-muted);white-space:nowrap" id="detailCount">115건</div>
+        </div>
+        <div id="detailTotal" style="font-size:13px;font-weight:700;color:var(--accent);font-family:&#39;DM Mono&#39;,monospace">카드총액: ₩3,147,393 (정산 입력 합계: -₩467,130)</div>
       </div>
       
       <div class="card" style="padding:0">
@@ -2669,8 +2795,8 @@
       <!-- 월별 추이 라인차트 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 추이</div>
-        <div style="overflow-x:auto">
-          <svg id="trendSvg" style="width:100%;min-width:600px;height:220px" viewBox="0 0 800 200">
+        <div class="trend-chart-wrap" style="overflow-x:auto">
+          <svg id="trendSvg" style="width:100%;height:220px" viewBox="0 0 800 200">
     <text x="52" y="174" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">0만</text>
     <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">67만</text>
     <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="9" fill="#8A7F74" font-family="DM Mono">134만</text>
@@ -2682,7 +2808,7 @@
     <circle cx="60.0" cy="62.6" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="420.0" cy="46.9" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="780.0" cy="20.0" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle>
   </svg>
         </div>
-        <div id="trendXLabels" style="display: flex; font-size: 10px; color: var(--text-muted); overflow-x: auto; min-width: 600px; padding-top: 4px; font-family: &quot;DM Mono&quot;, monospace; padding-left: 60px;">
+        <div id="trendXLabels" style="display: flex; font-size: 10px; color: var(--text-muted); overflow-x: hidden; padding-top: 4px; font-family: &quot;DM Mono&quot;, monospace; padding-left: 60px;">
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.01</span>
   
     <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.02</span>
@@ -2921,7 +3047,7 @@
       </div>
     </div>
   </div>
-        <div style="margin-top:16px;display:flex;gap:10px;">
+        <div class="income-btn-row" style="margin-top:16px;display:flex;gap:10px;">
           <button class="btn btn-primary" onclick="saveIncomeFromUpload()">💾 월 수익 저장</button>
           <button class="btn btn-ghost" onclick="clearIncomeFromUpload()">초기화</button>
         </div>
@@ -2933,14 +3059,14 @@
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">한 달간 개인이 선결제한 공금 항목들을 묶어서 총 청구액으로 등록합니다. 거래내역에 하나의 항목으로 추가됩니다.</p>
 
         <!-- 청구 월 선택 -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div class="claim-month-row" style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
           <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 청구 기준 월</span>
           <select id="claimYear" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026년</option></select>
           <select id="claimMonth" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
 
         <!-- 청구인 / 카테고리 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="claim-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="input-group">
             <div class="input-label">👤 청구인</div>
             <input type="text" id="claimPerson" placeholder="예: 예진, 기혁..." style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Noto Sans KR&#39;,sans-serif;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
@@ -2969,14 +3095,14 @@
           <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:.5px">📋 포함 항목 (여러 건 묶기)</div>
           <div id="claimItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"><div id="claimItem_1" style="display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border);">
     <input type="text" placeholder="항목명 (예: 마트, 약국, 주유소...)" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Noto Sans KR&#39;,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%" oninput="updateClaimTotal()" id="claimItemName_1">
-    <input type="number" placeholder="금액" min="0" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none;width:110px;text-align:right" oninput="updateClaimTotal()" id="claimItemAmt_1">
+    <input type="number" placeholder="금액" min="0" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none;width:90px;text-align:right" oninput="updateClaimTotal()" id="claimItemAmt_1">
     <button onclick="removeClaimItem(1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:2px 6px;border-radius:4px;transition:color .15s" onmouseover="this.style.color=&#39;var(--danger)&#39;" onmouseout="this.style.color=&#39;var(--text-muted)&#39;">✕</button>
   </div></div>
           <button class="btn btn-ghost btn-sm" onclick="addClaimItem()" style="width:100%;justify-content:center">＋ 항목 추가</button>
         </div>
 
         <!-- 합계 + 메모 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="claim-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div class="input-group">
             <div class="input-label">💰 총 청구 금액 (원)</div>
             <input type="number" id="claimTotal" placeholder="자동 합산 또는 직접 입력" style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;DM Mono&#39;,monospace;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
@@ -2993,10 +3119,10 @@
           <div id="claimPreviewContent"></div>
         </div>
 
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn btn-primary" onclick="submitClaim()">🧾 정산 청구 등록</button>
+        <div class="claim-btn-row" style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="submitClaim()">🧾 정산</button>
           <button class="btn btn-ghost" onclick="resetClaim()">초기화</button>
-          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인 가능합니다</span>
+          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인</span>
         </div>
 
         <!-- 최근 등록된 청구 내역 -->
@@ -5571,9 +5697,20 @@ function renderTrendChart(monthlyData) {
   const labelsEl = document.getElementById('trendXLabels');
   
   if (!monthlyData.length) { svg.innerHTML = ''; return; }
+
+  // 모바일에서는 컨테이너 너비에 맞게, PC는 800 고정
+  const isMob = document.body.classList.contains('mobile-app');
+  const container = svg.parentElement;
+  const containerW = container ? container.clientWidth : 800;
+  const W = isMob ? Math.max(containerW, 300) : 800;
+  const H = isMob ? 180 : 200;
+  svg.style.minWidth = '0';
+  svg.style.width = '100%';
+  svg.style.height = H + 'px';
+  labelsEl.style.minWidth = '0';
+  labelsEl.style.overflowX = 'hidden';
   
-  const W = 800, H = 200;
-  const pad = {top:20, right:20, bottom:30, left:60};
+  const pad = {top:20, right:16, bottom:30, left:isMob?44:60};
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
   
@@ -5616,8 +5753,10 @@ function renderTrendChart(monthlyData) {
   const showEvery = Math.ceil(monthlyData.length / 20);
   const labelW = plotW / monthlyData.length;
   labelsEl.style.paddingLeft = pad.left + 'px';
+  // 모바일에서는 라벨 간격도 W 기준으로
+  const labelStep = plotW / (monthlyData.length - 1 || 1);
   labelsEl.innerHTML = monthlyData.map((m, i) => `
-    <span style="width:${step.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
+    <span style="width:${labelStep.toFixed(1)}px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;${i%showEvery!==0?'opacity:0':''}">${m.label}</span>
   `).join('');
 }
 
@@ -6666,17 +6805,9 @@ async function _init() {
     const ua = navigator.userAgent || '';
     const isIOSPhone = /iPhone|iPod/i.test(ua);
     const isAndroidPhone = /Android/i.test(ua) && /Mobile/i.test(ua);
-    // iOS 홈화면 앱: window.navigator.standalone (가장 신뢰성 높음, Safari에서만 동작)
-    const isStandaloneIOS = window.navigator.standalone === true;
-    // Android/Chrome PWA: display-mode media query
-    const isStandaloneChrome = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
-    const isStandalone = isStandaloneIOS || isStandaloneChrome;
-    // screen.width: standalone 모드에서도 정확한 기기 폭을 반환 (innerWidth보다 신뢰)
-    const isNarrow = (window.screen.width <= 768) || (window.innerWidth <= 768);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isNarrow = window.innerWidth <= 768;
     const isMobile = isNarrow || isIOSPhone || isAndroidPhone || isStandalone;
-
-    // html 속성 동기화 (CSS 즉시 반영용)
-    document.documentElement.setAttribute('data-mobile', isMobile ? 'true' : 'false');
 
     const sidebar = document.querySelector('.sidebar');
     const main = document.querySelector('.main');
