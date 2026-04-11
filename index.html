@@ -5719,6 +5719,22 @@ function parseHtmlTableMatrix(htmlText) {
   }
 }
 
+function scoreSheetForImport(matrix) {
+  if (!Array.isArray(matrix) || !matrix.length) return -1;
+  const headerIdx = detectHeaderRow(matrix);
+  const header = matrix[headerIdx] || [];
+  const normalized = header.map(normalizeHeaderText);
+  let score = 0;
+  if (normalized.some(h => h.includes('이용일') || h.includes('승인일') || h.includes('거래일') || h === '날짜')) score += 4;
+  if (normalized.some(h => h.includes('가맹점') || h.includes('상호') || h.includes('이용하신곳') || h.includes('사용처'))) score += 4;
+  if (normalized.some(h => h.includes('원금'))) score += 5;
+  if (normalized.some(h => h.includes('이용금액') || h.includes('청구금액') || h.includes('결제예정금액') || h.includes('매입금액') || h.includes('승인금액') || h === '금액')) score += 3;
+  if (normalized.some(h => h.includes('이용자') || h.includes('상품명') || h.includes('카드번호'))) score -= 6;
+  const bodyCount = matrix.slice(headerIdx + 1, headerIdx + 8).filter(isMeaningfulRow).length;
+  score += Math.min(bodyCount, 5);
+  return score;
+}
+
 function extractUploadedMatrixFromArrayBuffer(buffer, fileName) {
   const bytes = new Uint8Array(buffer);
   const utf8Text = new TextDecoder('utf-8').decode(bytes);
@@ -5730,8 +5746,28 @@ function extractUploadedMatrixFromArrayBuffer(buffer, fileName) {
   }
 
   const wb = XLSX.read(buffer, {type:'array'});
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  return XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:true});
+  const fileLabel = String(fileName || '').replace(/\s+/g, '').toLowerCase();
+  const isSamsung = fileLabel.includes('삼성');
+
+  let bestMatrix = [];
+  let bestScore = -Infinity;
+
+  wb.SheetNames.forEach((sheetName, idx) => {
+    const ws = wb.Sheets[sheetName];
+    if (!ws) return;
+    const matrix = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:true});
+    let score = scoreSheetForImport(matrix);
+    const normalizedName = String(sheetName || '').replace(/\s+/g, '').toLowerCase();
+    if (isSamsung && idx === 1) score += 8;
+    if (normalizedName.includes('청구요약') || normalizedName.includes('요약')) score -= 8;
+    if (normalizedName.includes('일시불') || normalizedName.includes('이용내역')) score += 4;
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatrix = matrix;
+    }
+  });
+
+  return bestMatrix;
 }
 
 
@@ -5760,7 +5796,7 @@ function handleFileUpload(input) {
 
     const dateIdx = guessCol(uploadedHeaders, ['이용일', '이용일자', '승인일', '거래일', '날짜', 'date', '승인일자']);
     const storeIdx = guessCol(uploadedHeaders, ['가맹점', '이용가맹점', '상호', '거래처', 'store', '가맹점명', '이용가맹점(은행)명', '이용가맹점명', '이용하신곳', '사용처']);
-    const amountIdx = guessCol(uploadedHeaders, ['결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)', '원금']);
+    const amountIdx = guessCol(uploadedHeaders, ['원금', '결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)']);
     const noteIdx = guessCol(uploadedHeaders, ['비고', '메모', 'note', '내용', '기타', '결제후잔액']);
 
     const colSel = (id, idx) => {
@@ -5825,9 +5861,20 @@ function findColIndexByNames(headers, candidates) {
 
 function parseMoneyValue(raw) {
   if (typeof raw === 'number') return Number.isFinite(raw) ? raw : 0;
-  const cleaned = String(raw == null ? '' : raw).replace(/[^0-9.-]/g, '');
+  let text = String(raw == null ? '' : raw).trim();
+  if (!text) return 0;
+
+  text = text.replace(/[−－]/g, '-').replace(/[,₩원\s]/g, '');
+  const isParenNegative = /^\(.*\)$/.test(text);
+  if (isParenNegative) text = text.replace(/^\((.*)\)$/, '$1');
+  if (/^-?\d+(?:\.\d+)?-$/.test(text)) text = '-' + text.slice(0, -1);
+
+  const cleaned = text.replace(/[^0-9.-]/g, '');
   if (!cleaned || cleaned === '-' || cleaned === '.' || cleaned === '-.') return 0;
-  return Number(cleaned) || 0;
+
+  const value = Number(cleaned);
+  if (!Number.isFinite(value)) return 0;
+  return isParenNegative ? -Math.abs(value) : value;
 }
 
 function getRowCell(row, idx) {
@@ -5844,11 +5891,21 @@ function isCancelLikeRow(row, headers) {
 
 function resolveImportedAmount(row, headers, selectedAmountIdx) {
   const baseAmount = parseMoneyValue(getRowCell(row, selectedAmountIdx));
+  const principalIdx = findColIndexByNames(headers, ['원금']);
+  const principalAmount = principalIdx >= 0 ? parseMoneyValue(getRowCell(row, principalIdx)) : null;
   const scheduledIdx = findColIndexByNames(headers, ['결제예정금액', '청구금액', '매입금액', '이용대금', '청구예정금액']);
   const scheduledAmount = scheduledIdx >= 0 ? parseMoneyValue(getRowCell(row, scheduledIdx)) : null;
-  const approvalIdx = findColIndexByNames(headers, ['승인금액', '승인금액(원)']);
+  const approvalIdx = findColIndexByNames(headers, ['승인금액', '승인금액(원)', '이용금액', '이용금액(원)']);
   const approvalAmount = approvalIdx >= 0 ? parseMoneyValue(getRowCell(row, approvalIdx)) : null;
   const cancelRow = isCancelLikeRow(row, headers);
+
+  if (principalAmount !== null && !Number.isNaN(principalAmount) && principalAmount !== 0) {
+    return principalAmount;
+  }
+
+  if (principalAmount === 0 && cancelRow) {
+    return 0;
+  }
 
   if (scheduledAmount !== null && !Number.isNaN(scheduledAmount)) {
     if (scheduledAmount === 0 && (cancelRow || (approvalAmount !== null && approvalAmount > 0))) return 0;
@@ -5857,6 +5914,7 @@ function resolveImportedAmount(row, headers, selectedAmountIdx) {
 
   if (cancelRow) {
     if (baseAmount < 0) return baseAmount;
+    if (approvalAmount !== null && approvalAmount < 0) return approvalAmount;
     return 0;
   }
 
