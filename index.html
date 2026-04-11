@@ -3567,7 +3567,22 @@ window.showPage = function(page) {
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">카테고리</div>
-          <div id="txDetailCat"><span class="cat-badge cat-미분류">❓ 미분류</span></div>
+          <div id="txDetailCat" style="margin-bottom:8px"><span class="cat-badge cat-미분류">❓ 미분류</span></div>
+          <select id="txDetailCatSelect" class="cat-select" style="width:100%;max-width:180px"
+            onchange="previewTxDetailCategory(this.value)">
+            <option value="외식">🍽 외식</option>
+            <option value="생필품">🛒 생필품</option>
+            <option value="생활비">🚌 생활비</option>
+            <option value="여행">✈️ 여행</option>
+            <option value="쇼핑">🛍 쇼핑</option>
+            <option value="관계비용">🎁 관계비용</option>
+            <option value="가스비">🔥 가스비</option>
+            <option value="교육/놀이">📚 교육/놀이</option>
+            <option value="관리비">🏠 관리비</option>
+            <option value="통신/렌탈">📡 통신/렌탈</option>
+            <option value="세금/기타">📄 세금/기타</option>
+            <option value="미분류">❓ 미분류</option>
+          </select>
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">결제 금액</div>
@@ -5045,6 +5060,8 @@ function openTxDetailModal(id) {
 
   const catEl = document.getElementById('txDetailCat');
   catEl.innerHTML = `<span class="cat-badge ${CAT_CLASS[t.category]||'cat-미분류'}">${CAT_ICON[t.category]||'❓'} ${t.category}</span>`;
+  const catSelectEl = document.getElementById('txDetailCatSelect');
+  if (catSelectEl) catSelectEl.value = t.category || '미분류';
 
   const noteRow = document.getElementById('txDetailNoteRow');
   const noteEl = document.getElementById('txDetailNote');
@@ -5067,6 +5084,13 @@ function closeTxDetailModal(e) {
   if (e.target === document.getElementById('txDetailModal')) closeModal();
 }
 
+function previewTxDetailCategory(cat) {
+  const catEl = document.getElementById('txDetailCat');
+  if (!catEl) return;
+  const safeCat = cat || '미분류';
+  catEl.innerHTML = `<span class="cat-badge ${CAT_CLASS[safeCat]||'cat-미분류'}">${CAT_ICON[safeCat]||'❓'} ${safeCat}</span>`;
+}
+
 function previewSettlement() {
   const t = transactions.find(t => t.id === detailModalTxId);
   if (!t) return;
@@ -5087,13 +5111,31 @@ function saveSettlementFromModal() {
   const t = transactions.find(t => t.id === detailModalTxId);
   if (!t) return;
   const val = parseInt(document.getElementById('settlementInput').value) || 0;
+  const nextCategory = (document.getElementById('txDetailCatSelect') || {}).value || t.category || '미분류';
+  const prevSettlement = t.settlement || 0;
+  const prevCategory = t.category || '미분류';
+
   t.settlement = val > 0 ? Math.min(val, t.amount) : 0;
+  t.category = nextCategory;
+
   saveData();
   closeModal();
   renderDetailPage();
   applyDetailFilter();
   if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
-  showToast(t.settlement > 0 ? `✅ 정산 ${fmt(t.settlement)}원 반영됨` : '정산 금액이 제거됐어요');
+
+  const changedSettlement = prevSettlement !== t.settlement;
+  const changedCategory = prevCategory !== t.category;
+
+  let msg = '변경사항이 저장됐어요';
+  if (changedSettlement && changedCategory) {
+    msg = `✅ 카테고리 변경 + 정산 ${fmt(t.settlement)}원 반영됨`;
+  } else if (changedCategory) {
+    msg = '카테고리 변경됨';
+  } else if (changedSettlement) {
+    msg = t.settlement > 0 ? `✅ 정산 ${fmt(t.settlement)}원 반영됨` : '정산 금액이 제거됐어요';
+  }
+  showToast(msg);
 }
 
 
