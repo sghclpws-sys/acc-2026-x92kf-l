@@ -4921,8 +4921,10 @@ function applyDetailFilter() {
   const cat = document.getElementById('detailCat').value;
   const card = document.getElementById('detailCard') ? document.getElementById('detailCard').value : '';
   const search = document.getElementById('detailSearch').value.toLowerCase();
-  const amountMin = parseInt(document.getElementById('amountMin').value) || 0;
-  const amountMax = parseInt(document.getElementById('amountMax').value) || Infinity;
+  const amountMinRaw = document.getElementById('amountMin').value;
+  const amountMaxRaw = document.getElementById('amountMax').value;
+  const amountMin = String(amountMinRaw).trim() === '' ? -Infinity : parseInt(amountMinRaw, 10);
+  const amountMax = String(amountMaxRaw).trim() === '' ? Infinity : parseInt(amountMaxRaw, 10);
   
   filteredTx = transactions.filter(t => {
     const d = t.date;
