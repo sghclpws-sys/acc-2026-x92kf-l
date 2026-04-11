@@ -5834,7 +5834,7 @@ function refreshUploadMeta() {
     const idx = parseInt(amountIdxVal);
     rows.forEach(row => {
       const amount = resolveImportedAmount(row, uploadedHeaders, idx);
-      if (amount > 0) sum += amount;
+      sum += amount;
     });
   }
   document.getElementById('uploadMeta').textContent = `총 ${rows.length}행 발견 · 카드 ${cardText} · 업로드 합계 ₩${fmt(sum)} · 헤더 자동 인식 완료`;
@@ -6002,7 +6002,7 @@ function importData() {
     const amount = resolveImportedAmount(row, uploadedHeaders, amountIdx);
     const rowType = getImportRowType(row, uploadedHeaders, amount);
 
-    if (amount < 0) continue;
+    // 취소/환불 음수금액도 그대로 가져와야 함
     if (amount === 0 && rowType !== 'cancel') continue;
     
     const date = parseImportedDate(dateRaw);
