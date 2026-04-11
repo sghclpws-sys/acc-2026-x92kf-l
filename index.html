@@ -868,13 +868,6 @@
   .mobile-tabbar-item.active { color: var(--accent); }
   .mobile-tabbar-item:active { opacity: 0.7; }
 </style>
-<script>
-// showPage 프록시: JS 로드 전 클릭해도 초기화 후 실행되도록 큐잉
-window._pageQueue = null;
-window.showPage = function(page) {
-  window._pageQueue = page;
-};
-</script>
 </head>
 <body>
 
@@ -937,7 +930,7 @@ window.showPage = function(page) {
   <main class="main">
     
     <!-- ===== 월별 요약 ===== -->
-    <div class="page" id="page-summary">
+    <div class="page active" id="page-summary">
       <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
         <div>
           <h2>월별 요약</h2>
@@ -1409,7 +1402,7 @@ window.showPage = function(page) {
     </div>
 
     <!-- ===== 거래 내역 ===== -->
-    <div class="page active" id="page-detail">
+    <div class="page" id="page-detail">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
         <div>
           <h2>거래 내역</h2>
@@ -3833,6 +3826,7 @@ function showPage(page) {
   }
   if (page === 'settings') renderRules();
 }
+window.showPage = showPage; // onclick에서 접근 가능하도록 즉시 전역 등록
 
 // ===== HELPERS =====
 function fmt(n) {
@@ -6661,13 +6655,6 @@ function saveAdd() {
 
 // ===== INIT =====
 async function _init() {
-  // 실제 showPage로 교체 (프록시 해제)
-  window.showPage = showPage;
-  // 큐에 쌓인 페이지 처리
-  if (window._pageQueue) {
-    showPage(window._pageQueue);
-    window._pageQueue = null;
-  }
   // PWA/홈화면 모드 포함 모바일 강제 적용
   function applyMobileLayout() {
     const ua = navigator.userAgent || '';
