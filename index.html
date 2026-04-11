@@ -3569,7 +3569,7 @@ window.showPage = function(page) {
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">카테고리</div>
           <div id="txDetailCat" style="margin-bottom:8px"><span class="cat-badge cat-미분류">❓ 미분류</span></div>
           <select id="txDetailCatSelect" class="cat-select" style="width:100%;max-width:180px"
-            onchange="previewTxDetailCategory(this.value)">
+            onchange="handleTxDetailCategoryChange(this.value)">
             <option value="외식">🍽 외식</option>
             <option value="생필품">🛒 생필품</option>
             <option value="생활비">🚌 생활비</option>
@@ -3633,7 +3633,7 @@ window.showPage = function(page) {
 
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">닫기</button>
-      <button class="btn btn-primary" onclick="saveSettlementFromModal()">💾 정산 저장</button>
+      <button class="btn btn-primary" onclick="saveSettlementFromModal()">💾 저장</button>
     </div>
   </div>
 </div>
@@ -5091,6 +5091,26 @@ function previewTxDetailCategory(cat) {
   catEl.innerHTML = `<span class="cat-badge ${CAT_CLASS[safeCat]||'cat-미분류'}">${CAT_ICON[safeCat]||'❓'} ${safeCat}</span>`;
 }
 
+function handleTxDetailCategoryChange(cat) {
+  const t = transactions.find(t => t.id === detailModalTxId);
+  const safeCat = cat || '미분류';
+  previewTxDetailCategory(safeCat);
+  if (!t) return;
+
+  const prevCategory = t.category || '미분류';
+  t.category = safeCat;
+
+  try { saveData(); } catch (e) { console.error('카테고리 저장 오류:', e); }
+  try { renderDetailPage(); } catch (e) { console.error(e); }
+  try { if (typeof applyDetailFilter === 'function') applyDetailFilter(); } catch (e) { console.error(e); }
+  try { if (typeof renderSummary === 'function') renderSummary(); } catch (e) { console.error(e); }
+  try { if (typeof renderTrends === 'function') renderTrends(); } catch (e) { console.error(e); }
+
+  if (prevCategory !== safeCat) {
+    showToast(`카테고리 변경됨: ${safeCat}`);
+  }
+}
+
 function previewSettlement() {
   const t = transactions.find(t => t.id === detailModalTxId);
   if (!t) return;
@@ -5110,30 +5130,31 @@ function previewSettlement() {
 function saveSettlementFromModal() {
   const t = transactions.find(t => t.id === detailModalTxId);
   if (!t) return;
-  const val = parseInt(document.getElementById('settlementInput').value) || 0;
+
+  const val = parseInt(document.getElementById('settlementInput').value, 10) || 0;
   const nextCategory = (document.getElementById('txDetailCatSelect') || {}).value || t.category || '미분류';
   const prevSettlement = t.settlement || 0;
   const prevCategory = t.category || '미분류';
 
-  t.settlement = val > 0 ? Math.min(val, t.amount) : 0;
+  t.settlement = val > 0 ? Math.min(val, Math.max(t.amount, 0)) : 0;
   t.category = nextCategory;
 
-  saveData();
+  try { saveData(); } catch (e) { console.error('상세 팝업 저장 오류:', e); }
+  try { if (typeof applyDetailFilter === 'function') applyDetailFilter(); else renderDetailPage(); } catch (e) { console.error(e); }
+  try { if (typeof renderSummary === 'function') renderSummary(); } catch (e) { console.error(e); }
+  try { if (typeof renderTrends === 'function') renderTrends(); } catch (e) { console.error(e); }
   closeModal();
-  renderDetailPage();
-  applyDetailFilter();
-  if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
 
   const changedSettlement = prevSettlement !== t.settlement;
   const changedCategory = prevCategory !== t.category;
 
   let msg = '변경사항이 저장됐어요';
   if (changedSettlement && changedCategory) {
-    msg = `✅ 카테고리 변경 + 정산 ${fmt(t.settlement)}원 반영됨`;
+    msg = `카테고리 변경 + 정산 ${fmt(t.settlement)}원 반영됨`;
   } else if (changedCategory) {
-    msg = '카테고리 변경됨';
+    msg = `카테고리 변경됨: ${t.category}`;
   } else if (changedSettlement) {
-    msg = t.settlement > 0 ? `✅ 정산 ${fmt(t.settlement)}원 반영됨` : '정산 금액이 제거됐어요';
+    msg = t.settlement > 0 ? `정산 ${fmt(t.settlement)}원 반영됨` : '정산 금액이 제거됐어요';
   }
   showToast(msg);
 }
