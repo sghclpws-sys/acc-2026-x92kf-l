@@ -280,6 +280,8 @@
   .btn-primary:hover { background: #B06830; }
   .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-action { background: #E8E8E8; color: var(--text); border: 1.5px solid #D0D0D0; }
+  .btn-action:hover { background: #DCDCDC; border-color: #BEBEBE; }
   .btn-sm { padding: 5px 12px; height: auto; font-size: 12px; }
 
   /* Table */
@@ -385,6 +387,10 @@
     padding: 40px; text-align: center;
     cursor: pointer; transition: all 0.2s;
     background: var(--surface2);
+  }
+  @media (max-width: 600px) {
+    .upload-zone { padding: 24px 16px; }
+    .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
   }
   
   .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
@@ -531,7 +537,7 @@
   body.mobile-app .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
   body.mobile-app .chart-row,
   body.mobile-app .chart-row-3,
-  body.mobile-app .summary-grid { grid-template-columns: 1fr !important; }
+  body.mobile-app .summary-grid:not(#incomeGrid) { grid-template-columns: 1fr !important; }
   body.mobile-app .table-wrap { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
   body.mobile-app table { min-width: 0 !important; width: 100% !important; table-layout: fixed; }
   body.mobile-app th,
@@ -769,7 +775,8 @@
     .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
     .chart-row,
     .chart-row-3,
-    .summary-grid { grid-template-columns: minmax(0, 1fr) !important; }
+    .summary-grid:not(#incomeGrid) { grid-template-columns: minmax(0, 1fr) !important; }
+    #incomeGrid { grid-template-columns: 1fr 1fr !important; }
 
     .card,
     .stat-card,
@@ -2843,7 +2850,7 @@ window.showPage = function(page) {
         <div class="card-title">파일 업로드</div>
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
           <div class="upload-icon">📂</div>
-          <h3>엑셀 파일을 선택하거나 여기에 드래그하세요</h3>
+          <h3 style="white-space:nowrap;font-size:14px">파일 선택 또는 드래그</h3>
           <p>지원 형식: .xlsx, .xls · 날짜, 가맹점명, 금액 열이 포함된 파일</p>
         </div>
         <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" onchange="handleFileUpload(this)">
@@ -2871,7 +2878,7 @@ window.showPage = function(page) {
           
           <div id="uploadMeta" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></div>
           <div style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn btn-primary" onclick="importData()">✅ 가져오기</button>
+            <button class="btn btn-action" onclick="importData()">가져오기</button>
             <button class="btn btn-ghost" onclick="cancelUpload()">취소</button>
           </div>
         </div>
@@ -2883,7 +2890,7 @@ window.showPage = function(page) {
           <select id="uploadTotalsYear" onchange="renderUploadCardTotals()"><option value="2026">2026년</option></select>
           <select id="uploadTotalsMonth" onchange="renderUploadCardTotals()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
-        <div id="uploadCardTotals" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+        <div id="uploadCardTotals">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">미지정</div>
       <div style="font-size:22px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">1,979,396</div>
@@ -2898,21 +2905,21 @@ window.showPage = function(page) {
           <select id="uploadMonth" onchange="renderUploadFinance()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">26년_종합 시트 구조처럼 월 손익은 총수익 - 총지출로 계산됩니다</p>
-        <div class="summary-grid" id="incomeGrid">
+        <div class="summary-grid" id="incomeGrid" style="grid-template-columns:1fr 1fr!important">
     <div class="input-group">
-      <div class="input-label">👤 예진 수익</div>
+      <div class="input-label">예진</div>
       <input class="cash-input" type="number" id="income_yejin" placeholder="0" value="3000000" oninput="autoSaveIncome(&#39;2026-02&#39;)">
     </div>
     <div class="input-group">
-      <div class="input-label">👤 기혁 수익</div>
+      <div class="input-label">기혁</div>
       <input class="cash-input" type="number" id="income_gihyuk" placeholder="0" value="3000000" oninput="autoSaveIncome(&#39;2026-02&#39;)">
     </div>
     <div class="input-group">
-      <div class="input-label">➕ 기타 수익</div>
+      <div class="input-label">기타</div>
       <input class="cash-input" type="number" id="income_etc" placeholder="0" value="" oninput="autoSaveIncome(&#39;2026-02&#39;)">
     </div>
     <div class="input-group">
-      <div class="input-label">💰 월 총수익</div>
+      <div class="input-label">총수익</div>
       <input class="cash-input" type="text" id="income_total" value="6,000,000원" readonly="" style="background:var(--surface2);color:var(--text-muted)">
     </div>
     <div style="grid-column:1/-1;border-top:1.5px solid var(--border);margin:4px 0 8px;padding-top:16px">
@@ -2930,7 +2937,7 @@ window.showPage = function(page) {
     </div>
   </div>
         <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:nowrap;align-items:center">
-          <button class="btn btn-primary" onclick="saveIncomeFromUpload()" style="white-space:nowrap">💾 저장</button>
+          <button class="btn btn-action" onclick="saveIncomeFromUpload()" style="white-space:nowrap">저장</button>
           <button class="btn btn-ghost" onclick="clearIncomeFromUpload()">초기화</button>
         </div>
       </div>
@@ -2938,31 +2945,32 @@ window.showPage = function(page) {
       <!-- 공금 정산 청구 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">공금 정산 청구</div>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">한 달간 개인이 선결제한 공금 항목들을 묶어서 총 청구액으로 등록합니다. 거래내역에 하나의 항목으로 추가됩니다.</p>
 
-        <!-- 청구 월 선택 -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-          <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 청구 기준 월</span>
-          <select id="claimYear" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026년</option></select>
-          <select id="claimMonth" onchange="updateClaimPreview()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+        <!-- 1행: 기준 월 -->
+        <div class="input-group" style="margin-bottom:10px">
+          <div class="input-label">기준 월</div>
+          <div style="display:flex;gap:6px">
+            <select id="claimYear" onchange="updateClaimPreview()" style="flex:1;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026</option></select>
+            <select id="claimMonth" onchange="updateClaimPreview()" style="flex:1;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+          </div>
         </div>
 
-        <!-- 청구인 / 카테고리 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <!-- 2행: 청구인 + 카테고리 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div class="input-group">
-            <div class="input-label">👤 청구인</div>
-            <input type="text" id="claimPerson" placeholder="예: 예진, 기혁..." style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
+            <div class="input-label">청구인</div>
+            <input type="text" id="claimPerson" placeholder="예진, 기혁..." style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
           </div>
           <div class="input-group">
-            <div class="input-label">🏷 카테고리</div>
-            <select id="claimCat" onchange="updateClaimPreview()" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text)">
+            <div class="input-label">카테고리</div>
+            <select id="claimCat" onchange="updateClaimPreview()" style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text)">
               <option value="생필품">🛒 생필품</option>
               <option value="생활비">🚌 생활비</option>
               <option value="외식">🍽 외식</option>
               <option value="쇼핑">🛍 쇼핑</option>
               <option value="여행">✈️ 여행</option>
               <option value="관계비용">🎁 관계비용</option>
-              <option value="가스비">🔥 주유비/가스비</option>
+              <option value="가스비">🔥 가스비</option>
               <option value="교육/놀이">📚 교육/놀이</option>
               <option value="관리비">🏠 관리비</option>
               <option value="통신/렌탈">📡 통신/렌탈</option>
@@ -2973,41 +2981,40 @@ window.showPage = function(page) {
         </div>
 
         <!-- 항목 목록 -->
-        <div style="margin-bottom:12px">
-          <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:.5px">📋 포함 항목 (여러 건 묶기)</div>
-          <div id="claimItems" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"><div id="claimItem_1" style="display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; background: var(--surface2); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--border);">
-    <input type="text" placeholder="항목명 (예: 마트, 약국, 주유소...)" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%" oninput="updateClaimTotal()" id="claimItemName_1">
-    <input type="number" placeholder="금액" min="0" style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:110px;text-align:right" oninput="updateClaimTotal()" id="claimItemAmt_1">
-    <button onclick="removeClaimItem(1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:2px 6px;border-radius:4px;transition:color .15s" onmouseover="this.style.color=&#39;var(--danger)&#39;" onmouseout="this.style.color=&#39;var(--text-muted)&#39;">✕</button>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;letter-spacing:.3px">항목 목록</div>
+          <div id="claimItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"><div id="claimItem_1" style="display:grid;grid-template-columns:1fr 90px 28px;gap:6px;align-items:center">
+    <input type="text" placeholder="항목명" style="height:36px;padding:0 10px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" oninput="updateClaimTotal()" id="claimItemName_1">
+    <input type="number" placeholder="금액" min="0" style="height:36px;padding:0 8px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;text-align:right;box-sizing:border-box" oninput="updateClaimTotal()" id="claimItemAmt_1">
+    <button onclick="removeClaimItem(1)" style="height:36px;width:28px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-muted);border-radius:6px;display:flex;align-items:center;justify-content:center" onmouseover="this.style.color=&#39;var(--danger)&#39;" onmouseout="this.style.color=&#39;var(--text-muted)&#39;">✕</button>
   </div></div>
-          <button class="btn btn-ghost btn-sm" onclick="addClaimItem()" style="width:100%;justify-content:center">＋ 항목 추가</button>
+          <button class="btn btn-ghost btn-sm" onclick="addClaimItem()" style="width:100%;justify-content:center;margin-top:2px">＋ 항목 추가</button>
         </div>
 
         <!-- 합계 + 메모 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
           <div class="input-group">
-            <div class="input-label">💰 총 청구 금액 (원)</div>
-            <input type="number" id="claimTotal" placeholder="자동 합산 또는 직접 입력" style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
+            <div class="input-label">총 청구 금액</div>
+            <input type="number" id="claimTotal" placeholder="자동 합산" style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
           </div>
           <div class="input-group">
-            <div class="input-label">📝 메모 (선택)</div>
-            <input type="text" id="claimNote" placeholder="예: 3월 공금 정산 청구 등..." style="width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none" oninput="updateClaimPreview()">
+            <div class="input-label">메모 (선택)</div>
+            <input type="text" id="claimNote" placeholder="메모..." style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
           </div>
         </div>
 
         <!-- 미리보기 -->
-        <div id="claimPreview" style="display:none;background:var(--accent-light);border:1.5px solid var(--accent);border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px;margin-bottom:8px">📌 등록 미리보기</div>
+        <div id="claimPreview" style="display:none;background:var(--accent-light);border:1.5px solid var(--accent);border-radius:10px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px;margin-bottom:6px">등록 미리보기</div>
           <div id="claimPreviewContent"></div>
         </div>
 
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
-          <button class="btn btn-primary" onclick="submitClaim()" style="white-space:nowrap">🧾 정산 등록</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-action" onclick="submitClaim()" style="white-space:nowrap">등록</button>
           <button class="btn btn-ghost" onclick="resetClaim()" style="white-space:nowrap">초기화</button>
         </div>
 
-        <!-- 최근 등록된 청구 내역 -->
-        <div id="recentClaimTx" style="margin-top:16px"></div>
+        <div id="recentClaimTx" style="margin-top:14px"></div>
       </div>
     </div>
 
@@ -3713,7 +3720,7 @@ const INIT_RULES = [{"keyword":"송","category":"외식","type":"store"},{"keywo
 // Load from localStorage
 function mergeAuthoritativeJanFeb(storedTx) {
   const authoritative = (window._INIT_TX || []).filter(t => t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02') || t.date.startsWith('2026-03')));
-  const preserved = (storedTx || []).filter(t => !(t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02'))));
+  const preserved = (storedTx || []).filter(t => !(t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02') || t.date.startsWith('2026-03'))));
   const preserveMap = new Map(
     (storedTx || [])
       .filter(t => t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02') || t.date.startsWith('2026-03')))
@@ -3763,7 +3770,7 @@ async function loadData() {
   }
   // Firebase 미준비 or 데이터 없음 → localStorage 폴백
   const stored = localStorage.getItem('gaegebu_tx');
-  const migrationKey = 'gaegebu_migration_2026_1_3_v1';
+  const migrationKey = 'gaegebu_migration_2026_1_3_v2';
   if (stored) {
     transactions = JSON.parse(stored);
     if (localStorage.getItem(migrationKey) !== 'done') {
@@ -4454,12 +4461,14 @@ function renderUploadCardTotals() {
     wrap.innerHTML = '<div style="font-size:13px;color:var(--text-muted)">선택한 월의 카드 내역이 없습니다.</div>';
     return;
   }
-  wrap.innerHTML = entries.map(([card,total]) => `
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${card}</div>
-      <div style="font-size:22px;font-weight:700;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(total)}원</div>
-    </div>
-  `).join('');
+  wrap.innerHTML = `<div style="display:flex;flex-direction:column;gap:0">${
+    entries.map(([card,total], i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;${i > 0 ? 'border-top:1px solid var(--border)' : ''}">
+        <span style="font-size:13px;color:var(--text-muted)">${card}</span>
+        <span style="font-size:14px;font-weight:700;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(total)}원</span>
+      </div>`
+    ).join('')
+  }</div>`;
 }
 
 function renderUploadFinance() {
@@ -4472,19 +4481,19 @@ function renderUploadFinance() {
   const totalIncome = (income.yejin || 0) + (income.gihyuk || 0) + (income.etc || 0);
   incomeGrid.innerHTML = `
     <div class="input-group">
-      <div class="input-label">👤 예진 수익</div>
+      <div class="input-label">예진</div>
       <input class="cash-input" type="text" id="income_yejin" placeholder="0" value="${income.yejin ? fmt(income.yejin)+'원' : ''}" onfocus="this.value=this.value.replace(/[^0-9]/g,'')" onblur="const n=parseInt(this.value.replace(/[^0-9]/g,'')||'0');this.value=n?fmt(n)+'원':'';autoSaveIncome('${key}')" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <div class="input-group">
-      <div class="input-label">👤 기혁 수익</div>
+      <div class="input-label">기혁</div>
       <input class="cash-input" type="text" id="income_gihyuk" placeholder="0" value="${income.gihyuk ? fmt(income.gihyuk)+'원' : ''}" onfocus="this.value=this.value.replace(/[^0-9]/g,'')" onblur="const n=parseInt(this.value.replace(/[^0-9]/g,'')||'0');this.value=n?fmt(n)+'원':'';autoSaveIncome('${key}')" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <div class="input-group">
-      <div class="input-label">➕ 기타 수익</div>
+      <div class="input-label">기타</div>
       <input class="cash-input" type="text" id="income_etc" placeholder="0" value="${income.etc ? fmt(income.etc)+'원' : ''}" onfocus="this.value=this.value.replace(/[^0-9]/g,'')" onblur="const n=parseInt(this.value.replace(/[^0-9]/g,'')||'0');this.value=n?fmt(n)+'원':'';autoSaveIncome('${key}')" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
     <div class="input-group">
-      <div class="input-label">💰 월 총수익</div>
+      <div class="input-label">총수익</div>
       <input class="cash-input" type="text" id="income_total" value="${fmt(totalIncome)}원" readonly style="background:var(--surface2);color:var(--text-muted)">
     </div>
     <div style="grid-column:1/-1;border-top:1.5px solid var(--border);margin:4px 0 8px;padding-top:16px">
@@ -4501,22 +4510,23 @@ function renderUploadFinance() {
       </div>
     </div>
     <div style="grid-column:1/-1;border-top:1.5px solid var(--border);margin:4px 0 8px;padding-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;margin-bottom:12px">💵 현금 생활비</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;margin-bottom:8px">💵 현금 생활비</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end">
         <div class="input-group">
-          <div class="input-label">현금 지출 금액</div>
+          <div class="input-label">금액</div>
           <input class="cash-input" type="text" id="income_cashExpense" placeholder="0" value="${income.cashExpense ? fmt(income.cashExpense)+'원' : ''}" onfocus="this.value=this.value.replace(/[^0-9]/g,'')" onblur="const n=parseInt(this.value.replace(/[^0-9]/g,'')||'0');this.value=n?fmt(n)+'원':''" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
         </div>
         <div class="input-group">
-          <div class="input-label">메모 (거래명으로 사용)</div>
+          <div class="input-label">메모</div>
           <input class="cash-input" type="text" id="income_cashMemo" placeholder="예: 마트, 약국 등" value="">
         </div>
-      </div>
-      <div style="margin-top:10px">
-        <button class="btn btn-ghost" onclick="submitCashExpense('${key}')" style="border-color:var(--border)">💵 현금 생활비 등록</button>
+        <button class="btn btn-action btn-sm" onclick="submitCashExpense('${key}')" style="height:38px;white-space:nowrap;margin-bottom:1px">등록</button>
       </div>
     </div>
   `;
+  // 모바일에서도 2열 유지
+  const ig = document.getElementById('incomeGrid');
+  if (ig) ig.style.gridTemplateColumns = '1fr 1fr';
 }
 
 function saveIncomeFromUpload() { saveIncome(); if (document.getElementById('summaryYear')) renderSummary(); }
