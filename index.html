@@ -101,9 +101,9 @@
     --text: #1A1D23;
     --text-muted: #7C8490;
     --accent: #C4793A;
-    --accent-light: #F5E6D8;
+    --accent-light: #F0F2F5;
     --accent2: #3A7DC4;
-    --accent2-light: #D8E8F5;
+    --accent2-light: #EBF3FC;
     --danger: #C43A3A;
     --success: #3AA87D;
     --cat-외식: #E8734A;
@@ -174,7 +174,7 @@
   }
   
   .nav-item:hover { color: white; background: rgba(255,255,255,0.06); }
-  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(196,121,58,0.12); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(255,255,255,0.08); }
   .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
   
   .main { margin-left: 220px; padding: 32px 36px; flex: 1; }
@@ -189,8 +189,8 @@
     background: var(--surface);
     border-radius: var(--radius);
     padding: 24px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid #E8EAED;
   }
   
   .card-title {
@@ -214,7 +214,7 @@
   .stat-card::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--accent);
+    background: #D0D5DD;
   }
   
   .stat-card.blue::before { background: var(--accent2); }
@@ -418,9 +418,11 @@
 
   /* Insight cards */
   .insight-card {
-    background: linear-gradient(135deg, var(--accent) 0%, #E8924A 100%);
-    color: white; border-radius: var(--radius); padding: 20px;
-    box-shadow: var(--shadow);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: var(--radius); padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border: 1px solid #E8EAED;
   }
   /* 요약 하단 인사이트 카드 심플화 */
   #insightCards .insight-card { padding: 14px 16px !important; min-height: 0 !important; }
@@ -437,7 +439,7 @@
     background: linear-gradient(135deg, var(--success) 0%, #5ACA9D 100%);
   }
   
-  .insight-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .insight-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .insight-value { font-size: 22px; font-weight: 700; margin-bottom: 4px; font-family: 'DM Mono', monospace; }
   .insight-sub { font-size: 12px; opacity: 0.75; }
 
@@ -575,24 +577,27 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 14px;
+    gap: 12px;
   }
   body.mobile-app .mobile-summary-donut .mobile-donut-svg {
     flex-shrink: 0;
-    width: 140px;
+    width: 130px;
   }
   body.mobile-app .mobile-summary-donut svg {
-    width: 140px !important;
-    height: 140px !important;
+    width: 130px !important;
+    height: 130px !important;
     flex-shrink: 0;
+    display: block;
   }
   body.mobile-app .mobile-summary-donut .mobile-donut-legend {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding-top: 4px;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 0;
+    align-self: center;
   }
   body.mobile-app .mobile-donut-legend > div {
     font-size: 11px !important;
@@ -2954,8 +2959,7 @@
 
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
           <button class="btn btn-primary" onclick="submitClaim()" style="white-space:nowrap">🧾 정산 등록</button>
-          <button class="btn btn-ghost" onclick="resetClaim()">초기화</button>
-          <span style="font-size:12px;color:var(--text-muted)">등록 후 거래내역 탭에서 확인 가능합니다</span>
+          <button class="btn btn-ghost" onclick="resetClaim()" style="white-space:nowrap">초기화</button>
         </div>
 
         <!-- 최근 등록된 청구 내역 -->
@@ -3975,14 +3979,18 @@ function renderSummary() {
   const breakdown = getCatBreakdown(txs).sort((a,b) => b.total-a.total).slice(0,8);
   renderDonut(breakdown, cardExpense, year, month);
 
-  // TOP 10
-  const sorted = [...txs].sort((a,b) => b.amount-a.amount).slice(0,10);
-  const maxAmt = sorted[0] ? sorted[0].amount : 1;
+  // TOP 10 (정산 후 실제 지출 기준)
+  const sorted = [...txs]
+    .map(t => ({...t, netAmt: t.amount - (t.settlement||0)}))
+    .filter(t => t.netAmt > 0)
+    .sort((a,b) => b.netAmt - a.netAmt)
+    .slice(0,10);
+  const maxAmt = sorted[0] ? sorted[0].netAmt : 1;
   document.getElementById('topItems').innerHTML = sorted.map(t => `
     <div class="bar-row">
       <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="${t.store}">${t.store.length > 13 ? t.store.slice(0,13)+'…' : t.store}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(t.amount/maxAmt*100).toFixed(1)}%;background:${CAT_COLORS[t.category]||'#ccc'}"></div></div>
-      <div class="bar-amount">${fmt(t.amount)}원</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(t.netAmt/maxAmt*100).toFixed(1)}%;background:${CAT_COLORS[t.category]||'#ccc'}"></div></div>
+      <div class="bar-amount">${fmt(t.netAmt)}원</div>
     </div>
   `).join('');
 
@@ -4041,8 +4049,8 @@ function renderMonthCompare(year, month, txs) {
   const prevTxs = getMonthlyTx(String(prevY), prevM);
 
   const thisMap = {}, prevMap = {};
-  for (const t of txs) thisMap[t.category] = (thisMap[t.category] || 0) + t.amount;
-  for (const t of prevTxs) prevMap[t.category] = (prevMap[t.category] || 0) + t.amount;
+  for (const t of txs) thisMap[t.category] = (thisMap[t.category] || 0) + (t.amount - (t.settlement||0));
+  for (const t of prevTxs) prevMap[t.category] = (prevMap[t.category] || 0) + (t.amount - (t.settlement||0));
 
   const allCats = [...new Set([...Object.keys(thisMap), ...Object.keys(prevMap)])];
   const rows = allCats.map(cat => ({
@@ -4288,7 +4296,11 @@ function getPreviousMonthExpense(year, month) {
   const m = Number(month);
   const prevY = m > 1 ? y : y - 1;
   const prevM = m > 1 ? m - 1 : 12;
-  return getMonthlyTx(String(prevY), prevM).reduce((s,t) => s + (t.amount - (t.settlement||0)), 0);
+  const prevKey = `${String(prevY)}-${String(prevM).padStart(2,'0')}`;
+  const prevIncome = getIncomeForMonth(prevKey);
+  const prevInterest = prevIncome.interestExpense || 0;
+  const prevCard = getMonthlyTx(String(prevY), prevM).reduce((s,t) => s + (t.amount - (t.settlement||0)), 0);
+  return prevCard + prevInterest;
 }
 
 function initUploadFinanceControls() {
