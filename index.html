@@ -209,6 +209,20 @@
     color: var(--text-muted); margin-bottom: 16px;
   }
 
+  /* Compact cards for trend/upload/settings pages */
+  #page-trends .card,
+  #page-upload .card,
+  #page-settings .card {
+    padding: 16px 18px;
+  }
+  #page-trends .card-title,
+  #page-upload .card-title,
+  #page-settings .card-title {
+    margin-bottom: 12px;
+    padding-left: 0;
+  }
+
+
   /* Stats row */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
   
@@ -580,8 +594,8 @@
 
 
   .mobile-summary-stack { display: none; }
-  .mobile-summary-section { margin-bottom: 12px; }
-  .mobile-summary-section .card-title { margin-bottom: 12px; }
+  .mobile-summary-section { margin-bottom: 12px; padding: 14px 16px; }
+  .mobile-summary-section .card-title { margin-bottom: 10px; padding-left: 0; }
   .mobile-insight-stack { display: flex; flex-direction: column; gap: 10px; }
   .mobile-insight-stack .insight-card { min-height: auto; }
 
@@ -595,6 +609,7 @@
   body.mobile-app #mobileSummaryContent .card {
     width: 100%;
     min-width: 0;
+    padding: 14px 16px;
   }
   body.mobile-app .mobile-summary-donut {
     display: flex;
@@ -954,12 +969,12 @@ window.showPage = function(page) {
     <div class="stat-card red">
       <div class="stat-label">월 손익</div>
       <div class="stat-value">-503,417원</div>
-      <div class="stat-sub">수익 - 지출</div>
+      
     </div>
     <div class="stat-card blue">
       <div class="stat-label">총 수익</div>
       <div class="stat-value">6,000,000원</div>
-      <div class="stat-sub">예진·기혁·기타 합계</div>
+      
     </div>
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
@@ -983,8 +998,7 @@ window.showPage = function(page) {
           <div class="card-title">카테고리별 지출 구성</div>
           <!-- 도넛 + 우측 범례 (상위 5개) -->
           <div class="summary-donut-wrap" style="display:flex;align-items:center;gap:28px;margin-bottom:16px">
-            <svg id="donutSvg" width="200" height="200" viewBox="0 0 200 200" style="flex-shrink:0"><path d="M100,50 L100,20 A80,80 0 0,1 178.45305550766247,84.34375263635532 L149.03315969228905,90.21484539772207 A50,50 0 0,0 100,50 Z" fill="#E8A84A" opacity="0.9"></path><path d="M149.03315969228905,90.21484539772207 L178.45305550766247,84.34375263635532 A80,80 0 0,1 141.01804306156305,168.68420592392226 L125.6362769134769,142.92762870245141 A50,50 0 0,0 149.03315969228905,90.21484539772207 Z" fill="#5B8DD9" opacity="0.9"></path><path d="M125.6362769134769,142.92762870245141 L141.01804306156305,168.68420592392226 A80,80 0 0,1 59.79322291371474,169.16223735777902 L74.87076432107172,143.2263983486119 A50,50 0 0,0 125.6362769134769,142.92762870245141 Z" fill="#E8734A" opacity="0.9"></path><path d="M74.87076432107172,143.2263983486119 L59.79322291371474,169.16223735777902 A80,80 0 0,1 20.514094720731862,109.05488055885962 L50.321309200457414,105.65930034928726 A50,50 0 0,0 74.87076432107172,143.2263983486119 Z" fill="#8DD95B" opacity="0.9"></path><path d="M50.321309200457414,105.65930034928726 L20.514094720731862,109.05488055885962 A80,80 0 0,1 33.87772910817378,54.968396740645 L58.67358069260862,71.85524796290312 A50,50 0 0,0 50.321309200457414,105.65930034928726 Z" fill="#7B62B8" opacity="0.9"></path><path d="M58.67358069260862,71.85524796290312 L33.87772910817378,54.968396740645 A80,80 0 0,1 55.76724749185437,33.34069003092564 L72.35452968240898,58.33793126932852 A50,50 0 0,0 58.67358069260862,71.85524796290312 Z" fill="#4AB87B" opacity="0.9"></path><path d="M72.35452968240898,58.33793126932852 L55.76724749185437,33.34069003092564 A80,80 0 0,1 78.17838219196098,23.033663227097307 L86.3614888699756,51.896039516935815 A50,50 0 0,0 72.35452968240898,58.33793126932852 Z" fill="#3ABFB3" opacity="0.9"></path><path d="M86.3614888699756,51.896039516935815 L78.17838219196098,23.033663227097307 A80,80 0 0,1 92.0519002947305,20.39580594544597 L95.03243768420657,50.247378715903736 A50,50 0 0,0 86.3614888699756,51.896039516935815 Z" fill="#D95B5B" opacity="0.9"></path><text x="100" y="94" text-anchor="middle" font-size="11" font-family="Pretendard" fill="#8A7F74">총 지출</text>
-    <text x="100" y="114" text-anchor="middle" font-size="13" font-weight="700" font-family="Pretendard" fill="#1A1714">2,680,263원</text></svg>
+            <svg id="donutSvg" width="200" height="200" viewBox="0 0 200 200" style="flex-shrink:0"><path d="M100,50 L100,20 A80,80 0 0,1 178.45305550766247,84.34375263635532 L149.03315969228905,90.21484539772207 A50,50 0 0,0 100,50 Z" fill="#E8A84A" opacity="0.9"></path><path d="M149.03315969228905,90.21484539772207 L178.45305550766247,84.34375263635532 A80,80 0 0,1 141.01804306156305,168.68420592392226 L125.6362769134769,142.92762870245141 A50,50 0 0,0 149.03315969228905,90.21484539772207 Z" fill="#5B8DD9" opacity="0.9"></path><path d="M125.6362769134769,142.92762870245141 L141.01804306156305,168.68420592392226 A80,80 0 0,1 59.79322291371474,169.16223735777902 L74.87076432107172,143.2263983486119 A50,50 0 0,0 125.6362769134769,142.92762870245141 Z" fill="#E8734A" opacity="0.9"></path><path d="M74.87076432107172,143.2263983486119 L59.79322291371474,169.16223735777902 A80,80 0 0,1 20.514094720731862,109.05488055885962 L50.321309200457414,105.65930034928726 A50,50 0 0,0 74.87076432107172,143.2263983486119 Z" fill="#8DD95B" opacity="0.9"></path><path d="M50.321309200457414,105.65930034928726 L20.514094720731862,109.05488055885962 A80,80 0 0,1 33.87772910817378,54.968396740645 L58.67358069260862,71.85524796290312 A50,50 0 0,0 50.321309200457414,105.65930034928726 Z" fill="#7B62B8" opacity="0.9"></path><path d="M58.67358069260862,71.85524796290312 L33.87772910817378,54.968396740645 A80,80 0 0,1 55.76724749185437,33.34069003092564 L72.35452968240898,58.33793126932852 A50,50 0 0,0 58.67358069260862,71.85524796290312 Z" fill="#4AB87B" opacity="0.9"></path><path d="M72.35452968240898,58.33793126932852 L55.76724749185437,33.34069003092564 A80,80 0 0,1 78.17838219196098,23.033663227097307 L86.3614888699756,51.896039516935815 A50,50 0 0,0 72.35452968240898,58.33793126932852 Z" fill="#3ABFB3" opacity="0.9"></path><path d="M86.3614888699756,51.896039516935815 L78.17838219196098,23.033663227097307 A80,80 0 0,1 92.0519002947305,20.39580594544597 L95.03243768420657,50.247378715903736 A50,50 0 0,0 86.3614888699756,51.896039516935815 Z" fill="#D95B5B" opacity="0.9"></path><text x="100" y="110" text-anchor="middle" font-size="17" font-weight="700" font-family="Pretendard" fill="#1A1714">2,680,263원</text></svg>
             <div id="donutLegend" style="flex:1;display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;align-items:center;gap:8px">
         <div style="width:10px;height:10px;border-radius:50%;background:#E8A84A;flex-shrink:0"></div>
@@ -1477,7 +1491,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-12</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
       <td class="amount-cell">
-        ₩17,400
+        17,400
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3164, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1500,7 +1514,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-18</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="오아시스 아현점">오아시스 아현점</td>
       <td class="amount-cell">
-        ₩17,222
+        17,222
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3160, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1523,7 +1537,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사미스터밀크송당">주식회사미스터밀크송당</td>
       <td class="amount-cell">
-        ₩17,000
+        17,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3137, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1546,7 +1560,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-19</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
       <td class="amount-cell">
-        ₩16,600
+        16,600
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3158, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1569,7 +1583,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="에이치디씨아이파크몰 주식회사">에이치디씨아이파크몰 주식회사</td>
       <td class="amount-cell">
-        ₩16,500
+        16,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3104, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1592,7 +1606,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠-쿠팡이츠">쿠팡이츠-쿠팡이츠</td>
       <td class="amount-cell">
-        ₩16,000
+        16,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3162, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1615,7 +1629,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사 버드뷰">주식회사 버드뷰</td>
       <td class="amount-cell">
-        ₩15,200
+        15,200
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3088, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1638,7 +1652,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
       <td class="amount-cell">
-        ₩14,900
+        14,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3147, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1661,7 +1675,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-28</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
       <td class="amount-cell">
-        ₩13,900
+        13,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3083, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1684,7 +1698,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-27</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="씨유(CU)신촌힐스테이트점">씨유(CU)신촌힐스테이트점</td>
       <td class="amount-cell">
-        ₩13,500
+        13,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3150, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1707,7 +1721,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="씨유(CU)신촌힐스테이트점">씨유(CU)신촌힐스테이트점</td>
       <td class="amount-cell">
-        ₩13,490
+        13,490
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3163, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1730,7 +1744,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠">쿠팡이츠</td>
       <td class="amount-cell">
-        ₩13,300
+        13,300
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3106, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1753,7 +1767,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
       <td class="amount-cell">
-        ₩13,000
+        13,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3141, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1776,7 +1790,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점-카페모라">현대아울렛 김포점-카페모라</td>
       <td class="amount-cell">
-        ₩12,800
+        12,800
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3145, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1799,7 +1813,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
       <td class="amount-cell">
-        ₩12,650
+        12,650
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3087, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1822,7 +1836,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
       <td class="amount-cell">
-        ₩12,650
+        12,650
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3132, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1845,7 +1859,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-14</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="한화커넥트(주)">한화커넥트(주)</td>
       <td class="amount-cell">
-        ₩12,500
+        12,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3110, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1868,7 +1882,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카페오가다제주점">카페오가다제주점</td>
       <td class="amount-cell">
-        ₩12,000
+        12,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3133, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1891,7 +1905,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-03</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠">쿠팡이츠</td>
       <td class="amount-cell">
-        ₩11,900
+        11,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3128, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1914,7 +1928,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-08</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="매트블랙커피">매트블랙커피</td>
       <td class="amount-cell">
-        ₩11,500
+        11,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2926, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1937,7 +1951,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="매트블랙커피">매트블랙커피</td>
       <td class="amount-cell">
-        ₩11,500
+        11,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2930, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1960,7 +1974,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-20</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="오아시스 아현점">오아시스 아현점</td>
       <td class="amount-cell">
-        ₩11,480
+        11,480
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3154, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -1983,7 +1997,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-23</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="SK브로드밴드(주)">SK브로드밴드(주)</td>
       <td class="amount-cell">
-        ₩11,001
+        11,001
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3153, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2006,7 +2020,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-27</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
       <td class="amount-cell">
-        ₩10,800
+        10,800
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3148, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2029,7 +2043,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카카오T일반택시_0">카카오T일반택시_0</td>
       <td class="amount-cell">
-        ₩10,700
+        10,700
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3105, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2052,7 +2066,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)우아한형제들">(주)우아한형제들</td>
       <td class="amount-cell">
-        ₩10,700
+        10,700
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3134, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2075,7 +2089,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
       <td class="amount-cell">
-        ₩10,500
+        10,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3167, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2098,7 +2112,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="다르다김밥">다르다김밥</td>
       <td class="amount-cell">
-        ₩10,000
+        10,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2929, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2121,7 +2135,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
       <td class="amount-cell">
-        ₩10,000
+        10,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3142, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2144,7 +2158,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="스타벅스코리아_상품권">스타벅스코리아_상품권</td>
       <td class="amount-cell">
-        ₩10,000
+        10,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3178, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2167,7 +2181,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
       <td class="amount-cell">
-        ₩9,900
+        9,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3089, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2190,7 +2204,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="딸기">딸기</td>
       <td class="amount-cell">
-        ₩8,900
+        8,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2927, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2213,7 +2227,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점">현대아울렛 김포점</td>
       <td class="amount-cell">
-        ₩8,900
+        8,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3074, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2236,7 +2250,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-21</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
       <td class="amount-cell">
-        ₩8,900
+        8,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3097, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2259,7 +2273,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="연못카페">연못카페</td>
       <td class="amount-cell">
-        ₩8,500
+        8,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3093, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2282,7 +2296,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-18</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)시사에프앤비(SISA FandB Corp.)">(주)시사에프앤비(SISA FandB Corp.)</td>
       <td class="amount-cell">
-        ₩8,500
+        8,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3159, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2305,7 +2319,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="모뉴에트">모뉴에트</td>
       <td class="amount-cell">
-        ₩8,000
+        8,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3138, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2328,7 +2342,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-04</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(와우멤버십)-쿠팡(와우멤버십)">쿠팡(와우멤버십)-쿠팡(와우멤버십)</td>
       <td class="amount-cell">
-        ₩7,890
+        7,890
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3169, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2351,7 +2365,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점">현대아울렛 김포점</td>
       <td class="amount-cell">
-        ₩7,000
+        7,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3075, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2374,7 +2388,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-14</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카카오T일반택시_0">카카오T일반택시_0</td>
       <td class="amount-cell">
-        ₩6,700
+        6,700
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3112, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2397,7 +2411,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사미스터밀크송당">주식회사미스터밀크송당</td>
       <td class="amount-cell">
-        ₩6,500
+        6,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3136, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2420,7 +2434,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
       <td class="amount-cell">
-        ₩6,500
+        6,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3140, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2443,7 +2457,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-20</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="코웨이(주)">코웨이(주)</td>
       <td class="amount-cell">
-        ₩5,900
+        5,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3156, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2466,7 +2480,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)이마트 용산점">(주)이마트 용산점</td>
       <td class="amount-cell">
-        ₩5,500
+        5,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3120, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2489,7 +2503,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="모뉴에트">모뉴에트</td>
       <td class="amount-cell">
-        ₩5,500
+        5,500
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3139, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2512,7 +2526,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)제스코마트 동쪽송당 동화마을">(주)제스코마트 동쪽송당 동화마을</td>
       <td class="amount-cell">
-        ₩5,000
+        5,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3173, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2535,7 +2549,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)고암">(주)고암</td>
       <td class="amount-cell">
-        ₩4,900
+        4,900
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3095, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2558,7 +2572,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="에이치디씨아이파크몰 주식회사">에이치디씨아이파크몰 주식회사</td>
       <td class="amount-cell">
-        ₩4,800
+        4,800
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3166, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2581,7 +2595,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-23</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="산들약국">산들약국</td>
       <td class="amount-cell">
-        ₩4,300
+        4,300
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3091, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2604,7 +2618,7 @@ window.showPage = function(page) {
       <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-08</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="프렌디노">프렌디노</td>
       <td class="amount-cell">
-        ₩4,000
+        4,000
       </td>
       <td>
         <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3119, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
@@ -2687,14 +2701,14 @@ window.showPage = function(page) {
 
       <!-- 분기별 지출 히트맵 (전체 너비, 크게) -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">🗓 분기별 지출 히트맵</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악 — 색이 진할수록 지출이 많은 달</p>
+        <div class="card-title">분기별 지출 히트맵</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악</p>
         <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">01월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="40" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최대</text></svg></div>
       </div>
 
       <!-- 상위 카테고리 집중 분석 (전체 너비) -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">🔍 상위 카테고리 집중 분석</div>
+        <div class="card-title">상위 카테고리 집중 분석</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">지출 비중 변화 + 절감 시뮬레이션</p>
         <div id="topCatAnalysis">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
@@ -2872,7 +2886,7 @@ window.showPage = function(page) {
         <div id="uploadCardTotals" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">미지정</div>
-      <div style="font-size:22px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">₩1,979,396</div>
+      <div style="font-size:22px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">1,979,396</div>
     </div>
   </div>
       </div>
@@ -2923,7 +2937,7 @@ window.showPage = function(page) {
 
       <!-- 공금 정산 청구 -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">🧾 공금 정산 청구</div>
+        <div class="card-title">공금 정산 청구</div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">한 달간 개인이 선결제한 공금 항목들을 묶어서 총 청구액으로 등록합니다. 거래내역에 하나의 항목으로 추가됩니다.</p>
 
         <!-- 청구 월 선택 -->
@@ -3029,7 +3043,7 @@ window.showPage = function(page) {
         <div class="card-title">현재 규칙 목록</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>키워드 (가맹점명 포함 시)</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
+            <thead><tr><th>키워드</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
             <tbody id="rulesBody">
       <tr>
         <td><code style="background:var(--surface2);padding:2px 8px;border-radius:4px;font-size:12px">송</code></td>
@@ -3453,7 +3467,7 @@ window.showPage = function(page) {
 <div class="modal-overlay" id="catModal">
   <div class="modal">
     <h3>카테고리 변경</h3>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore">유니폼브릿지 · ₩369,730</p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore">유니폼브릿지 · 369,730</p>
     <select id="catModalSelect" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">
       <option value="외식">🍽 외식</option>
       <option value="생필품">🛒 생필품</option>
@@ -3586,7 +3600,7 @@ window.showPage = function(page) {
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">결제 금액</div>
-          <div style="font-size: 20px; font-weight: 700; font-family: &quot;Pretendard&quot;, -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text);" id="txDetailAmount">₩8,100</div>
+          <div style="font-size: 20px; font-weight: 700; font-family: &quot;Pretendard&quot;, -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text);" id="txDetailAmount">8,100</div>
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">카드</div>
@@ -4001,12 +4015,12 @@ function renderSummary() {
     <div class="stat-card ${monthlyProfit < 0 ? 'red' : 'green'}">
       <div class="stat-label">월 손익</div>
       <div class="stat-value">${fmtSignedWon(monthlyProfit)}</div>
-      <div class="stat-sub">수익 - 지출</div>
+      
     </div>
     <div class="stat-card blue">
       <div class="stat-label">총 수익</div>
       <div class="stat-value">${fmt(totalIncome)}원</div>
-      <div class="stat-sub">예진·기혁·기타 합계</div>
+      
     </div>
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
@@ -4077,7 +4091,7 @@ function renderSummary() {
     </div>
     <div class="insight-card ${savingsRate !== null && savingsRate >= 20 ? 'green' : ''}">
       <div class="insight-label">💰 저축률</div>
-      <div class="insight-value">${savingsRate !== null ? savingsRate.toFixed(1) + '%' : '수익 미입력'}</div>
+      <div class="insight-value">${savingsRate !== null ? savingsRate.toFixed(1) + '%' : ''}</div>
       <div class="insight-sub">${savingsRate !== null ? `저축 가능액 ${fmt(totalIncome - totalExpense)}원` : '내역 업로드 탭에서 수익 입력'}</div>
     </div>
   `;
@@ -4395,7 +4409,7 @@ function renderUploadCardTotals() {
   wrap.innerHTML = entries.map(([card,total]) => `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${card}</div>
-      <div style="font-size:22px;font-weight:700;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">₩${fmt(total)}</div>
+      <div style="font-size:22px;font-weight:700;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(total)}</div>
     </div>
   `).join('');
 }
@@ -4543,7 +4557,7 @@ function updateClaimPreview() {
       <span style="color:var(--text-muted)">거래명</span><span style="font-weight:600">${storeName}</span>
       <span style="color:var(--text-muted)">날짜</span><span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${txDate}</span>
       <span style="color:var(--text-muted)">카테고리</span><span>${CAT_ICON[cat]||''} ${cat}</span>
-      <span style="color:var(--text-muted)">총 청구액</span><span style="font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">₩${fmt(total)}</span>
+      <span style="color:var(--text-muted)">총 청구액</span><span style="font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(total)}</span>
     </div>`;
 
   if (items.length > 0) {
@@ -4551,7 +4565,7 @@ function updateClaimPreview() {
       <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">포함 항목 (${items.length}건)</div>
       ${items.map(i => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0">
         <span>${i.name || '항목명 없음'}</span>
-        <span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-muted)">${i.amount > 0 ? '₩'+fmt(i.amount) : '-'}</span>
+        <span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-muted)">${i.amount > 0 ? ''+fmt(i.amount) : '-'}</span>
       </div>`).join('')}
     </div>`;
   }
@@ -4636,7 +4650,7 @@ function renderRecentClaimTx() {
           <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.store}</div>
           <div style="font-size:11px;color:var(--text-muted)">${t.date} · ${t.category}${t.note ? ' · '+t.note.slice(0,40)+(t.note.length>40?'…':'') : ''}</div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">₩${fmt(t.amount)}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">${fmt(t.amount)}</div>
         <button onclick="deleteTx(${t.id})" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-muted);padding:2px 6px" title="삭제">🗑</button>
       </div>
     `).join('')}`;
@@ -4686,7 +4700,7 @@ function renderRecentCashTx() {
           <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.store}</div>
           <div style="font-size:11px;color:var(--text-muted)">${t.date} · ${t.category}${t.note ? ' · '+t.note : ''}</div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">₩${fmt(t.amount)}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">${fmt(t.amount)}</div>
       </div>
     `).join('')}`;
 }
@@ -4807,8 +4821,7 @@ function renderDonut(breakdown, total, year, month) {
     startAngle = endAngle;
   }
 
-  svg.innerHTML = html + `<text x="100" y="94" text-anchor="middle" font-size="11" font-family="Pretendard" fill="#8A7F74">총 지출</text>
-    <text x="100" y="114" text-anchor="middle" font-size="13" font-weight="700" font-family="Pretendard" fill="#1A1714">${fmt(total)}원</text>`;
+  svg.innerHTML = html + `<text x="100" y="108" text-anchor="middle" font-size="17" font-weight="700" font-family="Pretendard" fill="#1A1714">${fmt(total)}원</text>`;
 
   const prevY = Number(month) > 1 ? Number(year) : Number(year) - 1;
   const prevM = Number(month) > 1 ? Number(month) - 1 : 12;
@@ -4980,8 +4993,8 @@ function applyDetailFilter() {
   const settlementSum = filteredTx.reduce((s,t) => s + (t.settlement||0), 0);
   document.getElementById('detailCount').textContent = `${fmt(filteredTx.length)}건`;
   document.getElementById('detailTotal').textContent = settlementSum > 0
-    ? `카드총액: ₩${fmt(grossTotal)} (정산 입력 합계: -₩${fmt(settlementSum)})`
-    : `카드총액: ₩${fmt(grossTotal)}`;
+    ? `카드총액: ${fmt(grossTotal)} (정산 입력 합계: -${fmt(settlementSum)})`
+    : `카드총액: ${fmt(grossTotal)}`;
   renderDetailPage();
 }
 
@@ -5002,10 +5015,10 @@ function renderDetailPage() {
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="${t.store}">${t.store}</td>
       <td class="amount-cell">
         ${hasSettlement
-          ? `<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px">₩${fmt(t.amount)}</span><br>
-             <span style="color:var(--accent);font-weight:700;font-size:13px">₩${fmt(netCost)}</span>
+          ? `<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px">${fmt(t.amount)}</span><br>
+             <span style="color:var(--accent);font-weight:700;font-size:13px">${fmt(netCost)}</span>
              <span style="font-size:10px;background:rgba(58,168,125,0.15);color:var(--success);border-radius:4px;padding:1px 5px;margin-left:3px;font-weight:600;white-space:nowrap">-${fmt(settlement)}</span>`
-          : `₩${fmt(t.amount)}`}
+          : `${fmt(t.amount)}`}
       </td>
       <td>
         <input type="text" value="${(t.note||'').replace(/"/g,'&quot;')}" 
@@ -5054,7 +5067,7 @@ function openTxDetailModal(id) {
 
   document.getElementById('txDetailTitle').textContent = t.store;
   document.getElementById('txDetailDate').textContent = t.date;
-  document.getElementById('txDetailAmount').textContent = `₩${fmt(t.amount)}`;
+  document.getElementById('txDetailAmount').textContent = `${fmt(t.amount)}`;
   document.getElementById('txDetailAmount').style.color = t.settlement > 0 ? 'var(--text-muted)' : 'var(--text)';
   document.getElementById('txDetailCard').textContent = t.card || '-';
 
@@ -5118,9 +5131,9 @@ function previewSettlement() {
   const preview = document.getElementById('settlementPreview');
   if (val > 0) {
     const net = t.amount - Math.min(val, t.amount);
-    document.getElementById('previewOriginal').textContent = `₩${fmt(t.amount)}`;
-    document.getElementById('previewSettlement').textContent = `-₩${fmt(Math.min(val, t.amount))}`;
-    document.getElementById('previewNet').textContent = `₩${fmt(net)}`;
+    document.getElementById('previewOriginal').textContent = `${fmt(t.amount)}`;
+    document.getElementById('previewSettlement').textContent = `-${fmt(Math.min(val, t.amount))}`;
+    document.getElementById('previewNet').textContent = `${fmt(net)}`;
     preview.style.display = '';
   } else {
     preview.style.display = 'none';
@@ -5190,7 +5203,7 @@ function updateSelectedSummary() {
   const count = selected.length;
   const total = selected.reduce((s,t) => s + (t.amount || 0), 0);
   const infoEl = document.getElementById('detailSelectedInfo');
-  if (infoEl) infoEl.textContent = count ? `선택 ${fmt(count)}건 · ₩${fmt(total)}` : '';
+  if (infoEl) infoEl.textContent = count ? `선택 ${fmt(count)}건 · ${fmt(total)}` : '';
 
   const headerCb = document.getElementById('selectAllCurrentPage');
   if (headerCb) {
@@ -5210,7 +5223,7 @@ function bulkDeleteSelected() {
   const count = selected.length;
   const total = selected.reduce((s,t) => s + (t.amount || 0), 0);
   const ok = confirm(`선택한 ${count}건을 삭제할까요?
-합계: ₩${fmt(total)}
+합계: ${fmt(total)}
 이 작업은 되돌릴 수 없습니다.`);
   if (!ok) return;
   transactions = transactions.filter(t => !selectedTxIds.has(t.id));
@@ -5275,7 +5288,7 @@ function confirmAdd() {
 function openCatModal(id) {
   editingId = id;
   const tx = transactions.find(t => t.id === id);
-  document.getElementById('catModalStore').textContent = `${tx.store} · ₩${fmt(tx.amount)}`;
+  document.getElementById('catModalStore').textContent = `${tx.store} · ${fmt(tx.amount)}`;
   document.getElementById('catModalSelect').value = tx.category;
   document.getElementById('catModal').classList.add('show');
 }
@@ -5306,7 +5319,7 @@ function saveCatModal() {
 function openDeleteModal(id) {
   deletingId = id;
   const tx = transactions.find(t => t.id === id);
-  document.getElementById('delModalText').textContent = `"${tx.store}" (₩${fmt(tx.amount)}) 거래를 삭제하시겠습니까?`;
+  document.getElementById('delModalText').textContent = `"${tx.store}" (${fmt(tx.amount)}) 거래를 삭제하시겠습니까?`;
   document.getElementById('delModal').classList.add('show');
 }
 
@@ -5902,7 +5915,7 @@ function refreshUploadMeta() {
       sum += amount;
     });
   }
-  document.getElementById('uploadMeta').textContent = `총 ${rows.length}행 발견 · 카드 ${cardText} · 업로드 합계 ₩${fmt(sum)} · 헤더 자동 인식 완료`;
+  document.getElementById('uploadMeta').textContent = `총 ${rows.length}행 발견 · 카드 ${cardText} · 업로드 합계 ${fmt(sum)} · 헤더 자동 인식 완료`;
 }
 
 function guessCol(headers, candidates) {
@@ -6464,7 +6477,7 @@ function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
     "  var html='<div style=\"text-align:center;margin-bottom:20px\">';",
     "  html+='<div style=\"font-size:44px;margin-bottom:8px\">'+(CAT_ICON[t.category]||'❓')+'</div>';",
     "  html+='<div style=\"font-size:18px;font-weight:700\">'+t.store+'</div>';",
-    "  html+='<div style=\"font-size:28px;font-weight:700;color:#C43A3A;margin-top:8px\">₩'+fmt(t.amount)+'</div></div>';",
+    "  html+='<div style=\"font-size:28px;font-weight:700;color:#C43A3A;margin-top:8px\">'+fmt(t.amount)+'</div></div>';",
     "  html+='<div class=\"detail-row\"><span class=\"detail-row-label\">날짜</span><span class=\"detail-row-value\">'+fmtDate(t.date)+'</span></div>';",
     "  var cc=CAT_COLOR[t.category]||'#666';",
     "  html+='<div class=\"detail-row\"><span class=\"detail-row-label\">카테고리</span><span class=\"detail-row-value\" style=\"background:'+cc+'22;color:'+cc+';padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700\">'+(CAT_ICON[t.category]||'?')+' '+t.category+'</span></div>';",
@@ -6501,7 +6514,7 @@ function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
     "  var avgVal=count?Math.round(totalExp/count):0;",
     "  document.getElementById('heroCard').innerHTML=",
     "    '<div class=\"hero-label\">이번 달 총 지출</div>'",
-    "    +'<div class=\"hero-amount\">₩'+fmt(totalExp)+'</div>'",
+    "    +'<div class=\"hero-amount\">'+fmt(totalExp)+'</div>'",
     "    +'<div class=\"hero-sub\">'+count+'건 거래 · 카드 '+fmt(cardExp)+'원'+(interestExp>0?' · 이자비용 '+fmt(interestExp)+'원':'')+'</div>'",
     "    +'<div class=\"hero-grid\">'",
     "    +'<div class=\"hero-stat\"><div class=\"hero-stat-label\">건당 평균</div><div class=\"hero-stat-value\">'+fmtW(avgVal)+'</div></div>'",
@@ -6513,7 +6526,7 @@ function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
     "  var diffClass=diff<=0?'green':'red';",
     "  document.getElementById('kpiGrid').innerHTML=",
     "    '<div class=\"kpi-card '+profitClass+'\"><div class=\"kpi-label\">월 손익</div><div class=\"kpi-value\" style=\"color:'+profitColor+'\">'+(profit>=0?'+':'')+fmt(Math.abs(profit))+'원</div><div class=\"kpi-sub\">수익 '+fmt(totalInc)+'원</div></div>'",
-    "    +'<div class=\"kpi-card blue\"><div class=\"kpi-label\">총 수익</div><div class=\"kpi-value\" style=\"color:#3A7DC4\">'+fmt(totalInc)+'원</div><div class=\"kpi-sub\">'+(totalInc>0?'예진·기혁·기타 합계':'수익 미입력')+'</div></div>'",
+    "    +'<div class=\"kpi-card blue\"><div class=\"kpi-label\">총 수익</div><div class=\"kpi-value\" style=\"color:#3A7DC4\">'+fmt(totalInc)+'원</div><div class=\"kpi-sub\">'+(totalInc>0?'':'')+'</div></div>'",
     "    +'<div class=\"kpi-card\"><div class=\"kpi-label\">총 지출</div><div class=\"kpi-value\">'+fmt(totalExp)+'원</div><div class=\"kpi-sub\">카드 '+fmt(cardExp)+'원'+(interestExp>0?' · 이자비용 '+fmt(interestExp)+'원':'')+'</div></div>'",
     "    +'<div class=\"kpi-card '+diffClass+'\"><div class=\"kpi-label\">전월 대비</div><div class=\"kpi-value\" style=\"color:'+(diff<=0?'#3AA87D':'#C43A3A')+'\">'+(diff>=0?'+':'')+fmt(Math.abs(diff))+'원</div><div class=\"kpi-sub\">전월 '+fmt(prevExp)+'원</div></div>';",
     /* insight chips */
@@ -6541,7 +6554,7 @@ function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
     /* top5 */
     "  var top5=txs.slice().sort(function(a,b){return b.amount-a.amount;}).slice(0,5);",
     "  document.getElementById('top5List').innerHTML=top5.map(function(t){",
-    "    return '<div class=\"tx-item\" onclick=\"openTxDetail('+t.id+')\"><div class=\"tx-icon\">'+(CAT_ICON[t.category]||'❓')+'</div><div class=\"tx-info\"><div class=\"tx-store\">'+t.store+'</div><div class=\"tx-note\">'+(t.note||t.date)+'</div></div><div class=\"tx-amount\">₩'+fmt(t.amount)+'</div></div>';",
+    "    return '<div class=\"tx-item\" onclick=\"openTxDetail('+t.id+')\"><div class=\"tx-icon\">'+(CAT_ICON[t.category]||'❓')+'</div><div class=\"tx-info\"><div class=\"tx-store\">'+t.store+'</div><div class=\"tx-note\">'+(t.note||t.date)+'</div></div><div class=\"tx-amount\">'+fmt(t.amount)+'</div></div>';",
     "  }).join('');",
     /* month compare */
     "  var thisMap={};var prevMap={};",
@@ -6631,8 +6644,8 @@ function buildMobileHTML(txDataJSON, incomeJSON, dateStr, rangeLabel) {
     "  filtered.forEach(function(t){if(!groups[t.date])groups[t.date]=[];groups[t.date].push(t);});",
     "  document.getElementById('listBody').innerHTML=Object.keys(groups).sort(function(a,b){return b>a?1:-1;}).map(function(date){",
     "    var items=groups[date];var dayTotal=items.reduce(function(s,t){return s+t.amount;},0);",
-    "    return '<div class=\"tx-date-group\"><div class=\"tx-date-label\" style=\"display:flex;justify-content:space-between\"><span>'+fmtDate(date)+'</span><span style=\"color:var(--accent2);font-family:monospace\">₩'+fmt(dayTotal)+'</span></div><div class=\"card\" style=\"padding:0 16px\">'",
-    "      +items.map(function(t){return '<div class=\"tx-item\" onclick=\"openTxDetail('+t.id+')\"><div class=\"tx-icon\">'+(CAT_ICON[t.category]||'❓')+'</div><div class=\"tx-info\"><div class=\"tx-store\">'+t.store+'</div><div class=\"tx-note\">'+(t.note||((CAT_ICON[t.category]||'?')+' '+t.category))+'</div></div><div class=\"tx-amount\">₩'+fmt(t.amount)+'</div></div>';}).join('')",
+    "    return '<div class=\"tx-date-group\"><div class=\"tx-date-label\" style=\"display:flex;justify-content:space-between\"><span>'+fmtDate(date)+'</span><span style=\"color:var(--accent2);font-family:monospace\">'+fmt(dayTotal)+'</span></div><div class=\"card\" style=\"padding:0 16px\">'",
+    "      +items.map(function(t){return '<div class=\"tx-item\" onclick=\"openTxDetail('+t.id+')\"><div class=\"tx-icon\">'+(CAT_ICON[t.category]||'❓')+'</div><div class=\"tx-info\"><div class=\"tx-store\">'+t.store+'</div><div class=\"tx-note\">'+(t.note||((CAT_ICON[t.category]||'?')+' '+t.category))+'</div></div><div class=\"tx-amount\">'+fmt(t.amount)+'</div></div>';}).join('')",
     "      +'</div></div>';",
     "  }).join('');",
     "}",
