@@ -1,0 +1,121 @@
+{
+  "updated_at": "2026-04-13",
+  "_source": "미래에셋 앱 실시간 기준 (2026-04-13 18:07)",
+  "accounts": [
+    {
+      "name": "미래에셋 일반계좌 (개별주)",
+      "type": "taxable",
+      "role": "growth_individual",
+      "target_weight": 22,
+      "assets": [
+        { "id": "amazon",    "name": "아마존닷컴",   "ticker": "AMZN",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 21574313, "pnl_pct": 140.26 },
+        { "id": "microsoft", "name": "마이크로소프트","ticker": "MSFT",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 4401990,  "pnl_pct": 99.01  },
+        { "id": "apple",     "name": "애플",         "ticker": "AAPL",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 3864664,  "pnl_pct": 75.44  },
+        { "id": "tesla_m",   "name": "테슬라",       "ticker": "TSLA",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 3624087,  "pnl_pct": 43.65  }
+      ]
+    },
+    {
+      "name": "삼성증권 일반계좌 (개별주)",
+      "type": "taxable",
+      "role": "growth_individual",
+      "target_weight": 12,
+      "assets": [
+        { "id": "meta",      "name": "메타",         "ticker": "META",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 2803513,  "pnl_pct": 263.50 },
+        { "id": "tesla_s",   "name": "테슬라",       "ticker": "TSLA",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 2070907,  "pnl_pct": 64.93  },
+        { "id": "google",    "name": "알파벳 A",     "ticker": "GOOGL",  "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 2353397,  "pnl_pct": 174.07 },
+        { "id": "intel",     "name": "인텔",         "ticker": "INTC",   "asset_type": "stock", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 925513,   "pnl_pct": 67.43  }
+      ]
+    },
+    {
+      "name": "우리투자증권 일반계좌",
+      "type": "taxable",
+      "role": "growth",
+      "target_weight": 10,
+      "assets": [
+        { "id": "kodex_sp500_w",  "name": "KODEX 미국S&P500",   "ticker": "379810.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 11174215, "pnl_pct": 2.22 },
+        { "id": "kodex_nas_w",    "name": "KODEX 미국나스닥100", "ticker": "379800.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 4096880,  "pnl_pct": 2.91 }
+      ]
+    },
+    {
+      "name": "유진/SK증권 (국내주)",
+      "type": "taxable",
+      "role": "growth_individual",
+      "target_weight": 3,
+      "assets": [
+        { "id": "sk",       "name": "SK",          "ticker": "034730.KS", "asset_type": "stock", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 2124000, "pnl_pct": 14.59  },
+        { "id": "lghh",     "name": "LG생활건강",  "ticker": "051900.KS", "asset_type": "stock", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 1245000, "pnl_pct": -81.33 },
+        { "id": "skt",      "name": "SK텔레콤",    "ticker": "017670.KS", "asset_type": "stock", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 651000,  "pnl_pct": 19.74  },
+        { "id": "sk_iet",   "name": "SK아이이테크", "ticker": "361610.KS", "asset_type": "stock", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 69300,   "pnl_pct": -78.0  }
+      ]
+    },
+    {
+      "name": "미래에셋 ISA",
+      "type": "isa",
+      "role": "income",
+      "target_weight": 17,
+      "annual_limit": 20000000,
+      "deposited_this_year": 12000000,
+      "assets": [
+        { "id": "tiger_kr_div", "name": "TIGER 코리아배당다우존스",  "ticker": "449450.KS", "asset_type": "etf", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 1736100,  "pnl_pct": 28.52 },
+        { "id": "plus_highd",   "name": "PLUS 고배당주",             "ticker": "261110.KS", "asset_type": "etf", "asset_class": "equity_kr", "currency_exposure": "KRW", "amount": 6757500,  "pnl_pct": 36.77 },
+        { "id": "kodex_sp500i", "name": "KODEX 미국S&P500",          "ticker": "379810.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 7077645,  "pnl_pct": 1.92  },
+        { "id": "kodex_nas_i",  "name": "KODEX 미국나스닥100",       "ticker": "379800.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 6341475,  "pnl_pct": 2.10  },
+        { "id": "rise_realty",  "name": "RISE 글로벌리얼티인컴",     "ticker": "395160.KS", "asset_type": "etf", "asset_class": "reit",      "currency_exposure": "USD", "amount": 1219575,  "pnl_pct": 10.21 },
+        { "id": "kodex_div",    "name": "KODEX 미국배당다우존스",    "ticker": "458730.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 2000800,  "pnl_pct": 0.77  }
+      ]
+    },
+    {
+      "name": "미래에셋 연금저축 (ETF)",
+      "type": "pension",
+      "role": "all_weather",
+      "target_weight": 10,
+      "annual_limit": 6000000,
+      "deposited_this_year": 3200000,
+      "assets": [
+        { "id": "kodex_wti_p",    "name": "KODEX WTI원유선물(H)",           "ticker": "261220.KS", "asset_type": "etf", "asset_class": "commodity", "currency_exposure": "USD", "amount": 579025,  "pnl_pct": 93.89   },
+        { "id": "tiger_bond10",   "name": "TIGER 미국채10년선물",           "ticker": "305080.KS", "asset_type": "etf", "asset_class": "bond_us",   "currency_exposure": "USD", "amount": 1373430, "pnl_pct": 3.32    },
+        { "id": "tiger_gold",     "name": "TIGER 골드선물(H)",              "ticker": "132030.KS", "asset_type": "etf", "asset_class": "commodity", "currency_exposure": "USD", "amount": 1359360, "pnl_pct": 17.80   },
+        { "id": "kodex_sp500_p",  "name": "KODEX 미국S&P500",               "ticker": "379810.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 3137985, "pnl_pct": 0.10    },
+        { "id": "kodex_nas_p",    "name": "KODEX 미국나스닥100",            "ticker": "379800.KS", "asset_type": "etf", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 5897325, "pnl_pct": 12.49   },
+        { "id": "tiger_bond30",   "name": "TIGER 미국30년국채스트립액티브", "ticker": "452340.KS", "asset_type": "etf", "asset_class": "bond_us",   "currency_exposure": "USD", "amount": 444480,  "pnl_pct": -14.13  },
+        { "id": "hanaro_gold",    "name": "HANARO 글로벌금채굴기업",        "ticker": "441680.KS", "asset_type": "etf", "asset_class": "commodity", "currency_exposure": "USD", "amount": 793800,  "pnl_pct": 114.16  }
+      ]
+    },
+    {
+      "name": "미래에셋 연금저축 (TDF)",
+      "type": "pension",
+      "role": "all_weather",
+      "target_weight": 8,
+      "annual_limit": 0,
+      "deposited_this_year": 0,
+      "_note": "회사 납입 월15만원. TDF2055 매입중. 나머지 현금보유.",
+      "assets": [
+        { "id": "tdf2055", "name": "미래에셋ETF로자산배분TDF2055", "ticker": null, "asset_type": "fund", "asset_class": "equity_us", "currency_exposure": "USD", "amount": 11372935, "pnl_pct": 3.39 }
+      ]
+    },
+    {
+      "name": "개인형IRP",
+      "type": "irp",
+      "role": "all_weather",
+      "target_weight": 3,
+      "annual_limit": 3000000,
+      "deposited_this_year": 0,
+      "assets": [
+        { "id": "irp", "name": "개인형IRP", "ticker": null, "asset_type": "irp", "asset_class": "bond_us", "currency_exposure": "KRW", "amount": 3709066, "pnl_pct": null }
+      ]
+    },
+    {
+      "name": "업비트 (비트코인)",
+      "type": "crypto_exchange",
+      "role": "crypto",
+      "target_weight": 5,
+      "assets": [
+        { "id": "btc", "name": "비트코인 (BTC)", "ticker": "BTC", "asset_type": "crypto", "asset_class": "crypto", "currency_exposure": "USD", "amount": 22171079, "pnl_pct": -21.50 }
+      ]
+    }
+  ],
+  "cash": {
+    "available": 12432165,
+    "note": "입출금 통장 합산 (업비트 KRW 1,544,018 포함)"
+  }
+}
