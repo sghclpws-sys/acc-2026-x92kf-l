@@ -122,6 +122,7 @@
     --cat-쇼핑: #E8A84A;
     --cat-관계비용: #4ABCE8;
     --cat-가스비: #D95B5B;
+    --cat-주유: #E07B2A;
     --cat-교육놀이: #4AB87B;
     --cat-관리비: #8DD95B;
     --cat-통신렌탈: #B87B4A;
@@ -327,6 +328,7 @@
   .cat-쇼핑 { background: #FDF2DF; color: #A06820; }
   .cat-관계비용 { background: #DDF4FD; color: #1880A4; }
   .cat-가스비 { background: #FDE0E0; color: #A42A2A; }
+  .cat-주유 { background: #FEF0E0; color: #A05010; }
   .cat-교육놀이 { background: #E0F5EA; color: #1A844A; }
   .cat-관리비 { background: #EEF8E0; color: #4A8020; }
   .cat-통신렌탈 { background: #F5EAE0; color: #7A4820; }
@@ -1453,7 +1455,7 @@ window.showPage = function(page) {
       <!-- 필터: 카테고리+카드사 한 줄 -->
       <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
-        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
+        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option></select>
       </div>
       <!-- 검색 + 선택/삭제 + 건수 한 줄 -->
@@ -2955,39 +2957,23 @@ window.showPage = function(page) {
           </div>
         </div>
 
-        <!-- 2행: 청구인 + 카테고리 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <!-- 2행: 청구인 -->
+        <div style="margin-bottom:10px">
           <div class="input-group">
             <div class="input-label">청구인</div>
             <input type="text" id="claimPerson" placeholder="예진, 기혁..." style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
-          </div>
-          <div class="input-group">
-            <div class="input-label">카테고리</div>
-            <select id="claimCat" onchange="updateClaimPreview()" style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text)">
-              <option value="생필품">🛒 생필품</option>
-              <option value="생활비">🚌 생활비</option>
-              <option value="외식">🍽 외식</option>
-              <option value="쇼핑">🛍 쇼핑</option>
-              <option value="여행">✈️ 여행</option>
-              <option value="관계비용">🎁 관계비용</option>
-              <option value="가스비">🔥 가스비</option>
-              <option value="교육/놀이">📚 교육/놀이</option>
-              <option value="관리비">🏠 관리비</option>
-              <option value="통신/렌탈">📡 통신/렌탈</option>
-              <option value="세금/기타">📄 세금/기타</option>
-              <option value="미분류">❓ 기타</option>
-            </select>
           </div>
         </div>
 
         <!-- 항목 목록 -->
         <div style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;letter-spacing:.3px">항목 목록</div>
-          <div id="claimItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"><div id="claimItem_1" style="display:grid;grid-template-columns:1fr 90px 28px;gap:6px;align-items:center">
-    <input type="text" placeholder="항목명" style="height:36px;padding:0 10px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" oninput="updateClaimTotal()" id="claimItemName_1">
-    <input type="number" placeholder="금액" min="0" style="height:36px;padding:0 8px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;text-align:right;box-sizing:border-box" oninput="updateClaimTotal()" id="claimItemAmt_1">
-    <button onclick="removeClaimItem(1)" style="height:36px;width:28px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-muted);border-radius:6px;display:flex;align-items:center;justify-content:center" onmouseover="this.style.color=&#39;var(--danger)&#39;" onmouseout="this.style.color=&#39;var(--text-muted)&#39;">✕</button>
-  </div></div>
+          <div style="display:grid;grid-template-columns:1fr 130px 110px 28px;gap:6px;margin-bottom:4px;padding:0 2px">
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">항목명</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">카테고리</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px;text-align:right">금액</div>
+            <div></div>
+          </div>
+          <div id="claimItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
           <button class="btn btn-ghost btn-sm" onclick="addClaimItem()" style="width:100%;justify-content:center;margin-top:2px">＋ 항목 추가</button>
         </div>
 
@@ -3040,6 +3026,7 @@ window.showPage = function(page) {
             <option value="교육/놀이">📚 교육/놀이</option>
             <option value="관리비">🏠 관리비</option>
             <option value="통신/렌탈">📡 통신/렌탈</option>
+            <option value="주유">⛽ 주유</option>
             <option value="세금/기타">📄 세금/기타</option>
           </select>
           <button class="btn btn-ghost" onclick="addRule()" style="border-color:var(--border)">+ 규칙 추가</button>
@@ -3486,6 +3473,7 @@ window.showPage = function(page) {
       <option value="교육/놀이">📚 교육/놀이</option>
       <option value="관리비">🏠 관리비</option>
       <option value="통신/렌탈">📡 통신/렌탈</option>
+      <option value="주유">⛽ 주유</option>
       <option value="세금/기타">📄 세금/기타</option>
       <option value="미분류">❓ 미분류</option>
     </select>
@@ -3547,6 +3535,7 @@ window.showPage = function(page) {
           <option value="교육/놀이">📚 교육/놀이</option>
           <option value="관리비">🏠 관리비</option>
           <option value="통신/렌탈">📡 통신/렌탈</option>
+          <option value="주유">⛽ 주유</option>
           <option value="세금/기타">📄 세금/기타</option>
           <option value="미분류" selected="">❓ 미분류</option>
         </select>
@@ -3601,6 +3590,7 @@ window.showPage = function(page) {
             <option value="교육/놀이">📚 교육/놀이</option>
             <option value="관리비">🏠 관리비</option>
             <option value="통신/렌탈">📡 통신/렌탈</option>
+            <option value="주유">⛽ 주유</option>
             <option value="세금/기타">📄 세금/기타</option>
             <option value="미분류">❓ 미분류</option>
           </select>
@@ -3828,7 +3818,7 @@ function _startRealtimeSync() {
 }
 
 // ===== CONSTANTS =====
-const CATEGORIES = ['외식','생필품','생활비','여행','쇼핑','관계비용','가스비','교육/놀이','관리비','통신/렌탈','세금/기타','미분류'];
+const CATEGORIES = ['외식','생필품','생활비','여행','쇼핑','관계비용','가스비','교육/놀이','관리비','통신/렌탈','주유','세금/기타','미분류'];
 const CAT_COLORS = {
   '외식': '#E8734A', '생필품': '#5B8DD9', '생활비': '#3ABFB3', '여행': '#7B62B8', '쇼핑': '#E8A84A',
   '관계비용': '#4ABCE8', '가스비': '#D95B5B', '교육/놀이': '#4AB87B', '관리비': '#8DD95B',
@@ -3841,7 +3831,7 @@ const CAT_CLASS = {
 };
 const CAT_ICON = {
   '외식':'🍽','생필품':'🛒','생활비':'🚌','여행':'✈️','쇼핑':'🛍','관계비용':'🎁',
-  '가스비':'🔥','교육/놀이':'📚','관리비':'🏠','통신/렌탈':'📡','세금/기타':'📄','미분류':'❓'
+  '가스비':'🔥','교육/놀이':'📚','관리비':'🏠','통신/렌탈':'📡','주유':'⛽','세금/기타':'📄','미분류':'❓'
 };
 
 // ===== NAVIGATION =====
@@ -4551,21 +4541,42 @@ function initClaimControls() {
   if (document.getElementById('claimItems').children.length === 0) addClaimItem();
 }
 
+const CLAIM_CAT_OPTIONS = [
+  {value:'생필품', label:'🛒 생필품'},
+  {value:'생활비', label:'🚌 생활비'},
+  {value:'외식',   label:'🍽 외식'},
+  {value:'쇼핑',   label:'🛍 쇼핑'},
+  {value:'여행',   label:'✈️ 여행'},
+  {value:'관계비용',label:'🎁 관계비용'},
+  {value:'가스비', label:'🔥 가스비'},
+  {value:'교육/놀이',label:'📚 교육/놀이'},
+  {value:'관리비', label:'🏠 관리비'},
+  {value:'통신/렌탈',label:'📡 통신/렌탈'},
+  {value:'주유',   label:'⛽ 주유'},
+  {value:'세금/기타',label:'📄 세금/기타'},
+  {value:'미분류', label:'❓ 기타'},
+];
+
 function addClaimItem() {
   claimItemCount++;
   const id = claimItemCount;
   const wrap = document.getElementById('claimItems');
   const div = document.createElement('div');
   div.id = `claimItem_${id}`;
-  div.style.cssText = 'display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border)';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 130px 110px 28px;gap:6px;align-items:center';
+  const catOpts = CLAIM_CAT_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
   div.innerHTML = `
-    <input type="text" placeholder="항목명 (예: 마트, 약국, 주유소...)"
-      style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%"
+    <input type="text" placeholder="항목명 (예: 마트, 약국...)"
+      style="height:36px;padding:0 10px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box"
       oninput="updateClaimTotal()" id="claimItemName_${id}">
+    <select id="claimItemCat_${id}" onchange="updateClaimPreview()"
+      style="height:36px;padding:0 6px;border-radius:7px;border:1.5px solid var(--border);font-size:12px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box">
+      ${catOpts}
+    </select>
     <input type="number" placeholder="금액" min="0"
-      style="padding:7px 10px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:110px;text-align:right"
+      style="height:36px;padding:0 8px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;text-align:right;box-sizing:border-box"
       oninput="updateClaimTotal()" id="claimItemAmt_${id}">
-    <button onclick="removeClaimItem(${id})" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);padding:2px 6px;border-radius:4px;transition:color .15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+    <button onclick="removeClaimItem(${id})" style="height:36px;width:28px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-muted);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
   `;
   wrap.appendChild(div);
   updateClaimTotal();
@@ -4596,8 +4607,9 @@ function getClaimItemsList() {
     if (!idMatch) continue;
     const id = idMatch[1];
     const name = (document.getElementById(`claimItemName_${id}`)?.value || '').trim();
+    const cat = document.getElementById(`claimItemCat_${id}`)?.value || '미분류';
     const amount = parseInt(document.getElementById(`claimItemAmt_${id}`)?.value) || 0;
-    if (name || amount) results.push({ name, amount });
+    if (name || amount) results.push({ name, cat, amount });
   }
   return results;
 }
@@ -4609,7 +4621,6 @@ function updateClaimPreview() {
   const items = getClaimItemsList().filter(i => i.name || i.amount > 0);
   const total = parseInt(document.getElementById('claimTotal')?.value) || 0;
   const person = (document.getElementById('claimPerson')?.value || '').trim();
-  const cat = document.getElementById('claimCat')?.value || '';
   const note = (document.getElementById('claimNote')?.value || '').trim();
   const yearSel = document.getElementById('claimYear');
   const monthSel = document.getElementById('claimMonth');
@@ -4630,16 +4641,15 @@ function updateClaimPreview() {
     <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px">
       <span style="color:var(--text-muted)">거래명</span><span style="font-weight:600">${storeName}</span>
       <span style="color:var(--text-muted)">날짜</span><span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${txDate}</span>
-      <span style="color:var(--text-muted)">카테고리</span><span>${CAT_ICON[cat]||''} ${cat}</span>
       <span style="color:var(--text-muted)">총 청구액</span><span style="font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(total)}원</span>
     </div>`;
 
   if (items.length > 0) {
     html += `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">포함 항목 (${items.length}건)</div>
-      ${items.map(i => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0">
-        <span>${i.name || '항목명 없음'}</span>
-        <span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-muted)">${i.amount > 0 ? ''+fmt(i.amount) : '-'}</span>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">등록 항목 (${items.length}건 → 카테고리별 개별 거래로 등록됨)</div>
+      ${items.map(i => `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0">
+        <span>${i.name || '항목명 없음'} <span style="color:var(--text-muted);font-size:11px">${CAT_ICON[i.cat]||''} ${i.cat}</span></span>
+        <span style="font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-muted)">${i.amount > 0 ? fmt(i.amount)+'원' : '-'}</span>
       </div>`).join('')}
     </div>`;
   }
@@ -4699,13 +4709,13 @@ function submitClaim() {
   const year = yearSel?.value || '';
   const month = monthSel?.value ? String(monthSel.value).padStart(2, '0') : '';
   const person = (document.getElementById('claimPerson')?.value || '').trim();
-  const cat = document.getElementById('claimCat')?.value || '미분류';
   const totalRaw = parseInt(document.getElementById('claimTotal')?.value) || 0;
   const note = (document.getElementById('claimNote')?.value || '').trim();
-  const items = getClaimItemsList();
+  const items = getClaimItemsList().filter(i => i.name || i.amount > 0);
 
   if (!year || !month) { showToast('청구 기준 연/월을 선택하세요'); return; }
   if (!totalRaw || totalRaw <= 0) { showToast('총 청구 금액을 입력하세요'); return; }
+  if (items.length === 0) { showToast('항목을 하나 이상 입력하세요'); return; }
 
   const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
   const txDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
@@ -4714,29 +4724,28 @@ function submitClaim() {
     ? `[공금정산] ${person} ${parseInt(year)}년 ${parseInt(month)}월`
     : `[공금정산] ${parseInt(year)}년 ${parseInt(month)}월`;
 
-  // 항목 상세를 메모에 포함
-  let memoStr = note;
-  if (items.length > 0) {
-    const detail = items.filter(i => i.name || i.amount > 0)
-      .map(i => i.name + (i.amount > 0 ? ` ${fmt(i.amount)}원` : '')).join(', ');
-    memoStr = memoStr ? `${memoStr} | ${detail}` : detail;
-  }
+  let maxId = Math.max(...transactions.map(t => t.id), 0);
 
-  const maxId = Math.max(...transactions.map(t => t.id), 0);
-  const newTx = {
-    id: maxId + 1,
-    date: txDate,
-    store: storeName,
-    amount: totalRaw,
-    note: memoStr,
-    category: cat,
-    card: '공금정산'
-  };
-  transactions.push(newTx);
+  // 항목별 개별 거래 등록
+  const newTxList = items.map(i => {
+    maxId++;
+    return {
+      id: maxId,
+      date: txDate,
+      store: i.name ? `${storeName} - ${i.name}` : storeName,
+      amount: i.amount > 0 ? i.amount : totalRaw,
+      note: note || i.name || '',
+      category: i.cat || '미분류',
+      card: '공금정산'
+    };
+  });
+
+  transactions.push(...newTxList);
   saveData();
 
   renderRecentClaimTx();
-  showToast(`✅ 공금정산 ${fmt(totalRaw)}원 등록 완료`);
+  const catSummary = [...new Set(newTxList.map(t => t.category))].join(', ');
+  showToast(`✅ 공금정산 ${newTxList.length}건 등록 완료 (${fmt(totalRaw)}원)`);
   if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
   resetClaim();
 }
