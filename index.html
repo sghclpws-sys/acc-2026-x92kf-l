@@ -465,7 +465,10 @@
   
   .insight-card.blue {
     background: linear-gradient(135deg, var(--accent2) 0%, #5A9DE0 100%);
+    color: #fff;
   }
+  .insight-card.blue .insight-label { color: rgba(255,255,255,0.85); }
+  .insight-card.blue .insight-sub { color: rgba(255,255,255,0.8); }
   
   .insight-card.green {
     background: linear-gradient(135deg, var(--success) 0%, #5ACA9D 100%);
@@ -2652,194 +2655,54 @@ window.showPage = function(page) {
     <!-- ===== 항목별 추이 ===== -->
     <div class="page" id="page-trends">
       <div class="page-header">
-        <h2>항목별 추이</h2>
-        <p>소비 패턴의 전략적 분석</p>
+        <h2>소비 분석</h2>
+        <p>월별 손익 · 패턴 · 이상 탐지</p>
       </div>
 
-      <!-- 카테고리 탭 -->
-      <div class="tabs" id="trendTabs" style="flex-wrap:wrap;gap:6px;margin-bottom:20px">
-    <button class="tab-btn active" onclick="selectTrendCat(&#39;전체&#39;)">📊 전체</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;외식&#39;)">🍽 외식</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;생필품&#39;)">🛒 생필품</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;생활비&#39;)">🚌 생활비</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;여행&#39;)">✈️ 여행</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;쇼핑&#39;)">🛍 쇼핑</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;관계비용&#39;)">🎁 관계비용</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;가스비&#39;)">🔥 가스비</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;교육/놀이&#39;)">📚 교육/놀이</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;관리비&#39;)">🏠 관리비</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;통신/렌탈&#39;)">📡 통신/렌탈</button>
-  
-    <button class="tab-btn " onclick="selectTrendCat(&#39;세금/기타&#39;)">📄 세금/기타</button>
-  </div>
-
-      <!-- 월별 추이 라인차트 -->
+      <!-- 월별 손익 차트 -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">월별 추이</div>
+        <div class="card-title">월별 손익</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">수입 - 지출 · 양수면 흑자, 음수면 적자</p>
+        <div id="monthlyPnlChart"></div>
+      </div>
+
+      <!-- 월별 지출 추이 라인차트 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">월별 지출 추이</div>
         <div style="overflow-x:auto">
-          <svg id="trendSvg" style="width:100%;display:block" viewBox="0 0 800 200">
-    <text x="52" y="174" text-anchor="end" font-size="9" fill="#8A7F74" font-family="Pretendard">0만</text>
-    <line x1="60" y1="170" x2="780" y2="170" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="136.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="Pretendard">67만</text>
-    <line x1="60" y1="132.5" x2="780" y2="132.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="99" text-anchor="end" font-size="9" fill="#8A7F74" font-family="Pretendard">134만</text>
-    <line x1="60" y1="95" x2="780" y2="95" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="61.5" text-anchor="end" font-size="9" fill="#8A7F74" font-family="Pretendard">201만</text>
-    <line x1="60" y1="57.5" x2="780" y2="57.5" stroke="#E4DDD0" stroke-width="0.5"></line><text x="52" y="24" text-anchor="end" font-size="9" fill="#8A7F74" font-family="Pretendard">268만</text>
-    <line x1="60" y1="20" x2="780" y2="20" stroke="#E4DDD0" stroke-width="0.5"></line>
-    <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0 L780,170 L60,170 Z" fill="var(--accent)" opacity="0.1"></path>
-    <path d="M60.0,62.6 L420.0,46.9 L780.0,20.0" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>
-    <circle cx="60.0" cy="62.6" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="420.0" cy="46.9" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle><circle cx="780.0" cy="20.0" r="3" fill="var(--accent)" stroke="white" stroke-width="1.5"></circle>
-  </svg>
+          <svg id="trendSvg" style="width:100%;display:block" viewBox="0 0 800 200"></svg>
         </div>
-        <div id="trendXLabels" style="position:relative;height:20px;margin-top:4px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">
-    <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.01</span>
-  
-    <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.02</span>
-  
-    <span style="width:360.0px;display:inline-block;text-align:center;flex-shrink:0;font-size:9px;">26.03</span>
-  </div>
+        <div id="trendXLabels" style="position:relative;height:20px;margin-top:4px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif"></div>
       </div>
 
-      <!-- 분기별 지출 히트맵 (전체 너비, 크게) -->
+      <!-- 평균 대비 이번 달 초과/절약 -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">분기별 지출 히트맵</div>
+        <div class="card-title">이번 달 vs 평균</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">카테고리별 과거 평균 대비 이번 달 증감</p>
+        <div id="budgetAlert"></div>
+      </div>
+
+      <!-- 분기별 지출 히트맵 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">지출 히트맵</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악</p>
-        <div id="heatmapChart" style="overflow-x:auto"><svg width="256" height="412" style="min-width:256px;display:block;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif"><text x="126" y="14" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">01월</text><text x="178" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">02월</text><text x="230" y="14" text-anchor="middle" font-size="10" fill="#8A7F74" font-weight="400" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">03월</text><text x="90" y="60" text-anchor="end" font-size="12" fill="#555">🍽 외식</text><rect x="102" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.53"></rect><text x="126" y="59" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">42만</text><rect x="154" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.58"></rect><text x="178" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">47만</text><rect x="206" y="40" width="48" height="30" rx="5" fill="#E8734A" fill-opacity="0.57"></rect><text x="230" y="59" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">45만</text><text x="90" y="94" text-anchor="end" font-size="12" fill="#555">🛒 생필품</text><rect x="102" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.55"></rect><text x="126" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">44만</text><rect x="154" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.58"></rect><text x="178" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">47만</text><rect x="206" y="74" width="48" height="30" rx="5" fill="#5B8DD9" fill-opacity="0.64"></rect><text x="230" y="93" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">53만</text><text x="90" y="128" text-anchor="end" font-size="12" fill="#555">🚌 생활비</text><rect x="102" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.00"></rect><rect x="154" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.11"></rect><text x="178" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">1만</text><rect x="206" y="108" width="48" height="30" rx="5" fill="#3ABFB3" fill-opacity="0.23"></rect><text x="230" y="127" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">13만</text><text x="90" y="162" text-anchor="end" font-size="12" fill="#555">✈️ 여행</text><rect x="102" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.00"></rect><rect x="154" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.92"></rect><text x="178" y="161" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">80만</text><rect x="206" y="142" width="48" height="30" rx="5" fill="#7B62B8" fill-opacity="0.41"></rect><text x="230" y="161" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">30만</text><text x="90" y="196" text-anchor="end" font-size="12" fill="#555">🛍 쇼핑</text><rect x="102" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.00"></rect><rect x="154" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.19"></rect><text x="178" y="195" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">9만</text><rect x="206" y="176" width="48" height="30" rx="5" fill="#E8A84A" fill-opacity="0.70"></rect><text x="230" y="195" text-anchor="middle" font-size="10" fill="#fff" font-family="Pretendard" font-weight="600">59만</text><text x="90" y="230" text-anchor="end" font-size="12" fill="#555">🎁 관계비용</text><rect x="102" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="154" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><rect x="206" y="210" width="48" height="30" rx="5" fill="#4ABCE8" fill-opacity="0.00"></rect><text x="90" y="264" text-anchor="end" font-size="12" fill="#555">🔥 가스비</text><rect x="102" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.23"></rect><text x="126" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">12만</text><rect x="154" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.25"></rect><text x="178" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">15만</text><rect x="206" y="244" width="48" height="30" rx="5" fill="#D95B5B" fill-opacity="0.18"></rect><text x="230" y="263" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">8만</text><text x="90" y="298" text-anchor="end" font-size="12" fill="#555">📚 교육/놀이</text><rect x="102" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.41"></rect><text x="126" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">30만</text><rect x="154" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.26"></rect><text x="178" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">16만</text><rect x="206" y="278" width="48" height="30" rx="5" fill="#4AB87B" fill-opacity="0.27"></rect><text x="230" y="297" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">17만</text><text x="90" y="332" text-anchor="end" font-size="12" fill="#555">🏠 관리비</text><rect x="102" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.45"></rect><text x="126" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">34만</text><rect x="154" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.19"></rect><text x="178" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">8만</text><rect x="206" y="312" width="48" height="30" rx="5" fill="#8DD95B" fill-opacity="0.51"></rect><text x="230" y="331" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">40만</text><text x="90" y="366" text-anchor="end" font-size="12" fill="#555">📡 통신/렌탈</text><rect x="102" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="126" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">2만</text><rect x="154" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.13"></rect><text x="178" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">3만</text><rect x="206" y="346" width="48" height="30" rx="5" fill="#B87B4A" fill-opacity="0.14"></rect><text x="230" y="365" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">4만</text><text x="90" y="400" text-anchor="end" font-size="12" fill="#555">❓ 미분류</text><rect x="102" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.38"></rect><text x="126" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">27만</text><rect x="154" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.19"></rect><text x="178" y="399" text-anchor="middle" font-size="10" fill="#444" font-family="Pretendard" font-weight="600">9만</text><rect x="206" y="380" width="48" height="30" rx="5" fill="#CCCCCC" fill-opacity="0.00"></rect></svg><svg width="200" height="40" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text><rect x="55" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.1"></rect><text x="66" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최소</text><rect x="81" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.3"></rect><rect x="107" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.55"></rect><text x="118" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">중간</text><rect x="133" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.7"></rect><rect x="159" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="0.92"></rect><text x="170" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">최대</text></svg></div>
+        <div style="overflow-x:auto"><div id="heatmapChart"></div></div>
       </div>
 
-      <!-- 상위 카테고리 집중 분석 (전체 너비) -->
+      <!-- 카테고리별 집중 분석 (절감 시뮬 없이) -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">상위 카테고리 집중 분석</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">지출 비중 변화 + 절감 시뮬레이션</p>
-        <div id="topCatAnalysis">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
-      
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid #5B8DD9">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div style="font-size:14px;font-weight:700">🛒 생필품</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 21.1%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">477,765원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
-              </div>
-            </div>
-            <svg width="112" height="36" style="margin-bottom:10px"><rect x="4" y="9" width="12" height="25" rx="2" fill="#5B8DD9" opacity="0.8"></rect><rect x="20" y="7" width="12" height="27" rx="2" fill="#5B8DD9" opacity="0.8"></rect><rect x="36" y="4" width="12" height="30" rx="2" fill="#5B8DD9" opacity="0.8"></rect></svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 573,324원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 1,146,636원</div>
-              </div>
-            </div>
-          </div>
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid #E8734A">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div style="font-size:14px;font-weight:700">🍽 외식</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 19.8%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">447,775원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
-              </div>
-            </div>
-            <svg width="112" height="36" style="margin-bottom:10px"><rect x="4" y="7" width="12" height="27" rx="2" fill="#E8734A" opacity="0.8"></rect><rect x="20" y="4" width="12" height="30" rx="2" fill="#E8734A" opacity="0.8"></rect><rect x="36" y="5" width="12" height="29" rx="2" fill="#E8734A" opacity="0.8"></rect></svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 537,336원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 1,074,660원</div>
-              </div>
-            </div>
-          </div>
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid #7B62B8">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div style="font-size:14px;font-weight:700">✈️ 여행</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 16.2%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">367,060원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
-              </div>
-            </div>
-            <svg width="112" height="36" style="margin-bottom:10px"><rect x="4" y="34" width="12" height="0" rx="2" fill="#7B62B8" opacity="0.8"></rect><rect x="20" y="4" width="12" height="30" rx="2" fill="#7B62B8" opacity="0.8"></rect><rect x="36" y="23" width="12" height="11" rx="2" fill="#7B62B8" opacity="0.8"></rect></svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 440,472원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 880,944원</div>
-              </div>
-            </div>
-          </div>
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid #8DD95B">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div style="font-size:14px;font-weight:700">🏠 관리비</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 12.1%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">273,330원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
-              </div>
-            </div>
-            <svg width="112" height="36" style="margin-bottom:10px"><rect x="4" y="8" width="12" height="26" rx="2" fill="#8DD95B" opacity="0.8"></rect><rect x="20" y="28" width="12" height="6" rx="2" fill="#8DD95B" opacity="0.8"></rect><rect x="36" y="4" width="12" height="30" rx="2" fill="#8DD95B" opacity="0.8"></rect></svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 327,996원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 655,992원</div>
-              </div>
-            </div>
-          </div>
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid #E8A84A">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-              <div>
-                <div style="font-size:14px;font-weight:700">🛍 쇼핑</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 9.9%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">224,680원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
-              </div>
-            </div>
-            <svg width="112" height="36" style="margin-bottom:10px"><rect x="4" y="34" width="12" height="0" rx="2" fill="#E8A84A" opacity="0.8"></rect><rect x="20" y="29" width="12" height="5" rx="2" fill="#E8A84A" opacity="0.8"></rect><rect x="36" y="4" width="12" height="30" rx="2" fill="#E8A84A" opacity="0.8"></rect></svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 269,616원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 539,232원</div>
-              </div>
-            </div>
-          </div>
-    </div></div>
+        <div class="card-title">카테고리별 지출 비중</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">지출 상위 카테고리 · 월평균 및 최근 트렌드</p>
+        <div id="topCatAnalysis"></div>
       </div>
-    </div>
+
+      <!-- 연도별 지출 구성 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">연도별 지출 구성</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">연도별 카테고리 비중 변화</p>
+        <div id="yearlyChart"></div>
+      </div>
+
 
     <!-- ===== 내역 업로드 ===== -->
     <div class="page" id="page-upload">
@@ -2948,26 +2811,19 @@ window.showPage = function(page) {
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">공금 정산 청구</div>
 
-        <!-- 1행: 기준 월 -->
+        <!-- 1행: 기준 월 + 청구인 -->
         <div class="input-group" style="margin-bottom:10px">
-          <div class="input-label">기준 월</div>
+          <div class="input-label">기준 월 · 청구인</div>
           <div style="display:flex;gap:6px">
-            <select id="claimYear" onchange="updateClaimPreview()" style="flex:1;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026</option></select>
-            <select id="claimMonth" onchange="updateClaimPreview()" style="flex:1;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-          </div>
-        </div>
-
-        <!-- 2행: 청구인 -->
-        <div style="margin-bottom:10px">
-          <div class="input-group">
-            <div class="input-label">청구인</div>
-            <input type="text" id="claimPerson" placeholder="예진, 기혁..." style="width:100%;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
+            <select id="claimYear" onchange="updateClaimPreview()" style="flex:0 0 90px;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026</option></select>
+            <select id="claimMonth" onchange="updateClaimPreview()" style="flex:0 0 70px;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+            <input type="text" id="claimPerson" placeholder="청구인 (예진, 기혁...)" style="flex:1;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
           </div>
         </div>
 
         <!-- 항목 목록 -->
         <div style="margin-bottom:10px">
-          <div style="display:grid;grid-template-columns:1fr 130px 110px 28px;gap:6px;margin-bottom:4px;padding:0 2px">
+          <div style="display:grid;grid-template-columns:1fr 120px 100px 28px;gap:6px;margin-bottom:4px;padding:0 2px">
             <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">항목명</div>
             <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">카테고리</div>
             <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px;text-align:right">금액</div>
@@ -4563,7 +4419,7 @@ function addClaimItem() {
   const wrap = document.getElementById('claimItems');
   const div = document.createElement('div');
   div.id = `claimItem_${id}`;
-  div.style.cssText = 'display:grid;grid-template-columns:1fr 130px 110px 28px;gap:6px;align-items:center';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 120px 100px 28px;gap:6px;align-items:center';
   const catOpts = CLAIM_CAT_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
   div.innerHTML = `
     <input type="text" placeholder="항목명 (예: 마트, 약국...)"
@@ -5470,37 +5326,102 @@ function closeModal() {
 }
 
 // ===== TRENDS PAGE =====
-let selectedTrendCat = '전체';
-
 function renderTrends() {
-  const cats = ['전체', ...CATEGORIES.filter(c => c !== '미분류')];
-  document.getElementById('trendTabs').innerHTML = cats.map(c => `
-    <button class="tab-btn ${c===selectedTrendCat?'active':''}" onclick="selectTrendCat('${c}')">${c==='전체'?'📊 전체':(CAT_ICON[c]||'')+ ' '+c}</button>
-  `).join('');
+  // ① 월별 손익
+  renderMonthlyPnl();
 
-  // ① 월별 추이 라인차트
+  // ② 월별 지출 추이 라인차트 (전체)
   const months = getMonthRange();
   const monthlyData = months.map(({year, month}) => {
     const txs = getMonthlyTx(year, month);
-    const filtered = selectedTrendCat === '전체' ? txs : txs.filter(t => t.category === selectedTrendCat);
     return {
       label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
-      total: filtered.reduce((s,t) => s + (t.amount - (t.settlement||0)), 0),
+      total: txs.reduce((s,t) => s + (t.amount - (t.settlement||0)), 0),
       year, month
     };
   });
   renderTrendChart(monthlyData);
 
-  // 분기별 히트맵
+  // ③ 평균 대비 이번 달
+  renderBudgetAlert();
+
+  // ④ 히트맵
   renderHeatmap();
 
-  // 상위 카테고리 집중 분석
+  // ⑤ 카테고리별 집중 분석
   renderTopCatAnalysis();
+
+  // ⑥ 연도별
+  renderYearlyChart();
 }
 
-function selectTrendCat(cat) {
-  selectedTrendCat = cat;
-  renderTrends();
+// 월별 손익 차트
+function renderMonthlyPnl() {
+  const el = document.getElementById('monthlyPnlChart');
+  if (!el) return;
+  const months = getMonthRange();
+  if (!months.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">데이터가 없습니다</div>'; return; }
+
+  const data = months.map(({year, month}) => {
+    const key = `${year}-${String(month).padStart(2,'0')}`;
+    const inc = incomeData && incomeData[key]
+      ? (incomeData[key].yejin||0) + (incomeData[key].gihyuk||0) + (incomeData[key].etc||0)
+      : 0;
+    const exp = getMonthlyTx(year, month).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
+    return {
+      label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
+      income: inc, expense: exp, pnl: inc - exp, year, month
+    };
+  });
+
+  const maxAbs = Math.max(...data.map(d => Math.max(Math.abs(d.pnl), d.income, d.expense)), 1);
+  const barH = 100;
+  const barW = Math.max(Math.floor((Math.min(window.innerWidth, 600) - 60) / data.length) - 6, 28);
+  const totalW = data.length * (barW + 6);
+
+  let html = `<div style="overflow-x:auto"><div style="min-width:${totalW + 60}px;padding:0 4px">`;
+  // 막대 그래프
+  html += `<div style="display:flex;align-items:flex-end;gap:6px;height:${barH + 40}px;margin-bottom:4px;position:relative">`;
+  // 기준선
+  html += `<div style="position:absolute;bottom:40px;left:0;right:0;height:1px;background:var(--border)"></div>`;
+  data.forEach(d => {
+    const isPos = d.pnl >= 0;
+    const color = isPos ? 'var(--success)' : 'var(--danger)';
+    const pnlH = d.income > 0 ? Math.round(Math.abs(d.pnl) / maxAbs * (barH - 4)) : Math.round(Math.abs(d.pnl) / maxAbs * (barH - 4));
+    const expH = Math.round(d.expense / maxAbs * (barH - 4));
+    const incH = d.income > 0 ? Math.round(d.income / maxAbs * (barH - 4)) : 0;
+    html += `<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:${barW}px;flex-shrink:0">`;
+    // 손익 표시 (barH 영역)
+    html += `<div style="width:100%;height:${barH}px;display:flex;flex-direction:column;justify-content:flex-end;position:relative">`;
+    if (d.income > 0) {
+      // 수입 있으면 수입/지출 비교 표시
+      html += `<div title="지출 ${fmt(d.expense)}원" style="width:100%;height:${expH}px;background:var(--danger);opacity:.7;border-radius:3px 3px 0 0"></div>`;
+      // 손익선 표시
+      html += `<div title="수입 ${fmt(d.income)}원 / 손익 ${isPos?'+':''}${fmt(d.pnl)}원" style="position:absolute;bottom:${incH}px;left:0;right:0;height:2px;background:var(--accent);border-radius:1px"></div>`;
+    } else {
+      html += `<div title="지출 ${fmt(d.expense)}원" style="width:100%;height:${expH}px;background:var(--accent);opacity:.75;border-radius:3px 3px 0 0"></div>`;
+    }
+    html += `</div>`;
+    // 손익 수치
+    html += `<div style="font-size:9px;font-weight:700;color:${color};text-align:center;white-space:nowrap;margin-top:2px">${isPos?'+':''}${Math.round(d.pnl/10000)}만</div>`;
+    html += `<div style="font-size:9px;color:var(--text-muted);text-align:center">${d.label}</div>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  // 범례
+  html += `<div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">`;
+  if (data.some(d => d.income > 0)) {
+    html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:16px;height:3px;background:var(--accent);border-radius:2px"></div>수입 기준선</div>`;
+    html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--danger);opacity:.7;border-radius:2px"></div>지출</div>`;
+  } else {
+    html += `<div style="font-size:11px;color:var(--text-muted)">수입 데이터가 등록되면 손익이 함께 표시됩니다</div>`;
+  }
+  html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:12px;height:10px;background:var(--success);border-radius:2px"></div>흑자</div>`;
+  html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:12px;height:10px;background:var(--danger);border-radius:2px"></div>적자</div>`;
+  html += `</div>`;
+  html += `</div></div>`;
+  el.innerHTML = html;
 }
 
 // ② 예산 초과 탐지: 전체 평균 대비 최근 달 초과 항목
