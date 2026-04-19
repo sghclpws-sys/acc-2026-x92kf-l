@@ -2696,13 +2696,7 @@ window.showPage = function(page) {
         <div id="topCatAnalysis"></div>
       </div>
 
-      <!-- 연도별 지출 구성 -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">연도별 지출 구성</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">연도별 카테고리 비중 변화</p>
-        <div id="yearlyChart"></div>
-      </div>
-
+    </div>
 
     <!-- ===== 내역 업로드 ===== -->
     <div class="page" id="page-upload">
@@ -2811,22 +2805,22 @@ window.showPage = function(page) {
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">공금 정산 청구</div>
 
-        <!-- 1행: 기준 월 + 청구인 -->
-        <div class="input-group" style="margin-bottom:10px">
-          <div class="input-label">기준 월 · 청구인</div>
-          <div style="display:flex;gap:6px">
-            <select id="claimYear" onchange="updateClaimPreview()" style="flex:0 0 90px;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="2026">2026</option></select>
-            <select id="claimMonth" onchange="updateClaimPreview()" style="flex:0 0 70px;height:38px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text)"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-            <input type="text" id="claimPerson" placeholder="청구인 (예진, 기혁...)" style="flex:1;height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;box-sizing:border-box" oninput="updateClaimPreview()">
+        <!-- 1행: 기준 연월 + 청구인 한 줄 -->
+        <div style="margin-bottom:10px">
+          <div class="input-label" style="margin-bottom:4px">기준 월 · 청구인</div>
+          <div style="display:grid;grid-template-columns:100px 72px 1fr;gap:6px">
+            <select id="claimYear" onchange="updateClaimPreview()" style="height:38px;padding:0 6px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box"><option value="2026">2026년</option></select>
+            <select id="claimMonth" onchange="updateClaimPreview()" style="height:38px;padding:0 6px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+            <input type="text" id="claimPerson" placeholder="청구인" style="height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" oninput="updateClaimPreview()">
           </div>
         </div>
 
         <!-- 항목 목록 -->
         <div style="margin-bottom:10px">
-          <div style="display:grid;grid-template-columns:1fr 120px 100px 28px;gap:6px;margin-bottom:4px;padding:0 2px">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">항목명</div>
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px">카테고리</div>
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px;text-align:right">금액</div>
+          <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,90px) 24px;gap:4px;margin-bottom:4px;padding:0 2px">
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted)">항목명</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted)">카테고리</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-align:right">금액</div>
             <div></div>
           </div>
           <div id="claimItems" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
@@ -4419,20 +4413,20 @@ function addClaimItem() {
   const wrap = document.getElementById('claimItems');
   const div = document.createElement('div');
   div.id = `claimItem_${id}`;
-  div.style.cssText = 'display:grid;grid-template-columns:1fr 120px 100px 28px;gap:6px;align-items:center';
+  div.style.cssText = 'display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,90px) 24px;gap:4px;align-items:center';
   const catOpts = CLAIM_CAT_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
   div.innerHTML = `
-    <input type="text" placeholder="항목명 (예: 마트, 약국...)"
-      style="height:36px;padding:0 10px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box"
+    <input type="text" placeholder="항목명"
+      style="height:36px;padding:0 8px;border-radius:7px;border:1.5px solid var(--border);font-size:12px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box;min-width:0"
       oninput="updateClaimTotal()" id="claimItemName_${id}">
     <select id="claimItemCat_${id}" onchange="updateClaimPreview()"
-      style="height:36px;padding:0 6px;border-radius:7px;border:1.5px solid var(--border);font-size:12px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box">
+      style="height:36px;padding:0 4px;border-radius:7px;border:1.5px solid var(--border);font-size:11px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box;min-width:0">
       ${catOpts}
     </select>
     <input type="number" placeholder="금액" min="0"
-      style="height:36px;padding:0 8px;border-radius:7px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;text-align:right;box-sizing:border-box"
+      style="height:36px;padding:0 6px;border-radius:7px;border:1.5px solid var(--border);font-size:12px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;text-align:right;box-sizing:border-box;min-width:0"
       oninput="updateClaimTotal()" id="claimItemAmt_${id}">
-    <button onclick="removeClaimItem(${id})" style="height:36px;width:28px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-muted);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+    <button onclick="removeClaimItem(${id})" style="height:36px;width:24px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-muted);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
   `;
   wrap.appendChild(div);
   updateClaimTotal();
@@ -5327,32 +5321,24 @@ function closeModal() {
 
 // ===== TRENDS PAGE =====
 function renderTrends() {
-  // ① 월별 손익
-  renderMonthlyPnl();
+  try { renderMonthlyPnl(); } catch(e) { console.error('renderMonthlyPnl', e); }
 
-  // ② 월별 지출 추이 라인차트 (전체)
-  const months = getMonthRange();
-  const monthlyData = months.map(({year, month}) => {
-    const txs = getMonthlyTx(year, month);
-    return {
-      label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
-      total: txs.reduce((s,t) => s + (t.amount - (t.settlement||0)), 0),
-      year, month
-    };
-  });
-  renderTrendChart(monthlyData);
+  try {
+    const months = getMonthRange();
+    const monthlyData = months.map(({year, month}) => {
+      const txs = getMonthlyTx(year, month);
+      return {
+        label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
+        total: txs.reduce((s,t) => s + (t.amount - (t.settlement||0)), 0),
+        year, month
+      };
+    });
+    renderTrendChart(monthlyData);
+  } catch(e) { console.error('renderTrendChart', e); }
 
-  // ③ 평균 대비 이번 달
-  renderBudgetAlert();
-
-  // ④ 히트맵
-  renderHeatmap();
-
-  // ⑤ 카테고리별 집중 분석
-  renderTopCatAnalysis();
-
-  // ⑥ 연도별
-  renderYearlyChart();
+  try { renderBudgetAlert(); } catch(e) { console.error('renderBudgetAlert', e); }
+  try { renderHeatmap(); } catch(e) { console.error('renderHeatmap', e); }
+  try { renderTopCatAnalysis(); } catch(e) { console.error('renderTopCatAnalysis', e); }
 }
 
 // 월별 손익 차트
@@ -5368,59 +5354,59 @@ function renderMonthlyPnl() {
       ? (incomeData[key].yejin||0) + (incomeData[key].gihyuk||0) + (incomeData[key].etc||0)
       : 0;
     const exp = getMonthlyTx(year, month).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-    return {
-      label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
-      income: inc, expense: exp, pnl: inc - exp, year, month
-    };
+    const pnl = inc - exp;
+    return { label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`, inc, exp, pnl };
   });
 
-  const maxAbs = Math.max(...data.map(d => Math.max(Math.abs(d.pnl), d.income, d.expense)), 1);
-  const barH = 100;
-  const barW = Math.max(Math.floor((Math.min(window.innerWidth, 600) - 60) / data.length) - 6, 28);
-  const totalW = data.length * (barW + 6);
+  const maxVal = Math.max(...data.map(d => Math.max(d.inc, d.exp)), 1);
+  const BAR_H = 120;
+  const hasIncome = data.some(d => d.inc > 0);
 
-  let html = `<div style="overflow-x:auto"><div style="min-width:${totalW + 60}px;padding:0 4px">`;
-  // 막대 그래프
-  html += `<div style="display:flex;align-items:flex-end;gap:6px;height:${barH + 40}px;margin-bottom:4px;position:relative">`;
-  // 기준선
-  html += `<div style="position:absolute;bottom:40px;left:0;right:0;height:1px;background:var(--border)"></div>`;
+  let html = '<div style="overflow-x:auto"><div style="min-width:' + (data.length * 64 + 20) + 'px">';
+
+  // 막대 영역
+  html += '<div style="display:flex;align-items:flex-end;gap:8px;height:' + (BAR_H + 4) + 'px;padding:0 4px;border-bottom:1.5px solid var(--border);margin-bottom:6px">';
   data.forEach(d => {
+    const expH = Math.max(Math.round(d.exp / maxVal * BAR_H), d.exp > 0 ? 3 : 0);
+    const incH = hasIncome ? Math.max(Math.round(d.inc / maxVal * BAR_H), d.inc > 0 ? 3 : 0) : 0;
     const isPos = d.pnl >= 0;
-    const color = isPos ? 'var(--success)' : 'var(--danger)';
-    const pnlH = d.income > 0 ? Math.round(Math.abs(d.pnl) / maxAbs * (barH - 4)) : Math.round(Math.abs(d.pnl) / maxAbs * (barH - 4));
-    const expH = Math.round(d.expense / maxAbs * (barH - 4));
-    const incH = d.income > 0 ? Math.round(d.income / maxAbs * (barH - 4)) : 0;
-    html += `<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:${barW}px;flex-shrink:0">`;
-    // 손익 표시 (barH 영역)
-    html += `<div style="width:100%;height:${barH}px;display:flex;flex-direction:column;justify-content:flex-end;position:relative">`;
-    if (d.income > 0) {
-      // 수입 있으면 수입/지출 비교 표시
-      html += `<div title="지출 ${fmt(d.expense)}원" style="width:100%;height:${expH}px;background:var(--danger);opacity:.7;border-radius:3px 3px 0 0"></div>`;
-      // 손익선 표시
-      html += `<div title="수입 ${fmt(d.income)}원 / 손익 ${isPos?'+':''}${fmt(d.pnl)}원" style="position:absolute;bottom:${incH}px;left:0;right:0;height:2px;background:var(--accent);border-radius:1px"></div>`;
-    } else {
-      html += `<div title="지출 ${fmt(d.expense)}원" style="width:100%;height:${expH}px;background:var(--accent);opacity:.75;border-radius:3px 3px 0 0"></div>`;
+    const pnlColor = isPos ? 'var(--success)' : 'var(--danger)';
+
+    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;min-width:0">';
+    // 손익 표시 (상단)
+    html += '<div style="font-size:9px;font-weight:700;color:' + pnlColor + ';margin-bottom:3px;white-space:nowrap">';
+    if (hasIncome) html += (isPos ? '+' : '') + Math.round(d.pnl / 10000) + '만';
+    html += '</div>';
+    // 막대들
+    html += '<div style="display:flex;align-items:flex-end;gap:2px;height:' + BAR_H + 'px">';
+    if (hasIncome) {
+      html += '<div style="width:12px;height:' + incH + 'px;background:var(--accent2);border-radius:3px 3px 0 0;opacity:.85" title="수입 ' + fmt(d.inc) + '원"></div>';
     }
-    html += `</div>`;
-    // 손익 수치
-    html += `<div style="font-size:9px;font-weight:700;color:${color};text-align:center;white-space:nowrap;margin-top:2px">${isPos?'+':''}${Math.round(d.pnl/10000)}만</div>`;
-    html += `<div style="font-size:9px;color:var(--text-muted);text-align:center">${d.label}</div>`;
-    html += `</div>`;
+    html += '<div style="width:12px;height:' + expH + 'px;background:var(--danger);border-radius:3px 3px 0 0;opacity:.7" title="지출 ' + fmt(d.exp) + '원"></div>';
+    html += '</div>';
+    html += '</div>';
   });
-  html += `</div>`;
+  html += '</div>';
+
+  // X축 레이블
+  html += '<div style="display:flex;gap:8px;padding:0 4px">';
+  data.forEach(d => {
+    html += '<div style="flex:1;text-align:center;font-size:9px;color:var(--text-muted);white-space:nowrap;min-width:0">' + d.label + '</div>';
+  });
+  html += '</div>';
 
   // 범례
-  html += `<div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">`;
-  if (data.some(d => d.income > 0)) {
-    html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:16px;height:3px;background:var(--accent);border-radius:2px"></div>수입 기준선</div>`;
-    html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--danger);opacity:.7;border-radius:2px"></div>지출</div>`;
-  } else {
-    html += `<div style="font-size:11px;color:var(--text-muted)">수입 데이터가 등록되면 손익이 함께 표시됩니다</div>`;
+  html += '<div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;padding:0 4px">';
+  if (hasIncome) {
+    html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--accent2);border-radius:2px;opacity:.85"></div>수입</div>';
   }
-  html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:12px;height:10px;background:var(--success);border-radius:2px"></div>흑자</div>`;
-  html += `<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:12px;height:10px;background:var(--danger);border-radius:2px"></div>적자</div>`;
-  html += `</div>`;
-  html += `</div></div>`;
+  html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--danger);border-radius:2px;opacity:.7"></div>지출</div>';
+  if (hasIncome) {
+    html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><span style="color:var(--success);font-weight:700">+</span>흑자 &nbsp;<span style="color:var(--danger);font-weight:700">-</span>적자</div>';
+  }
+  html += '</div>';
+
+  html += '</div></div>';
   el.innerHTML = html;
 }
 
@@ -5454,6 +5440,7 @@ function renderBudgetAlert() {
     ratio: catAvg[cat] > 0 ? ((recentBd[cat]||0) / catAvg[cat]) : null
   })).filter(a => a.cur > 0).sort((a,b) => b.diff - a.diff);
 
+  if (!alerts.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">이번 달 지출 데이터가 없습니다</div>'; return; }
   const maxBar = Math.max(...alerts.map(a => Math.max(a.cur, a.avg)), 1);
 
   el.innerHTML = alerts.slice(0, 8).map(a => {
@@ -5642,8 +5629,6 @@ function renderTopCatAnalysis() {
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
       ${catTotals.map(({cat, total, avg}) => {
         const pct = grandTotal > 0 ? (total/grandTotal*100).toFixed(1) : 0;
-        const save10 = Math.round(avg * 0.1);
-        const save20 = Math.round(avg * 0.2);
         const color = CAT_COLORS[cat] || '#aaa';
         // 월별 트렌드 (최근 6개월)
         const recentMonths = allMonths.slice(-6);
@@ -5651,38 +5636,82 @@ function renderTopCatAnalysis() {
           getMonthlyTx(year, month).filter(t => t.category === cat).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0)
         );
         const maxV = Math.max(...recentVals, 1);
+        const barW = 14, gap = 4, totalBars = recentVals.length;
+        const svgW = totalBars * (barW + gap) - gap;
         const sparkline = recentVals.map((v, i) => {
-          const x = 4 + i * 16;
+          const x = i * (barW + gap);
           const h = Math.max(Math.round(v / maxV * 30), v > 0 ? 2 : 0);
-          const y = 34 - h;
-          return `<rect x="${x}" y="${y}" width="12" height="${h}" rx="2" fill="${color}" opacity="0.8"/>`;
+          const y = 30 - h;
+          return `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="2" fill="${color}" opacity="0.8"/>`;
+        }).join('');
+        const monthLabels = recentMonths.map((m, i) => {
+          const x = i * (barW + gap) + barW / 2;
+          return `<text x="${x}" y="44" text-anchor="middle" font-size="9" fill="#8A7F74">${m.month}월</text>`;
         }).join('');
 
+        const last3 = recentVals.slice(-3);
+        const trend = last3.length >= 2
+          ? (last3[last3.length-1] > last3[0] ? '📈' : last3[last3.length-1] < last3[0] ? '📉' : '➡️')
+          : '';
+
         return `
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid ${color}">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;border-top:3px solid ${color}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
-                <div style="font-size:14px;font-weight:700">${CAT_ICON[cat]||''} ${cat}</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체 지출의 ${pct}%</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:15px;font-weight:700;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${fmt(avg)}원<span style="font-size:10px;color:var(--text-muted);font-weight:400">/월평균</span></div>
+                <div style="font-size:13px;font-weight:700">${CAT_ICON[cat]||''} ${cat} ${trend}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체의 ${pct}% · 월평균 ${fmt(avg)}원</div>
               </div>
             </div>
-            <svg width="112" height="36" style="margin-bottom:10px">${sparkline}</svg>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">절감 시뮬레이션</div>
-            <div style="display:flex;gap:8px">
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">10% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 ${fmt(save10*12)}원</div>
-              </div>
-              <div style="flex:1;padding:8px;background:var(--surface2);border-radius:8px;text-align:center">
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">20% 절감 시</div>
-                <div style="font-size:13px;font-weight:700;color:var(--success)">연 ${fmt(save20*12)}원</div>
-              </div>
-            </div>
+            <svg width="${svgW}" height="48" style="display:block;overflow:visible">
+              ${sparkline}${monthLabels}
+            </svg>
           </div>`;
       }).join('')}
+    </div>`;
+}
+
+function renderYearlyChart() {
+  const el = document.getElementById('yearlyChart');
+  if (!el) return;
+  const years = [...new Set(transactions.map(t => t.date.slice(0,4)))].sort();
+  if (!years.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">데이터가 없습니다</div>'; return; }
+
+  const activeCats = CATEGORIES.filter(cat => transactions.some(t => t.category === cat));
+  const data = years.map(year => {
+    const txs = transactions.filter(t => t.date.startsWith(year));
+    const catTotals = {};
+    for (const cat of activeCats) {
+      catTotals[cat] = txs.filter(t => t.category === cat).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
+    }
+    const total = Object.values(catTotals).reduce((a,b)=>a+b, 0);
+    return { year, catTotals, total };
+  });
+  const maxTotal = Math.max(...data.map(d => d.total), 1);
+
+  el.innerHTML = `
+    <div style="display:flex;gap:20px;align-items:flex-end;margin-bottom:16px">
+      ${data.map(d => {
+        let barHtml = '';
+        for (const cat of activeCats) {
+          const v = d.catTotals[cat] || 0;
+          if (!v) continue;
+          const h = Math.round(v / maxTotal * 160);
+          barHtml = `<div style="width:100%;height:${h}px;background:${CAT_COLORS[cat]||'#aaa'};opacity:.85" title="${cat}: ${fmt(v)}원"></div>` + barHtml;
+        }
+        return `
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="font-size:11px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text-muted)">${fmt(d.total)}원</div>
+            <div style="width:100%;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden;height:160px">${barHtml}</div>
+            <div style="font-size:12px;font-weight:700">${d.year}년</div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--border)">
+      ${activeCats.map(cat => `
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px">
+          <div style="width:10px;height:10px;border-radius:2px;background:${CAT_COLORS[cat]||'#aaa'};opacity:.85"></div>
+          <span>${cat}</span>
+        </div>`).join('')}
     </div>`;
 }
 
@@ -5701,6 +5730,7 @@ function getMonthRange() {
 function renderTrendChart(monthlyData) {
   const svg = document.getElementById('trendSvg');
   const labelsEl = document.getElementById('trendXLabels');
+  if (!svg || !labelsEl) return;
   if (!monthlyData.length) { svg.innerHTML = ''; labelsEl.innerHTML = ''; return; }
 
   const W = 800, H = 200;
@@ -5728,7 +5758,7 @@ function renderTrendChart(monthlyData) {
     yLabels += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
 
-  const color = selectedTrendCat==='전체' ? 'var(--accent)' : (CAT_COLORS[selectedTrendCat]||'var(--accent)');
+  const color = 'var(--accent)';
   const dots = points.map(p =>
     `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`
   ).join('');
