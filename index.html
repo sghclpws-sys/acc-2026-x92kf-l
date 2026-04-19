@@ -546,9 +546,21 @@
   body.mobile-app .table-wrap { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
   body.mobile-app table { min-width: 0 !important; width: 100% !important; table-layout: fixed; }
   body.mobile-app th,
-  body.mobile-app td { padding: 8px 6px; font-size: 11px; }
+  body.mobile-app td { padding: 8px 4px; font-size: 11px; }
   body.mobile-app th:nth-child(n+5),
   body.mobile-app td:nth-child(n+5) { display: none; }
+  /* 모바일 컬럼 너비 고정: 체크박스 32px, 날짜 56px, 가맹점명 나머지, 금액 80px */
+  body.mobile-app #detailTable th:nth-child(1),
+  body.mobile-app #detailTable td:nth-child(1) { width: 32px !important; padding: 8px 2px !important; }
+  body.mobile-app #detailTable th:nth-child(2),
+  body.mobile-app #detailTable td:nth-child(2) { width: 56px !important; font-size: 11px !important; }
+  body.mobile-app #detailTable th:nth-child(3),
+  body.mobile-app #detailTable td:nth-child(3) { width: auto !important; max-width: none !important; padding-left: 8px !important; }
+  body.mobile-app #detailTable th:nth-child(4),
+  body.mobile-app #detailTable td:nth-child(4) { width: 80px !important; text-align: right !important; }
+  /* 모바일 정산 표시 간략화 */
+  body.mobile-app .amount-cell .settlement-badge { display: none !important; }
+  body.mobile-app .amount-cell { font-size: 12px !important; }
   body.mobile-app .page-header h2 { font-size: 20px; }
   body.mobile-app .page-header p { font-size: 12px; }
   body.mobile-app .filter-bar { flex-wrap: wrap; gap: 6px; }
@@ -1482,10 +1494,12 @@ window.showPage = function(page) {
                 <th style="width:42px;text-align:center">
                   <input type="checkbox" id="selectAllCurrentPage" onchange="toggleSelectAllCurrentPage(this.checked)">
                 </th>
-                <th class="sortable-th" onclick="setSort(&#39;date&#39;)" id="th-date">
+                <th class="sortable-th" onclick="setSort('date')" id="th-date">
                   날짜 <span class="sort-icon" id="si-date">⇅</span>
                 </th>
-                <th>가맹점명</th>
+                <th class="sortable-th" onclick="setSort('store')" id="th-store">
+                  가맹점명 <span class="sort-icon" id="si-store">⇅</span>
+                </th>
                 <th class="sortable-th" onclick="setSort(&#39;amount&#39;)" id="th-amount" style="text-align: right; color: var(--accent);">
                   금액 <span class="sort-icon" id="si-amount" style="color: var(--accent);">↓</span>
                 </th>
@@ -4904,18 +4918,18 @@ function setSort(field) {
 }
 
 function updateSortIcons() {
-  ['date', 'amount'].forEach(f => {
+  ['date', 'store', 'amount'].forEach(f => {
     const el = document.getElementById('si-' + f);
     const th = document.getElementById('th-' + f);
     if (el) {
       if (sortField === f) {
         el.textContent = sortDir === 'asc' ? '↑' : '↓';
         el.style.color = 'var(--accent)';
-        th.style.color = 'var(--accent)';
+        if (th) th.style.color = 'var(--accent)';
       } else {
         el.textContent = '⇅';
         el.style.color = '';
-        th.style.color = '';
+        if (th) th.style.color = '';
       }
     }
   });
@@ -4962,8 +4976,8 @@ function applyDetailFilter() {
   
   // Sort
   filteredTx.sort((a, b) => {
-    let va = sortField === 'date' ? a.date : a.amount;
-    let vb = sortField === 'date' ? b.date : b.amount;
+    let va = sortField === 'date' ? a.date : sortField === 'store' ? (a.store||'') : a.amount;
+    let vb = sortField === 'date' ? b.date : sortField === 'store' ? (b.store||'') : b.amount;
     if (va < vb) return sortDir === 'asc' ? -1 : 1;
     if (va > vb) return sortDir === 'asc' ? 1 : -1;
     return 0;
@@ -4998,7 +5012,7 @@ function renderDetailPage() {
         ${hasSettlement
           ? `<span style="text-decoration:line-through;color:var(--text-muted);font-size:11px">${fmt(t.amount)}원</span><br>
              <span style="color:var(--accent);font-weight:700;font-size:13px">${fmt(netCost)}원</span>
-             <span style="font-size:10px;background:rgba(58,168,125,0.15);color:var(--success);border-radius:4px;padding:1px 5px;margin-left:3px;font-weight:600;white-space:nowrap">-${fmt(settlement)}원</span>`
+             <span class="settlement-badge" style="font-size:10px;background:rgba(58,168,125,0.15);color:var(--success);border-radius:4px;padding:1px 5px;margin-left:3px;font-weight:600;white-space:nowrap">-${fmt(settlement)}원</span>`
           : `${fmt(t.amount)}원`}
       </td>
       <td>
