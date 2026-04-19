@@ -2662,7 +2662,6 @@ window.showPage = function(page) {
       <!-- 월별 손익 차트 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 손익</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">수입 - 지출 · 양수면 흑자, 음수면 적자</p>
         <div id="monthlyPnlChart"></div>
       </div>
 
@@ -5353,7 +5352,9 @@ function renderMonthlyPnl() {
     const inc = incomeData && incomeData[key]
       ? (incomeData[key].yejin||0) + (incomeData[key].gihyuk||0) + (incomeData[key].etc||0)
       : 0;
-    const exp = getMonthlyTx(year, month).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
+    const interestExp = incomeData && incomeData[key] ? (incomeData[key].interestExpense||0) : 0;
+    const cardExp = getMonthlyTx(year, month).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
+    const exp = cardExp + interestExp;
     const pnl = inc - exp;
     return { label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`, inc, exp, pnl };
   });
@@ -5362,10 +5363,40 @@ function renderMonthlyPnl() {
   const BAR_H = 120;
   const hasIncome = data.some(d => d.inc > 0);
 
-  let html = '<div style="overflow-x:auto"><div style="min-width:' + (data.length * 64 + 20) + 'px">';
+  // Y축 레이블 (3단계: 최대값, 절반, 0)
+  const ySteps = [maxVal, maxVal / 2, 0];
+  const yLabels = ySteps.map(v => {
+    const h = Math.round(v / maxVal * BAR_H);
+    const label = v >= 10000000 ? `${(v/10000000).toFixed(0)}천만`
+                : v >= 1000000  ? `${(v/1000000).toFixed(0)}백만`
+                : v >= 10000   ? `${Math.round(v/10000)}만`
+                : v > 0        ? `${Math.round(v/1000)}천`
+                : '0';
+    return { h, label };
+  });
+
+  let html = '<div style="overflow-x:auto"><div style="min-width:' + (data.length * 64 + 44) + 'px">';
+
+  // 막대 + Y축 영역
+  html += '<div style="display:flex;gap:0;align-items:flex-end">';
+
+  // Y축
+  html += '<div style="width:36px;flex-shrink:0;height:' + (BAR_H + 4) + 'px;position:relative;margin-right:4px">';
+  yLabels.forEach(({h, label}) => {
+    const bottom = h + 4;
+    html += '<div style="position:absolute;bottom:' + bottom + 'px;right:0;font-size:9px;color:var(--text-muted);white-space:nowrap;line-height:1">' + label + '</div>';
+  });
+  html += '</div>';
 
   // 막대 영역
-  html += '<div style="display:flex;align-items:flex-end;gap:8px;height:' + (BAR_H + 4) + 'px;padding:0 4px;border-bottom:1.5px solid var(--border);margin-bottom:6px">';
+  html += '<div style="flex:1;display:flex;align-items:flex-end;gap:8px;height:' + (BAR_H + 4) + 'px;border-left:1px solid var(--border);border-bottom:1.5px solid var(--border);padding-left:4px;position:relative">';
+
+  // Y축 보조선
+  ySteps.slice(0, -1).forEach(v => {
+    const bottom = Math.round(v / maxVal * BAR_H) + 4;
+    html += '<div style="position:absolute;bottom:' + bottom + 'px;left:0;right:0;height:1px;background:var(--border);opacity:0.5"></div>';
+  });
+
   data.forEach(d => {
     const expH = Math.max(Math.round(d.exp / maxVal * BAR_H), d.exp > 0 ? 3 : 0);
     const incH = hasIncome ? Math.max(Math.round(d.inc / maxVal * BAR_H), d.inc > 0 ? 3 : 0) : 0;
@@ -5373,11 +5404,10 @@ function renderMonthlyPnl() {
     const pnlColor = isPos ? 'var(--success)' : 'var(--danger)';
 
     html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;min-width:0">';
-    // 손익 표시 (상단)
     html += '<div style="font-size:9px;font-weight:700;color:' + pnlColor + ';margin-bottom:3px;white-space:nowrap">';
     if (hasIncome) html += (isPos ? '+' : '') + Math.round(d.pnl / 10000) + '만';
+    else html += Math.round(d.exp / 10000) + '만';
     html += '</div>';
-    // 막대들
     html += '<div style="display:flex;align-items:flex-end;gap:2px;height:' + BAR_H + 'px">';
     if (hasIncome) {
       html += '<div style="width:12px;height:' + incH + 'px;background:var(--accent2);border-radius:3px 3px 0 0;opacity:.85" title="수입 ' + fmt(d.inc) + '원"></div>';
@@ -5386,10 +5416,10 @@ function renderMonthlyPnl() {
     html += '</div>';
     html += '</div>';
   });
-  html += '</div>';
+  html += '</div></div>'; // 막대영역 + flex row 닫기
 
   // X축 레이블
-  html += '<div style="display:flex;gap:8px;padding:0 4px">';
+  html += '<div style="display:flex;gap:0;padding-left:44px;margin-top:4px">';
   data.forEach(d => {
     html += '<div style="flex:1;text-align:center;font-size:9px;color:var(--text-muted);white-space:nowrap;min-width:0">' + d.label + '</div>';
   });
@@ -5401,9 +5431,6 @@ function renderMonthlyPnl() {
     html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--accent2);border-radius:2px;opacity:.85"></div>수입</div>';
   }
   html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--danger);border-radius:2px;opacity:.7"></div>지출</div>';
-  if (hasIncome) {
-    html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><span style="color:var(--success);font-weight:700">+</span>흑자 &nbsp;<span style="color:var(--danger);font-weight:700">-</span>적자</div>';
-  }
   html += '</div>';
 
   html += '</div></div>';
