@@ -5973,6 +5973,31 @@ function extractUploadedMatrixFromArrayBuffer(buffer, fileName) {
 }
 
 
+function parseHtmlTableToMatrix(htmlText) {
+  // 현대백화점카드: .xls 확장자이지만 실제 HTML 테이블 파일 처리
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlText, 'text/html');
+  const tables = doc.querySelectorAll('table');
+  let bestTable = null;
+  let bestScore = -1;
+  tables.forEach(table => {
+    const rows = table.querySelectorAll('tr');
+    if (rows.length < 2) return;
+    const headerText = Array.from(rows[0].querySelectorAll('td,th')).map(c => c.textContent.trim()).join(' ');
+    let score = rows.length;
+    if (headerText.includes('이용일자') || headerText.includes('이용일')) score += 10;
+    if (headerText.includes('이용금액') || headerText.includes('금액')) score += 5;
+    if (score > bestScore) { bestScore = score; bestTable = table; }
+  });
+  if (!bestTable) return [];
+  const matrix = [];
+  bestTable.querySelectorAll('tr').forEach(tr => {
+    const cells = Array.from(tr.querySelectorAll('td,th')).map(c => c.textContent.trim());
+    matrix.push(cells);
+  });
+  return matrix;
+}
+
 function handleFileUpload(input) {
   const file = input.files[0];
   if (!file) return;
@@ -5980,8 +6005,21 @@ function handleFileUpload(input) {
   uploadedFileName = file.name || '';
   const reader = new FileReader();
   reader.onload = (e) => {
-    let data = extractUploadedMatrixFromArrayBuffer(e.target.result, uploadedFileName);
-    data = normalizeImportedMatrix(data);
+    // 현대백화점카드: .xls지만 실제 HTML인 경우 감지
+    const rawBytes = new Uint8Array(e.target.result.slice(0, 20));
+    const prefix = String.fromCharCode(...rawBytes).replace(/[\r\n]/g, '');
+    const isHtmlFile = prefix.trim().startsWith('<') || prefix.includes('<html') || prefix.includes('<table') || prefix.includes('<h');
+
+    let data;
+    if (isHtmlFile) {
+      const textDecoder = new TextDecoder('utf-8');
+      const htmlText = textDecoder.decode(e.target.result);
+      data = parseHtmlTableToMatrix(htmlText);
+      data = normalizeImportedMatrix(data);
+    } else {
+      data = extractUploadedMatrixFromArrayBuffer(e.target.result, uploadedFileName);
+      data = normalizeImportedMatrix(data);
+    }
     uploadedSourceText = data.slice(0, 12).map(r => (r || []).join(' ')).join(' ');
 
     if (data.length < 2) { showToast('데이터가 없습니다'); return; }
@@ -5997,8 +6035,8 @@ function handleFileUpload(input) {
       });
 
     const dateIdx = guessCol(uploadedHeaders, ['이용일', '이용일자', '승인일', '거래일', '날짜', 'date', '승인일자']);
-    const storeIdx = guessCol(uploadedHeaders, ['가맹점', '이용가맹점', '상호', '거래처', 'store', '가맹점명', '이용가맹점(은행)명', '이용가맹점명', '이용하신곳', '사용처']);
-    const amountIdx = guessCol(uploadedHeaders, ['원금', '결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)']);
+    const storeIdx = guessCol(uploadedHeaders, ['가맹점', '이용가맹점', '상호', '거래처', 'store', '가맹점명', '이용가맹점(은행)명', '이용가맹점명', '이용하신곳', '사용처', '이용점', '상품명']);
+    const amountIdx = guessCol(uploadedHeaders, ['원금', '결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)', '금월납부액']);
     const noteIdx = guessCol(uploadedHeaders, ['비고', '메모', 'note', '내용', '기타', '결제후잔액']);
 
     const colSel = (id, idx) => {
@@ -6155,6 +6193,12 @@ function parseImportedDate(dateRaw) {
     return `${isoLike[1]}-${String(isoLike[2]).padStart(2,'0')}-${String(isoLike[3]).padStart(2,'0')}`;
   }
 
+  // 국민카드: "26.04.04" (YY.MM.DD) 형식
+  const yymmdd = raw.match(/^(\d{2})\.(\d{2})\.(\d{2})$/);
+  if (yymmdd) {
+    return `20${yymmdd[1]}-${yymmdd[2]}-${yymmdd[3]}`;
+  }
+
   if (raw.match(/^\d{5}$/)) {
     const base = new Date(1899,11,30);
     base.setDate(base.getDate() + parseInt(raw, 10));
@@ -6200,6 +6244,7 @@ function importData() {
     
     if (!store || amountRaw === null || amountRaw === undefined || String(amountRaw).trim() === '') continue;
     if (String(store).includes('총 합계')) continue;
+    if (/합계$/.test(String(store).trim())) continue;
     
     const amount = resolveImportedAmount(row, uploadedHeaders, amountIdx);
     const rowType = getImportRowType(row, uploadedHeaders, amount);
