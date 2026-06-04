@@ -6232,9 +6232,15 @@ function importData() {
   const selectedCard = document.getElementById('uploadCard') ? (document.getElementById('uploadCard').value || '') : '';
   let maxId = Math.max(...transactions.map(t => t.id), 0);
 
-  const existingKeys = new Set(
-    transactions.map(t => buildImportDedupKey(t.date, t.store, t.amount, t.card || '', t.rowType || 'approval'))
-  );
+  // Map으로 카운팅: 동일 key가 DB에 n개 있으면 n개까지 허용, n+1번째부터 중복 처리
+  // 예) 실제로 3번 결제된 동일건은 DB에 1개 있을 때 2개를 추가 허용
+  const existingKeyCounts = new Map();
+  for (const t of transactions) {
+    const k = buildImportDedupKey(t.date, t.store, t.amount, t.card || '', t.rowType || 'approval');
+    existingKeyCounts.set(k, (existingKeyCounts.get(k) || 0) + 1);
+  }
+  // 이번 임포트에서 추가된 건 카운팅 (파일 내 중복도 개수만큼 허용)
+  const importKeyCounts = new Map();
   
   for (const row of uploadedRows) {
     const dateRaw = String(row[dateIdx]||'').trim();
@@ -6254,13 +6260,21 @@ function importData() {
     
     const date = parseImportedDate(dateRaw);
     const dedupKey = buildImportDedupKey(date, store, amount, selectedCard, rowType);
-    if (existingKeys.has(dedupKey)) continue;
+
+    // 파일 내에서 이 key가 몇 번 나왔는지
+    const importCount = (importKeyCounts.get(dedupKey) || 0) + 1;
+    importKeyCounts.set(dedupKey, importCount);
+
+    // DB에 이미 있는 개수보다 많이 나온 경우만 추가 (중복 파일 재업로드 방지)
+    const dbCount = existingKeyCounts.get(dedupKey) || 0;
+    if (importCount <= dbCount) continue;
     
     let cat = applyRules(store, note) || autoCategory(store, note);
     
     maxId++;
     transactions.push({id: maxId, date, store, amount, note, category: cat, card: selectedCard, rowType});
-    existingKeys.add(dedupKey);
+    // DB 카운트도 업데이트 (같은 임포트 내에서 반영)
+    existingKeyCounts.set(dedupKey, dbCount + 1);
     added++;
   }
   
