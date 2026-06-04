@@ -6031,7 +6031,13 @@ function handleFileUpload(input) {
       .filter(row => isMeaningfulRow(row))
       .filter(row => {
         const rowText = (row || []).map(v => String(v == null ? '' : v)).join(' ').replace(/\s+/g, ' ').trim();
-        return rowText && !rowText.includes('총 합계');
+        if (!rowText) return false;
+        if (rowText.includes('총 합계') || rowText.includes('합계')) return false;
+        if (/소계/.test(rowText)) return false;
+        // 날짜 셀이 "-" 단독인 행 제거 (현대백화점카드 합계행)
+        const firstCell = String((row || [])[0] || '').trim();
+        if (firstCell === '-') return false;
+        return true;
       });
 
     const dateIdx = guessCol(uploadedHeaders, ['이용일', '이용일자', '승인일', '거래일', '날짜', 'date', '승인일자']);
@@ -6092,7 +6098,7 @@ function refreshUploadMeta() {
 
     rows.forEach(row => {
       const store = sIdx >= 0 ? String(row[sIdx]||'').trim() : '';
-      if (!store || String(store).includes('총 합계') || /합계$/.test(store)) return;
+      if (!store || String(store).includes('합계') || /소계/.test(store) || /합계$/.test(store)) return;
       const amount = resolveImportedAmount(row, uploadedHeaders, aIdx);
       const rowType = getImportRowType(row, uploadedHeaders, amount);
       if (amount === 0 && rowType !== 'cancel') return;
@@ -6299,7 +6305,8 @@ function importData() {
     const note = noteIdx !== '' ? String(row[parseInt(noteIdx)]||'').trim() : '';
     
     if (!store || amountRaw === null || amountRaw === undefined || String(amountRaw).trim() === '') continue;
-    if (String(store).includes('총 합계')) continue;
+    if (String(store).includes('총 합계') || String(store).includes('합계')) continue;
+    if (/소계/.test(String(store))) continue;
     if (/합계$/.test(String(store).trim())) continue;
     
     const amount = resolveImportedAmount(row, uploadedHeaders, amountIdx);
