@@ -6066,18 +6066,68 @@ function handleFileUpload(input) {
 }
 
 function refreshUploadMeta() {
-  const cardText = document.getElementById('uploadCard') ? (document.getElementById('uploadCard').value || '미지정') : '미지정';
+  const selectedCard = document.getElementById('uploadCard') ? (document.getElementById('uploadCard').value || '') : '';
+  const cardText = selectedCard || '미지정';
   const rows = uploadedRows || [];
+  const dateIdxVal = document.getElementById('colDate') ? document.getElementById('colDate').value : '';
+  const storeIdxVal = document.getElementById('colStore') ? document.getElementById('colStore').value : '';
   const amountIdxVal = document.getElementById('colAmount') ? document.getElementById('colAmount').value : '';
-  let sum = 0;
+
+  let fileSum = 0, fileCount = 0, newSum = 0, newCount = 0, skipCount = 0;
+  const canSimulate = amountIdxVal !== '' && dateIdxVal !== '' && storeIdxVal !== '';
+
+  const simKeyCounts = new Map();
+  if (canSimulate) {
+    for (const t of transactions) {
+      const k = buildImportDedupKey(t.date, t.store, t.amount, t.card || '', t.rowType || 'approval');
+      simKeyCounts.set(k, (simKeyCounts.get(k) || 0) + 1);
+    }
+  }
+  const simImportCounts = new Map();
+
   if (amountIdxVal !== '') {
-    const idx = parseInt(amountIdxVal);
+    const aIdx = parseInt(amountIdxVal);
+    const dIdx = dateIdxVal !== '' ? parseInt(dateIdxVal) : -1;
+    const sIdx = storeIdxVal !== '' ? parseInt(storeIdxVal) : -1;
+
     rows.forEach(row => {
-      const amount = resolveImportedAmount(row, uploadedHeaders, idx);
-      sum += amount;
+      const store = sIdx >= 0 ? String(row[sIdx]||'').trim() : '';
+      if (!store || String(store).includes('총 합계') || /합계$/.test(store)) return;
+      const amount = resolveImportedAmount(row, uploadedHeaders, aIdx);
+      const rowType = getImportRowType(row, uploadedHeaders, amount);
+      if (amount === 0 && rowType !== 'cancel') return;
+
+      fileSum += amount;
+      fileCount++;
+
+      if (canSimulate) {
+        const dateRaw = dIdx >= 0 ? String(row[dIdx]||'').trim() : '';
+        const date = parseImportedDate(dateRaw);
+        const dedupKey = buildImportDedupKey(date, store, amount, selectedCard, rowType);
+        const importCount = (simImportCounts.get(dedupKey) || 0) + 1;
+        simImportCounts.set(dedupKey, importCount);
+        const dbCount = simKeyCounts.get(dedupKey) || 0;
+        if (importCount <= dbCount) {
+          skipCount++;
+        } else {
+          newSum += amount;
+          newCount++;
+          simKeyCounts.set(dedupKey, dbCount + 1);
+        }
+      }
     });
   }
-  document.getElementById('uploadMeta').textContent = `총 ${rows.length}행 발견 · 카드 ${cardText} · 업로드 합계 ${fmt(sum)} · 헤더 자동 인식 완료`;
+
+  const metaEl = document.getElementById('uploadMeta');
+  if (canSimulate) {
+    metaEl.innerHTML =
+      `<span style="color:var(--text-muted)">파일: ${fileCount}건 / ${fmt(fileSum)}원</span>` +
+      `<span style="margin:0 8px;color:var(--border)">|</span>` +
+      `<span style="color:var(--success);font-weight:600">신규 적용: ${newCount}건 / ${fmt(newSum)}원</span>` +
+      (skipCount > 0 ? `<span style="margin:0 8px;color:var(--border)">|</span><span style="color:var(--text-muted)">중복 제외: ${skipCount}건</span>` : '');
+  } else {
+    metaEl.textContent = `총 ${fileCount}행 발견 · 카드 ${cardText} · 업로드 합계 ${fmt(fileSum)}`;
+  }
 }
 
 function guessCol(headers, candidates) {
