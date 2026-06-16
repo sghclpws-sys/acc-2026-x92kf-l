@@ -971,15 +971,17 @@ window.showPage = function(page) {
     
     <!-- ===== 월별 요약 ===== -->
     <div class="page" id="page-summary">
-      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:12px">
         <div>
           <h2>월별 요약</h2>
           <p>소비 패턴 분석과 관리 인사이트</p>
         </div>
-        <div class="filter-bar" style="margin:0">
-          <select id="summaryYear" onchange="renderSummary()"><option value="2026">2026년</option></select>
-          <button type="button" class="rpt-trigger" onclick="openKakaoReport()">📷 카톡 리포트</button>
-          <select id="summaryMonth" onchange="renderSummary()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:2px">
+          <button type="button" class="rpt-trigger" onclick="openKakaoReport()">📷 리포트</button>
+          <div class="filter-bar" style="margin:0">
+            <select id="summaryYear" onchange="renderSummary()"><option value="2026">2026년</option></select>
+            <select id="summaryMonth" onchange="renderSummary()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+          </div>
         </div>
       </div>
 
@@ -6616,17 +6618,18 @@ if ('serviceWorker' in navigator) {
 <!-- ===================== 카톡 월간 리포트 (PNG 내보내기) ===================== -->
 <style>
   .rpt-trigger{
-    border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:13px;
-    padding:8px 14px; border-radius:10px; background:#20242E; color:#fff;
-    display:inline-flex; align-items:center; gap:5px; line-height:1; white-space:nowrap;
+    border:1.5px solid var(--border); cursor:pointer; font-family:inherit; font-weight:700; font-size:12px;
+    padding:5px 12px; border-radius:8px; background:var(--surface); color:var(--text-muted);
+    display:inline-flex; align-items:center; gap:4px; line-height:1; white-space:nowrap;
   }
+  .rpt-trigger:hover{ border-color:var(--accent); color:var(--accent); }
   .rpt-trigger:active{ transform:translateY(1px); }
 
   /* off-screen render stage (full-size, captured by html2canvas) */
   #rptStage{ position:fixed; left:-10000px; top:0; width:480px; z-index:-1; }
   .rpt-page{
     width:480px; background:#fff; border-radius:26px; overflow:hidden;
-    font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif;
     color:#1B1E27; font-variant-numeric:tabular-nums; box-sizing:border-box;
   }
   .rpt-page + .rpt-page{ margin-top:24px; }
@@ -6643,11 +6646,11 @@ if ('serviceWorker' in navigator) {
   .rpt-ledger{ background:#F1F4F8; border-radius:18px; padding:16px 18px; }
   .rpt-lrow{ display:flex; align-items:baseline; justify-content:space-between; padding:7px 0; }
   .rpt-lrow .k{ font-size:14px; color:#7B8597; font-weight:600; display:flex; align-items:center; gap:7px; }
-  .rpt-lrow .v{ font-size:18px; font-weight:700; letter-spacing:-.4px; }
+  .rpt-lrow .v{ font-size:18px; font-weight:700; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-lrow .v small{ font-size:13px; color:#7B8597; font-weight:600; margin-left:2px; }
   .rpt-ldiv{ height:1px; background:#E7EBF1; margin:6px 2px; }
   .rpt-lrow.total .k{ font-size:15px; color:#1B1E27; font-weight:800; }
-  .rpt-lrow.total .v{ font-size:26px; font-weight:800; letter-spacing:-.8px; }
+  .rpt-lrow.total .v{ font-size:26px; font-weight:800; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-dot{ width:8px; height:8px; border-radius:3px; display:inline-block; }
   .rpt-delta{ margin-top:12px; font-size:12.5px; color:#7B8597; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .rpt-pill{ display:inline-flex; align-items:center; gap:4px; font-weight:800; font-size:12px; padding:4px 9px; border-radius:999px; }
@@ -6663,7 +6666,7 @@ if ('serviceWorker' in navigator) {
   .rpt-cat .meta{ flex:1; min-width:0; }
   .rpt-cat .meta .top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
   .rpt-cat .meta .top .nm{ font-size:13.5px; font-weight:700; }
-  .rpt-cat .meta .top .am{ font-size:13.5px; font-weight:800; letter-spacing:-.3px; }
+  .rpt-cat .meta .top .am{ font-size:13.5px; font-weight:800; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-track{ height:8px; background:#F1F4F8; border-radius:6px; overflow:hidden; }
   .rpt-fill{ height:100%; border-radius:6px; }
 
@@ -6673,7 +6676,7 @@ if ('serviceWorker' in navigator) {
   .rpt-income{ display:flex; gap:10px; flex-wrap:wrap; }
   .rpt-income .is{ flex:1; min-width:120px; background:#F1F4F8; border-radius:14px; padding:13px 14px; }
   .rpt-income .is .who{ font-size:12px; color:#7B8597; font-weight:700; }
-  .rpt-income .is .amt{ font-size:16px; font-weight:800; margin-top:4px; color:#16B07C; letter-spacing:-.3px; }
+  .rpt-income .is .amt{ font-size:16px; font-weight:800; margin-top:4px; color:#16B07C; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
 
   .rpt-drow{ display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid #E7EBF1; }
   .rpt-drow:last-child{ border-bottom:none; }
@@ -6682,7 +6685,7 @@ if ('serviceWorker' in navigator) {
   .rpt-drow .l .tx{ min-width:0; }
   .rpt-drow .l .tx .nm{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:230px; }
   .rpt-drow .l .tx .subt{ font-size:11.5px; color:#A7B0BF; font-weight:600; margin-top:1px; }
-  .rpt-drow .r{ font-size:14px; font-weight:800; letter-spacing:-.3px; white-space:nowrap; }
+  .rpt-drow .r{ font-size:14px; font-weight:800; letter-spacing:-1px; white-space:nowrap; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-grpamt{ font-size:13.5px; font-weight:800; color:#7B8597; }
 
   .rpt-trend-legend{ display:flex; gap:16px; justify-content:center; margin-top:8px; }
