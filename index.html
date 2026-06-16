@@ -5569,7 +5569,7 @@ function renderHeatmap() {
       const x = labelW + mi * cellW;
       svgHtml += `<rect x="${x + 2}" y="${y + 2}" width="${cellW - 4}" height="${cellH - 4}" rx="5" fill="${color}" fill-opacity="${opacity.toFixed(2)}"/>`;
       if (val > 0) {
-        const label = val >= 1000000 ? `${(val/1000000).toFixed(1)}백` : val >= 10000 ? `${Math.round(val/10000)}만` : `${Math.round(val/1000)}천`;
+        const label = val >= 10000 ? `${Math.round(val/10000)}만` : `${(val/10000).toFixed(1)}만`;
         svgHtml += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 4}" text-anchor="middle" font-size="10" fill="${opacity > 0.55 ? '#fff' : '#444'}" font-family="Pretendard" font-weight="600">${label}</text>`;
       }
     });
@@ -6646,7 +6646,7 @@ if ('serviceWorker' in navigator) {
   .rpt-ledger{ background:#F1F4F8; border-radius:18px; padding:16px 18px; }
   .rpt-lrow{ display:flex; align-items:baseline; justify-content:space-between; padding:7px 0; }
   .rpt-lrow .k{ font-size:14px; color:#7B8597; font-weight:600; display:flex; align-items:center; gap:7px; }
-  .rpt-lrow .v{ font-size:18px; font-weight:700; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
+  .rpt-lrow .v{ font-size:18px; font-weight:700; letter-spacing:-0.4px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-lrow .v small{ font-size:13px; color:#7B8597; font-weight:600; margin-left:2px; }
   .rpt-ldiv{ height:1px; background:#E7EBF1; margin:6px 2px; }
   .rpt-lrow.total .k{ font-size:15px; color:#1B1E27; font-weight:800; }
@@ -6661,13 +6661,13 @@ if ('serviceWorker' in navigator) {
   .rpt-legend .it{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:#7B8597; font-weight:600; }
   .rpt-legend .it b{ color:#1B1E27; font-weight:800; }
 
-  .rpt-cat{ display:flex; align-items:center; gap:12px; margin:13px 0; }
+  .rpt-cat{ display:flex; align-items:center; gap:12px; margin:15px 0; }
   .rpt-chip{ width:34px; height:34px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center; font-size:18px; }
   .rpt-cat .meta{ flex:1; min-width:0; }
-  .rpt-cat .meta .top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
-  .rpt-cat .meta .top .nm{ font-size:13.5px; font-weight:700; }
-  .rpt-cat .meta .top .am{ font-size:13.5px; font-weight:800; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
-  .rpt-track{ height:8px; background:#F1F4F8; border-radius:6px; overflow:hidden; }
+  .rpt-cat .meta .top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; }
+  .rpt-cat .meta .top .nm{ font-size:13.5px; font-weight:600; color:#5A6376; }
+  .rpt-cat .meta .top .am{ font-size:15px; font-weight:700; letter-spacing:-0.2px; color:#1B1E27; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
+  .rpt-track{ height:7px; background:#F1F4F8; border-radius:6px; overflow:hidden; }
   .rpt-fill{ height:100%; border-radius:6px; }
 
   .rpt-insight{ margin-top:20px; background:#FFF6F1; border:1px solid #FFE2D6; border-radius:15px; padding:14px 16px; font-size:13px; color:#9A4A36; font-weight:600; line-height:1.6; }
@@ -6676,7 +6676,7 @@ if ('serviceWorker' in navigator) {
   .rpt-income{ display:flex; gap:10px; flex-wrap:wrap; }
   .rpt-income .is{ flex:1; min-width:120px; background:#F1F4F8; border-radius:14px; padding:13px 14px; }
   .rpt-income .is .who{ font-size:12px; color:#7B8597; font-weight:700; }
-  .rpt-income .is .amt{ font-size:16px; font-weight:800; margin-top:4px; color:#16B07C; letter-spacing:-1px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
+  .rpt-income .is .amt{ font-size:16px; font-weight:800; margin-top:4px; color:#16B07C; letter-spacing:-0.3px; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
 
   .rpt-drow{ display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid #E7EBF1; }
   .rpt-drow:last-child{ border-bottom:none; }
@@ -6685,7 +6685,7 @@ if ('serviceWorker' in navigator) {
   .rpt-drow .l .tx{ min-width:0; }
   .rpt-drow .l .tx .nm{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:230px; }
   .rpt-drow .l .tx .subt{ font-size:11.5px; color:#A7B0BF; font-weight:600; margin-top:1px; }
-  .rpt-drow .r{ font-size:14px; font-weight:800; letter-spacing:-1px; white-space:nowrap; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
+  .rpt-drow .r{ font-size:14.5px; font-weight:700; letter-spacing:-0.2px; white-space:nowrap; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Roboto,'Malgun Gothic',sans-serif; }
   .rpt-grpamt{ font-size:13.5px; font-weight:800; color:#7B8597; }
 
   .rpt-trend-legend{ display:flex; gap:16px; justify-content:center; margin-top:8px; }
