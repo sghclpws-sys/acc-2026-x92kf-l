@@ -1471,7 +1471,7 @@ window.showPage = function(page) {
       <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
         <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
-        <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option></select>
+        <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option><option value="BC카드">BC카드</option></select>
       </div>
       <!-- 검색 + 선택/삭제 + 건수 한 줄 -->
       <div class="filter-bar" style="margin-bottom:6px;gap:6px;align-items:center;flex-wrap:nowrap">
@@ -2824,7 +2824,10 @@ window.showPage = function(page) {
           <div style="display:grid;grid-template-columns:100px 72px 1fr;gap:6px">
             <select id="claimYear" onchange="updateClaimPreview()" style="height:38px;padding:0 6px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box"><option value="2026">2026년</option></select>
             <select id="claimMonth" onchange="updateClaimPreview()" style="height:38px;padding:0 6px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text);width:100%;box-sizing:border-box"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-            <input type="text" id="claimPerson" placeholder="청구인" style="height:38px;padding:0 10px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box" oninput="updateClaimPreview()">
+            <select id="claimPerson" onchange="updateClaimPreview()" style="height:38px;padding:0 8px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--surface);outline:none;width:100%;box-sizing:border-box">
+              <option value="기혁">기혁</option>
+              <option value="예진">예진</option>
+            </select>
           </div>
         </div>
 
@@ -3379,6 +3382,7 @@ window.showPage = function(page) {
           <option value="현대백화점카드">현대백화점카드</option>
           <option value="SC현대카드">SC현대카드</option>
           <option value="국민카드">국민카드</option>
+          <option value="BC카드">BC카드</option>
         </select>
       </div>
       <div class="input-group">
@@ -3784,6 +3788,8 @@ function getUploadCardOptionsHtml(selected) {
 function detectCardLabel(fileName, sourceText='') {
   const raw = `${fileName || ''} ${sourceText || ''}`.replace(/\s+/g, '').toLowerCase();
   if (!raw) return '';
+  // BC카드: 파일명/머리글에 비씨/BC 또는 BC 고유 컬럼(결제후잔액) 포함
+  if (raw.includes('비씨') || raw.includes('bccard') || raw.includes('결제후잔액') || (raw.includes('이용카드') && raw.includes('할부회차'))) return 'BC카드';
   if (raw.includes('삼성')) return '삼성카드';
   if (raw.includes('국민') || raw.includes('kb')) return '국민카드';
   if (raw.includes('우리')) return '우리카드';
@@ -4375,11 +4381,13 @@ function renderUploadFinance() {
         </div>
         <button class="btn btn-action btn-sm" onclick="submitCashExpense('${key}')" style="height:38px;white-space:nowrap;margin-bottom:1px">등록</button>
       </div>
+      <div id="recentCashTx" style="margin-top:14px"></div>
     </div>
   `;
   // 모바일에서도 2열 유지
   const ig = document.getElementById('incomeGrid');
   if (ig) ig.style.gridTemplateColumns = '1fr 1fr';
+  renderRecentCashTx(key);
 }
 
 function saveIncomeFromUpload() { saveIncome(); if (document.getElementById('summaryYear')) renderSummary(); }
@@ -4562,6 +4570,7 @@ function submitCashExpense(key) {
   saveData();
 
   showToast(`✅ 현금 생활비 ${fmt(amount)}원 거래내역에 추가됨`);
+  renderRecentCashTx(key);
   if (document.getElementById('page-summary') && document.getElementById('page-summary').classList.contains('active')) renderSummary();
   if (document.getElementById('page-detail') && document.getElementById('page-detail').classList.contains('active')) applyDetailFilter();
 }
@@ -4617,7 +4626,7 @@ function resetClaim() {
   const p = document.getElementById('claimPerson');
   const t = document.getElementById('claimTotal');
   const n = document.getElementById('claimNote');
-  if (p) p.value = '';
+  if (p) p.selectedIndex = 0;
   if (t) t.value = '';
   if (n) n.value = '';
   const wrap = document.getElementById('claimItems');
@@ -4657,6 +4666,49 @@ function deleteTx(id) {
   if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
 }
 
+// ===== 현금 생활비 등록 내역 (히스토리) =====
+function currentUploadKey() {
+  const y = document.getElementById('uploadYear');
+  const m = document.getElementById('uploadMonth');
+  if (!y || !m) return '';
+  return `${y.value}-${String(parseInt(m.value)).padStart(2, '0')}`;
+}
+
+function renderRecentCashTx(key) {
+  const el = document.getElementById('recentCashTx');
+  if (!el) return;
+  let list = transactions.filter(t => t.card === '현금');
+  if (key) list = list.filter(t => String(t.date || '').startsWith(key));
+  list = list.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+  if (!list.length) { el.innerHTML = ''; return; }
+  const sum = list.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:.5px">이번 달 현금 생활비 내역</div>
+      <div style="font-size:12px;color:var(--text-muted)">${list.length}건 · ${fmt(sum)}원</div>
+    </div>
+    ${list.map(t => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:18px">💵</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.store}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${t.date} · ${t.category}${t.note ? ' · ' + t.note.slice(0, 40) + (t.note.length > 40 ? '…' : '') : ''}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">${fmt(t.amount)}</div>
+        <button onclick="deleteCashTx(${t.id})" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-muted);padding:2px 6px" title="삭제">🗑</button>
+      </div>`).join('')}`;
+}
+
+function deleteCashTx(id) {
+  if (!confirm('이 현금 내역을 삭제하시겠습니까?')) return;
+  transactions = transactions.filter(t => t.id !== id);
+  saveData();
+  renderRecentCashTx(currentUploadKey());
+  showToast('삭제됐어요');
+  if (document.getElementById('page-summary') && document.getElementById('page-summary').classList.contains('active')) renderSummary();
+  if (document.getElementById('page-detail') && document.getElementById('page-detail').classList.contains('active')) applyDetailFilter();
+}
+
 function addCashTransaction() {
   const date = document.getElementById('cashTxDate')?.value;
   const cat = document.getElementById('cashTxCat')?.value;
@@ -4676,25 +4728,6 @@ function addCashTransaction() {
   renderRecentCashTx();
   showToast(`✅ "${store}" ${fmt(amount)}원 거래내역에 추가됐어요`);
   if (document.getElementById('page-summary').classList.contains('active')) renderSummary();
-}
-
-function renderRecentCashTx() {
-  const el = document.getElementById('recentCashTx');
-  if (!el) return;
-  const recent = transactions.filter(t => t.card === '현금').slice(-5).reverse();
-  if (!recent.length) { el.innerHTML = ''; return; }
-  el.innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:.5px">최근 추가된 현금 지출</div>
-    ${recent.map(t => `
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="font-size:18px">${CAT_ICON[t.category]||'💵'}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.store}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${t.date} · ${t.category}${t.note ? ' · '+t.note : ''}</div>
-        </div>
-        <div style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">${fmt(t.amount)}</div>
-      </div>
-    `).join('')}`;
 }
 
 let autoSaveTimer;
@@ -4851,7 +4884,7 @@ let sortDir = 'desc'; // 'asc' or 'desc'
 let selectedTxIds = new Set();
 
 const SORT_LABELS = { date: '날짜', amount: '금액' };
-const CARD_OPTIONS = ['삼성카드','우리카드','현대백화점카드','SC현대카드','국민카드'];
+const CARD_OPTIONS = ['삼성카드','우리카드','현대백화점카드','SC현대카드','국민카드','BC카드'];
 const NO_CARD_VALUE = '__NO_CARD__';
 
 function initDetailFilters() {
@@ -5998,6 +6031,27 @@ function parseHtmlTableToMatrix(htmlText) {
   return matrix;
 }
 
+// ===== BC카드 전용 파싱 =====
+// BC카드 엑셀은 2줄 병합헤더 구조라 라벨과 데이터 열이 어긋남.
+// (결제금액=6번째 열, 가맹점=3번째 열) → 깔끔한 단일 헤더로 정규화한다.
+function isBcMatrix(matrix) {
+  const head = (matrix || []).slice(0, 4).map(r => (r || []).join('')).join('').replace(/\s/g, '');
+  return (head.includes('결제금액') && head.includes('결제후잔액'))
+      || (head.includes('이용카드') && head.includes('할부회차') && head.includes('결제금액'));
+}
+
+function normalizeBcMatrix(matrix) {
+  // 표준 단일 헤더 (열 순서: 이용일자/이용카드/가맹점/현지통화/할부회차/결제금액/수수료/잔액/포인트/할부가격)
+  const header = ['이용일자', '이용카드', '가맹점명', '현지통화', '할부회차', '결제금액', '수수료', '결제후', '포인트', '할부가격'];
+  const dateRe = /^\d{4}[.\-/]\d{1,2}[.\-/]\d{1,2}$/;
+  const rows = [];
+  (matrix || []).forEach(r => {
+    const c0 = String((r || [])[0] || '').trim();
+    if (dateRe.test(c0)) rows.push(r);   // 날짜로 시작하는 행만 = 실제 거래 (합계/머리글 자동 제외)
+  });
+  return [header, ...rows];
+}
+
 function handleFileUpload(input) {
   const file = input.files[0];
   if (!file) return;
@@ -6010,7 +6064,7 @@ function handleFileUpload(input) {
     const prefix = String.fromCharCode(...rawBytes).replace(/[\r\n]/g, '');
     const isHtmlFile = prefix.trim().startsWith('<') || prefix.includes('<html') || prefix.includes('<table') || prefix.includes('<h');
 
-    let data;
+    let data, bcMode = false;
     if (isHtmlFile) {
       const textDecoder = new TextDecoder('utf-8');
       const htmlText = textDecoder.decode(e.target.result);
@@ -6019,6 +6073,7 @@ function handleFileUpload(input) {
     } else {
       data = extractUploadedMatrixFromArrayBuffer(e.target.result, uploadedFileName);
       data = normalizeImportedMatrix(data);
+      if (isBcMatrix(data)) { data = normalizeBcMatrix(data); bcMode = true; }
     }
     uploadedSourceText = data.slice(0, 12).map(r => (r || []).join(' ')).join(' ');
 
@@ -6040,10 +6095,19 @@ function handleFileUpload(input) {
         return true;
       });
 
-    const dateIdx = guessCol(uploadedHeaders, ['이용일', '이용일자', '승인일', '거래일', '날짜', 'date', '승인일자']);
-    const storeIdx = guessCol(uploadedHeaders, ['가맹점', '이용가맹점', '상호', '거래처', 'store', '가맹점명', '이용가맹점(은행)명', '이용가맹점명', '이용하신곳', '사용처', '이용점', '상품명']);
-    const amountIdx = guessCol(uploadedHeaders, ['원금', '결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)', '금월납부액']);
-    const noteIdx = guessCol(uploadedHeaders, ['비고', '메모', 'note', '내용', '기타', '결제후잔액']);
+    let dateIdx = guessCol(uploadedHeaders, ['이용일', '이용일자', '승인일', '거래일', '날짜', 'date', '승인일자']);
+    let storeIdx = guessCol(uploadedHeaders, ['가맹점', '이용가맹점', '상호', '거래처', 'store', '가맹점명', '이용가맹점(은행)명', '이용가맹점명', '이용하신곳', '사용처', '이용점', '상품명']);
+    let amountIdx = guessCol(uploadedHeaders, ['원금', '결제예정금액', '청구금액', '매입금액', '이용대금', '이용금액', '금액', 'amount', '이용금액(원)', '승인금액', '승인금액(원)', '금월납부액']);
+    let noteIdx = guessCol(uploadedHeaders, ['비고', '메모', 'note', '내용', '기타', '결제후잔액']);
+
+    // BC카드: 병합헤더 보정 — 결제금액(KRW 청구액) 열을 금액으로 고정
+    if (bcMode) {
+      dateIdx = guessCol(uploadedHeaders, ['이용일자']);
+      storeIdx = guessCol(uploadedHeaders, ['가맹점명']);
+      const bcAmt = guessCol(uploadedHeaders, ['결제금액']);
+      amountIdx = bcAmt >= 0 ? bcAmt : 5;
+      noteIdx = -1;
+    }
 
     const colSel = (id, idx) => {
       const el = document.getElementById(id);
@@ -6061,7 +6125,7 @@ function handleFileUpload(input) {
     const body = document.getElementById('previewBody');
     body.innerHTML = uploadedRows.slice(0,10).map(row => `<tr>${uploadedHeaders.map((_,i) => `<td style="font-size:12px;padding:8px 12px">${row[i]||''}</td>`).join('')}</tr>`).join('');
 
-    uploadedCardLabel = detectCardLabel(uploadedFileName, uploadedSourceText);
+    uploadedCardLabel = bcMode ? 'BC카드' : detectCardLabel(uploadedFileName, uploadedSourceText);
     const uploadCard = document.getElementById('uploadCard');
     if (uploadCard) uploadCard.innerHTML = getUploadCardOptionsHtml(uploadedCardLabel);
     refreshUploadMeta();
