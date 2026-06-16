@@ -6618,7 +6618,7 @@ if ('serviceWorker' in navigator) {
 <!-- ===================== 카톡 월간 리포트 (PNG 내보내기) ===================== -->
 <style>
   .rpt-trigger{
-    border:1.5px solid var(--border); cursor:pointer; font-family:inherit; font-weight:700; font-size:12px;
+    border:1.5px solid var(--border); cursor:pointer; font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; font-weight:700; font-size:12px;
     padding:5px 12px; border-radius:8px; background:var(--surface); color:var(--text-muted);
     display:inline-flex; align-items:center; gap:4px; line-height:1; white-space:nowrap;
   }
@@ -6889,7 +6889,11 @@ if ('serviceWorker' in navigator) {
     modal.classList.add('on'); document.body.style.overflow='hidden';
     try{
       buildReport();
-      await new Promise(function(r){ requestAnimationFrame(function(){ setTimeout(r,120); }); });
+      // Pretendard 웹폰트 강제 로드 후 캡처
+      await document.fonts.load('700 16px Pretendard');
+      await document.fonts.load('800 16px Pretendard');
+      await document.fonts.ready;
+      await new Promise(function(r){ requestAnimationFrame(function(){ setTimeout(r,200); }); });
       var ids=['rptPage1','rptPage2'], mLabel=(document.getElementById('summaryMonth')?document.getElementById('summaryMonth').value:'')+'월';
       var urls=[];
       for(var i=0;i<ids.length;i++){ urls.push(await snap(document.getElementById(ids[i]))); }
