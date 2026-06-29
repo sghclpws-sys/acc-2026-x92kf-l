@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Goals</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #B5956A;
+    --gold-light: #C8A87A;
+    --gold-bg: #F7F1E8;
+    --bg: #F5F4F1;
+    --surface: #FFFFFF;
+    --surface-2: #F9F8F6;
+    --border: #E4E2DC;
+    --border-strong: #D0CEC6;
+    --text: #1A1917;
+    --text-sub: #6B6962;
+    --text-muted: #A09D96;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --green: #4A9E6B;
+    --red: #C0392B;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+  .app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── Topbar ── */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; flex-shrink: 0; }
+  .logo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); }
+  .month-nav { display: flex; align-items: center; gap: 10px; }
+  .month-label { font-size: 14px; font-weight: 500; min-width: 90px; text-align: center; }
+  .nav-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-sub); cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .nav-btn:hover { background: var(--gold-bg); }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-icon { height: 30px; padding: 0 12px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-sub); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; transition: background 0.15s; white-space: nowrap; }
+  .btn-icon:hover { background: var(--gold-bg); }
+  .btn-icon.primary { background: var(--gold); border-color: var(--gold); color: white; }
+  .btn-icon.primary:hover { background: #A0845C; }
+
+  /* ── Gist status bar ── */
+  .gist-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1.25rem; font-size: 12px; color: var(--text-muted); }
+  .gist-status { display: flex; align-items: center; gap: 5px; }
+  .gist-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .gist-dot.connected { background: var(--green); }
+  .gist-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+  .gist-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .gist-bar-actions { margin-left: auto; display: flex; gap: 8px; }
+  .gist-link { font-size: 12px; color: var(--gold); cursor: pointer; text-decoration: underline; }
+
+  /* ── Stats ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.75rem; }
+  .stat-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem 1.1rem; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-unit { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-left: 2px; }
+
+  /* ── Main grid ── */
+  .main-grid { display: grid; grid-template-columns: 1fr 296px; gap: 20px; align-items: start; }
+
+  /* ── Left panel ── */
+  .left-panel { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.6px; text-transform: uppercase; }
+  .legend { display: flex; gap: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); }
+  .leg-check { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--border-strong); }
+  .leg-line { width: 20px; height: 3px; border-radius: 2px; background: var(--gold); }
+
+  .type-section { padding: 0.8rem 1.2rem; }
+  .type-header { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .type-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .type-section + .type-section { border-top: 1px solid var(--border); }
+
+  /* ── Todo items ── */
+  .todo-list { display: flex; flex-direction: column; gap: 6px; }
+  .todo-item { border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); padding: 10px 12px; transition: border-color 0.15s; }
+  .todo-item:hover { border-color: var(--border-strong); }
+  .todo-item.done { opacity: 0.5; }
+  .todo-item.done .todo-text { text-decoration: line-through; }
+  .todo-row { display: flex; align-items: center; gap: 10px; }
+  .todo-check { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--border-strong); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; background: white; }
+  .todo-check:hover { border-color: var(--gold); }
+  .todo-check.checked { background: var(--gold); border-color: var(--gold); }
+  .todo-check.checked::after { content: ''; display: block; width: 5px; height: 8px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); }
+  .todo-text { flex: 1; font-size: 14px; color: var(--text); line-height: 1.4; }
+  .todo-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); flex-shrink: 0; white-space: nowrap; }
+  .todo-btn { width: 22px; height: 22px; border-radius: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .todo-btn:hover { background: var(--border); }
+
+  /* ── Qualitative slider ── */
+  .qual-area { padding-top: 8px; padding-left: 0; }
+  .slider-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+  .slider-wrap input[type=range] { flex: 1; height: 4px; -webkit-appearance: none; appearance: none; border-radius: 4px; cursor: pointer; outline: none; border: none; }
+  .slider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px var(--gold); }
+  .slider-val { font-size: 13px; font-weight: 600; color: var(--gold); min-width: 16px; text-align: right; }
+  .slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
+
+  /* ── Add inline ── */
+  .add-form { display: none; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius); border: 1px dashed var(--gold); background: var(--gold-bg); margin-top: 6px; }
+  .add-form.show { display: flex; }
+  .add-form input, .add-form select { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 7px 10px; font-size: 13px; background: white; color: var(--text); outline: none; font-family: inherit; }
+  .add-form input:focus, .add-form select:focus { border-color: var(--gold); }
+  .add-form-row { display: flex; gap: 8px; }
+  .add-form-row select { flex: 1; }
+  .add-form-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .btn-sm { padding: 5px 12px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid var(--border-strong); background: white; color: var(--text-sub); }
+  .btn-sm.gold { background: var(--gold); border-color: var(--gold); color: white; }
+  .add-trigger { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 6px 0; transition: color 0.15s; margin-top: 4px; }
+  .add-trigger:hover { color: var(--gold); }
+  .add-trigger svg { width: 14px; height: 14px; }
+
+  /* ── Right col ── */
+  .right-col { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem 1.15rem; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 10px; }
+  .reflection-area { width: 100%; border: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; color: var(--text); line-height: 1.65; outline: none; min-height: 80px; }
+  .reflection-area::placeholder { color: var(--text-muted); }
+
+  /* ── Chart ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-month { font-size: 11px; color: var(--text-muted); width: 28px; flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; height: 7px; border-radius: 4px; background: var(--bg); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width 0.4s; }
+  .bar-pct { font-size: 11px; color: var(--text-sub); width: 30px; text-align: right; flex-shrink: 0; }
+
+  /* ── Carry over ── */
+  .carry-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .carry-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-sub); padding: 6px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); }
+  .carry-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-light); flex-shrink: 0; }
+  .carry-score { margin-left: auto; font-size: 11px; color: var(--gold); font-weight: 500; }
+  .carry-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 10px 0; }
+  .carry-actions { display: flex; gap: 8px; }
+  .carry-btn { flex: 1; padding: 7px 0; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-sub); text-align: center; transition: background 0.15s; }
+  .carry-btn:hover { background: var(--bg); }
+  .carry-btn.primary { background: var(--gold); border-color: var(--gold); color: white; }
+  .carry-btn.primary:hover { background: #A0845C; }
+
+  /* ── Modals ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.5rem; width: 460px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+  .modal label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 10px; }
+  .modal input, .modal select, .modal textarea { width: 100%; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 8px 10px; font-size: 13px; background: white; color: var(--text); outline: none; font-family: inherit; }
+  .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--gold); }
+  .modal textarea { resize: none; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+  .type-toggle { display: flex; gap: 6px; margin-bottom: 2px; }
+  .type-opt { flex: 1; padding: 7px 0; border-radius: var(--radius); font-size: 13px; text-align: center; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-sub); transition: all 0.15s; }
+  .type-opt.active { background: var(--gold); border-color: var(--gold); color: white; }
+
+  /* ── Bulk import ── */
+  .bulk-modal { width: 600px; }
+  .bulk-hint { font-size: 12px; color: var(--text-muted); line-height: 1.6; background: var(--gold-bg); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 4px; }
+  .bulk-hint code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; }
+  .bulk-textarea { min-height: 180px; font-family: monospace; font-size: 12px; line-height: 1.6; }
+  .bulk-preview { margin-top: 12px; }
+  .bulk-preview-title { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .bulk-month-block { margin-bottom: 12px; }
+  .bulk-month-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .bulk-item-row { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 5px; background: var(--surface-2); margin-bottom: 3px; font-size: 13px; }
+  .bulk-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-strong); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .bulk-check.checked { background: var(--gold); border-color: var(--gold); }
+  .bulk-check.checked::after { content: ''; display: block; width: 4px; height: 7px; border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); }
+  .bulk-item-text { flex: 1; }
+  .bulk-tag-sel { border: 1px solid var(--border); border-radius: 4px; font-size: 11px; padding: 2px 4px; color: var(--text-sub); background: white; }
+  .bulk-type-sel { border: 1px solid var(--border); border-radius: 4px; font-size: 11px; padding: 2px 4px; color: var(--text-sub); background: white; }
+
+  /* ── Gist setup modal ── */
+  .gist-modal { width: 500px; }
+  .gist-step { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin-bottom: 8px; }
+  .gist-step a { color: var(--gold); }
+  .gist-notice { font-size: 12px; color: var(--text-muted); background: var(--gold-bg); padding: 8px 10px; border-radius: var(--radius); margin-top: 4px; }
+
+  /* ── History ── */
+  .history-modal { width: 580px; }
+  .history-month { margin-bottom: 1.25rem; }
+  .history-month-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .history-item { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .history-item:last-child { border-bottom: none; }
+  .h-check { font-size: 12px; color: var(--gold); width: 14px; }
+  .h-text { flex: 1; color: var(--text); }
+  .h-tag { font-size: 11px; color: var(--text-muted); }
+  .h-score { font-size: 12px; color: var(--gold); font-weight: 500; }
+  .history-memo { font-size: 12px; color: var(--text-sub); font-style: italic; background: var(--gold-bg); border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: white; padding: 9px 18px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .text-sm { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo"><div class="logo-dot"></div>Monthly Goals</div>
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button class="nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-icon" onclick="openBulk()">📥 과거 데이터 입력</button>
+      <button class="btn-icon" onclick="openHistory()">📋 히스토리</button>
+      <button class="btn-icon" onclick="openGistSetup()">☁ Gist 설정</button>
+      <button class="btn-icon primary" onclick="openAddModal()">+ 목표 추가</button>
+    </div>
+  </div>
+
+  <!-- Gist status bar -->
+  <div class="gist-bar">
+    <div class="gist-status">
+      <div class="gist-dot" id="gistDot"></div>
+      <span id="gistStatusText">Gist 미연결 — 데이터가 이 브라우저에만 저장돼요</span>
+    </div>
+    <div class="gist-bar-actions">
+      <span class="gist-link" id="gistSyncBtn" onclick="syncGist()" style="display:none">지금 동기화</span>
+      <span class="gist-link" onclick="openGistSetup()">설정</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">정량 달성</div><div class="stat-value" id="statQuant">–</div></div>
+    <div class="stat-card"><div class="stat-label">정량 달성률</div><div class="stat-value" id="statQuantPct">–<span class="stat-unit">%</span></div></div>
+    <div class="stat-card"><div class="stat-label">정성 평균</div><div class="stat-value" id="statQual">–<span class="stat-unit">/ 5</span></div></div>
+    <div class="stat-card"><div class="stat-label">전체 누적 평균</div><div class="stat-value" id="statAvg">–<span class="stat-unit">%</span></div></div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+    <div class="left-panel">
+      <div class="panel-header">
+        <div class="panel-title">이번 달 목표</div>
+        <div class="legend">
+          <div class="legend-item"><div class="leg-check"></div>정량</div>
+          <div class="legend-item"><div class="leg-line"></div>정성 (1–5)</div>
+        </div>
+      </div>
+      <div class="type-section">
+        <div class="type-header">정량 목표</div>
+        <div class="todo-list" id="quantList"></div>
+        <div class="add-trigger" onclick="showAddInline('quant')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+          정량 목표 추가
+        </div>
+        <div class="add-form" id="addFormQuant">
+          <input type="text" id="addTextQuant" placeholder="목표를 입력하세요" />
+          <div class="add-form-row">
+            <select id="addTagQuant"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>기타</option></select>
+          </div>
+          <div class="add-form-actions">
+            <button class="btn-sm" onclick="hideAddInline('quant')">취소</button>
+            <button class="btn-sm gold" onclick="addTodoInline('quant')">추가</button>
+          </div>
+        </div>
+      </div>
+      <div class="type-section">
+        <div class="type-header">정성 목표</div>
+        <div class="todo-list" id="qualList"></div>
+        <div class="add-trigger" onclick="showAddInline('qual')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+          정성 목표 추가
+        </div>
+        <div class="add-form" id="addFormQual">
+          <input type="text" id="addTextQual" placeholder="목표를 입력하세요" />
+          <div class="add-form-row">
+            <select id="addTagQual"><option>가족</option><option>건강</option><option>커리어</option><option>재무</option><option>자기계발</option><option>기타</option></select>
+          </div>
+          <div class="add-form-actions">
+            <button class="btn-sm" onclick="hideAddInline('qual')">취소</button>
+            <button class="btn-sm gold" onclick="addTodoInline('qual')">추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <div class="card-title">이달의 메모</div>
+        <textarea class="reflection-area" id="memoArea" placeholder="이달의 컨텍스트나 느낀 점을 자유롭게 적어두세요." oninput="saveMemo()"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">달성률 추이</div>
+        <div class="bar-chart" id="barChart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">다음 달 이월 제안</div>
+        <div class="carry-list" id="carryList"></div>
+        <div class="carry-actions">
+          <button class="carry-btn" onclick="skipCarry()">건너뛰기</button>
+          <button class="carry-btn primary" onclick="doCarry()">이월하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">목표 추가</div>
+    <div class="type-toggle">
+      <div class="type-opt active" id="typeOptQuant" onclick="selectType('quant')">정량 목표</div>
+      <div class="type-opt" id="typeOptQual" onclick="selectType('qual')">정성 목표</div>
+    </div>
+    <label>목표 내용</label>
+    <input type="text" id="modalText" placeholder="목표를 입력하세요" />
+    <label>카테고리</label>
+    <select id="modalTag"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>기타</option></select>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeModal('addModal')">취소</button>
+      <button class="btn-sm gold" onclick="addTodoFromModal()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal bulk-modal">
+    <div class="modal-title">📥 과거 데이터 일괄 입력</div>
+    <div class="bulk-hint">
+      아이패드 노트 내용을 그대로 붙여넣으세요.<br>
+      인식 형식: <code>1월</code> 또는 <code>2025년 1월</code> 헤더 아래 <code>1. 목표내용</code> 또는 <code>- 목표내용</code><br>
+      달성한 항목엔 줄 끝에 <code>✓</code> 또는 <code>완료</code> 또는 <code>O</code>를 붙이면 자동으로 체크돼요.
+    </div>
+    <label>텍스트 붙여넣기</label>
+    <textarea class="modal textarea bulk-textarea" id="bulkInput" placeholder="1월&#10;1. 블로그 포스팅 2개 올리기 ✓&#10;2. 운동 주 4회&#10;3. 가족 나들이 완료&#10;&#10;2월&#10;1. ETF 리밸런싱 점검 O&#10;2. 영어 Audible 10시간" oninput="parseBulk()"></textarea>
+    <div class="bulk-preview" id="bulkPreview"></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeModal('bulkModal')">취소</button>
+      <button class="btn-sm gold" onclick="confirmBulk()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gist Setup Modal -->
+<div class="modal-overlay" id="gistModal">
+  <div class="modal gist-modal">
+    <div class="modal-title">☁ GitHub Gist 동기화 설정</div>
+    <div class="gist-step">
+      <b>1단계.</b> <a href="https://github.com/settings/tokens/new" target="_blank">GitHub → Settings → Tokens (classic)</a> 에서<br>
+      토큰 생성 → <b>gist</b> 권한만 체크 → 복사
+    </div>
+    <div class="gist-step">
+      <b>2단계.</b> 아래에 토큰을 붙여넣고 연결하면 자동으로 private Gist가 생성돼요.
+    </div>
+    <label>GitHub Personal Access Token</label>
+    <input type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+    <div id="gistIdRow" style="display:none">
+      <label>Gist ID (자동 입력)</label>
+      <input type="text" id="gistId" placeholder="자동으로 채워져요" readonly />
+    </div>
+    <div class="gist-notice">토큰은 이 브라우저에만 저장되며 외부로 전송되지 않아요. Gist는 private으로 생성돼요.</div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeModal('gistModal')">취소</button>
+      <button class="btn-sm" onclick="disconnectGist()" id="gistDisconnectBtn" style="display:none">연결 해제</button>
+      <button class="btn-sm gold" onclick="connectGist()" id="gistConnectBtn">연결하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal history-modal">
+    <div class="modal-title">목표 히스토리</div>
+    <div id="historyContent" style="max-height:460px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-sm gold" onclick="closeModal('historyModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── State ──
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  let modalType = 'quant';
+  let data = {};
+  let bulkParsed = [];
+
+  const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  // ── LocalStorage ──
+  function load() {
+    try { data = JSON.parse(localStorage.getItem('monthly-goals-data') || '{}'); } catch(e) { data = {}; }
+  }
+  function save() {
+    localStorage.setItem('monthly-goals-data', JSON.stringify(data));
+    if (getGistConfig().token) scheduleGistSync();
+  }
+  function getMonthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
+  function getCurrentKey() { return getMonthKey(currentYear, currentMonth); }
+  function getMonthData() {
+    const k = getCurrentKey();
+    if (!data[k]) data[k] = { todos: [], memo: '' };
+    return data[k];
+  }
+
+  // ── Gist ──
+  function getGistConfig() {
+    try {
+      return JSON.parse(localStorage.getItem('gist-config') || '{}');
+    } catch(e) { return {}; }
+  }
+  function setGistConfig(cfg) {
+    localStorage.setItem('gist-config', JSON.stringify(cfg));
+  }
+
+  let syncTimer = null;
+  function scheduleGistSync() {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncGist, 2000);
+  }
+
+  function setGistStatus(state, text) {
+    const dot = document.getElementById('gistDot');
+    const txt = document.getElementById('gistStatusText');
+    const btn = document.getElementById('gistSyncBtn');
+    dot.className = 'gist-dot' + (state ? ' ' + state : '');
+    txt.textContent = text;
+    btn.style.display = (state === 'connected') ? 'inline' : 'none';
+  }
+
+  async function syncGist() {
+    const cfg = getGistConfig();
+    if (!cfg.token) return;
+    setGistStatus('syncing', '동기화 중...');
+    try {
+      const body = { files: { 'monthly-goals.json': { content: JSON.stringify(data, null, 2) } } };
+      let url, method;
+      if (cfg.gistId) {
+        url = `https://api.github.com/gists/${cfg.gistId}`;
+        method = 'PATCH';
+      } else {
+        url = 'https://api.github.com/gists';
+        method = 'POST';
+        body.description = 'Monthly Goals Data';
+        body.public = false;
+      }
+      const res = await fetch(url, {
+        method,
+        headers: { Authorization: `token ${cfg.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error('API error ' + res.status);
+      const json = await res.json();
+      if (!cfg.gistId) {
+        cfg.gistId = json.id;
+        setGistConfig(cfg);
+      }
+      const now = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      setGistStatus('connected', `Gist 연결됨 · 마지막 동기화 ${now}`);
+    } catch(e) {
+      setGistStatus('error', 'Gist 동기화 실패 — 토큰을 확인하세요');
+    }
+  }
+
+  async function loadFromGist() {
+    const cfg = getGistConfig();
+    if (!cfg.token || !cfg.gistId) return;
+    setGistStatus('syncing', 'Gist에서 불러오는 중...');
+    try {
+      const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+        headers: { Authorization: `token ${cfg.token}` }
+      });
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      const content = json.files['monthly-goals.json']?.content;
+      if (content) {
+        data = JSON.parse(content);
+        localStorage.setItem('monthly-goals-data', JSON.stringify(data));
+        render();
+      }
+      const now = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      setGistStatus('connected', `Gist 연결됨 · 마지막 동기화 ${now}`);
+    } catch(e) {
+      setGistStatus('error', 'Gist 불러오기 실패');
+    }
+  }
+
+  function openGistSetup() {
+    const cfg = getGistConfig();
+    document.getElementById('gistToken').value = cfg.token || '';
+    document.getElementById('gistId').value = cfg.gistId || '';
+    document.getElementById('gistIdRow').style.display = cfg.gistId ? 'block' : 'none';
+    document.getElementById('gistDisconnectBtn').style.display = cfg.token ? 'inline' : 'none';
+    document.getElementById('gistConnectBtn').textContent = cfg.token ? '재연결' : '연결하기';
+    document.getElementById('gistModal').classList.add('show');
+  }
+
+  async function connectGist() {
+    const token = document.getElementById('gistToken').value.trim();
+    if (!token) { showToast('토큰을 입력하세요'); return; }
+    const cfg = getGistConfig();
+    cfg.token = token;
+    setGistConfig(cfg);
+    closeModal('gistModal');
+    // 기존 gistId 있으면 pull, 없으면 push
+    if (cfg.gistId) {
+      await loadFromGist();
+    } else {
+      await syncGist();
+    }
+    document.getElementById('gistIdRow').style.display = 'block';
+    document.getElementById('gistId').value = getGistConfig().gistId || '';
+    showToast('Gist 연결됐어요');
+  }
+
+  function disconnectGist() {
+    if (!confirm('Gist 연결을 해제할까요? 로컬 데이터는 유지돼요.')) return;
+    localStorage.removeItem('gist-config');
+    setGistStatus('', 'Gist 미연결 — 데이터가 이 브라우저에만 저장돼요');
+    closeModal('gistModal');
+    showToast('연결을 해제했어요');
+  }
+
+  // ── Bulk Import ──
+  function openBulk() {
+    document.getElementById('bulkInput').value = '';
+    document.getElementById('bulkPreview').innerHTML = '';
+    bulkParsed = [];
+    document.getElementById('bulkModal').classList.add('show');
+  }
+
+  function parseBulk() {
+    const raw = document.getElementById('bulkInput').value;
+    const lines = raw.split('\n');
+    bulkParsed = [];
+    let currentMonthIdx = -1;
+    let currentYearNum = new Date().getFullYear();
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      // 월 헤더 인식: "1월", "2025년 1월", "1월:", "## 1월" 등
+      const yearMonthMatch = trimmed.match(/(\d{4})년\s*(\d{1,2})월/);
+      const monthOnlyMatch = trimmed.match(/^#+?\s*(\d{1,2})월/);
+      const simpleMonthMatch = trimmed.match(/^(\d{1,2})월[:：]?\s*$/);
+
+      if (yearMonthMatch) {
+        currentYearNum = parseInt(yearMonthMatch[1]);
+        currentMonthIdx = parseInt(yearMonthMatch[2]) - 1;
+        bulkParsed.push({ type: 'header', year: currentYearNum, month: currentMonthIdx, items: [] });
+        return;
+      }
+      if (monthOnlyMatch || simpleMonthMatch) {
+        const mNum = parseInt((monthOnlyMatch || simpleMonthMatch)[1]) - 1;
+        currentMonthIdx = mNum;
+        bulkParsed.push({ type: 'header', year: currentYearNum, month: currentMonthIdx, items: [] });
+        return;
+      }
+
+      if (currentMonthIdx === -1) return;
+
+      // 항목 인식: "1. ...", "- ...", "• ..."
+      const itemMatch = trimmed.match(/^(?:\d+[.\)]\s*|[-•·]\s*)(.+)$/);
+      if (!itemMatch) return;
+
+      let text = itemMatch[1].trim();
+      // 달성 여부
+      const donePatterns = [/✓/, /✔/, /완료/, /\bO\b/, /\[x\]/i, /☑/];
+      const done = donePatterns.some(p => p.test(text));
+      // 달성 표시 제거
+      text = text.replace(/✓|✔|완료|\bO\b|\[x\]|☑/gi, '').trim();
+
+      const header = bulkParsed[bulkParsed.length - 1];
+      if (header) {
+        header.items.push({ text, done, tag: '기타', itemType: 'quant', id: genId() });
+      }
+    });
+
+    renderBulkPreview();
+  }
+
+  function renderBulkPreview() {
+    const preview = document.getElementById('bulkPreview');
+    if (bulkParsed.length === 0) { preview.innerHTML = ''; return; }
+
+    preview.innerHTML = `<div class="bulk-preview-title">미리보기 — 카테고리와 달성 여부를 확인해 주세요</div>` +
+      bulkParsed.map((block, bi) =>
+        `<div class="bulk-month-block">
+          <div class="bulk-month-name">${block.year}년 ${MONTHS[block.month]}</div>
+          ${block.items.map((item, ii) =>
+            `<div class="bulk-item-row">
+              <div class="bulk-check${item.done ? ' checked' : ''}" onclick="toggleBulkDone(${bi},${ii})" id="bc-${bi}-${ii}"></div>
+              <div class="bulk-item-text">${escHtml(item.text)}</div>
+              <select class="bulk-type-sel" onchange="setBulkType(${bi},${ii},this.value)">
+                <option value="quant" ${item.itemType==='quant'?'selected':''}>정량</option>
+                <option value="qual" ${item.itemType==='qual'?'selected':''}>정성</option>
+              </select>
+              <select class="bulk-tag-sel" onchange="setBulkTag(${bi},${ii},this.value)">
+                ${['커리어','건강','재무','가족','자기계발','기타'].map(t =>
+                  `<option${item.tag===t?' selected':''}>${t}</option>`).join('')}
+              </select>
+            </div>`
+          ).join('')}
+        </div>`
+      ).join('');
+  }
+
+  function toggleBulkDone(bi, ii) {
+    bulkParsed[bi].items[ii].done = !bulkParsed[bi].items[ii].done;
+    const el = document.getElementById(`bc-${bi}-${ii}`);
+    el.classList.toggle('checked', bulkParsed[bi].items[ii].done);
+  }
+  function setBulkTag(bi, ii, val) { bulkParsed[bi].items[ii].tag = val; }
+  function setBulkType(bi, ii, val) { bulkParsed[bi].items[ii].itemType = val; }
+
+  function confirmBulk() {
+    if (bulkParsed.length === 0) { showToast('입력된 데이터가 없어요'); return; }
+    let added = 0;
+    bulkParsed.forEach(block => {
+      const k = getMonthKey(block.year, block.month);
+      if (!data[k]) data[k] = { todos: [], memo: '' };
+      block.items.forEach(item => {
+        data[k].todos.push({
+          id: item.id,
+          type: item.itemType,
+          text: item.text,
+          tag: item.tag,
+          done: item.itemType === 'quant' ? item.done : undefined,
+          score: item.itemType === 'qual' ? 3 : undefined,
+          created: new Date().toISOString()
+        });
+        added++;
+      });
+    });
+    save();
+    render();
+    closeModal('bulkModal');
+    showToast(`${added}개 항목을 저장했어요`);
+  }
+
+  // ── Render ──
+  function render() {
+    renderLabel();
+    renderLists();
+    renderStats();
+    renderChart();
+    renderCarry();
+    renderMemo();
+  }
+
+  function renderLabel() {
+    document.getElementById('monthLabel').textContent = `${currentYear}년 ${MONTHS[currentMonth]}`;
+  }
+
+  function renderLists() {
+    const md = getMonthData();
+    const quants = md.todos.filter(t => t.type === 'quant');
+    const quals = md.todos.filter(t => t.type === 'qual');
+    document.getElementById('quantList').innerHTML = quants.map(renderQuantItem).join('');
+    document.getElementById('qualList').innerHTML = quals.map(renderQualItem).join('');
+    quals.forEach(t => {
+      const sl = document.getElementById('sl-'+t.id);
+      if (sl) {
+        updateSliderBg(sl, t.score || 3);
+        sl.addEventListener('input', function() {
+          const val = parseInt(this.value);
+          document.getElementById('sv-'+t.id).textContent = val;
+          updateSliderBg(this, val);
+          updateTodoField(t.id, 'score', val);
+        });
+      }
+    });
+  }
+
+  function renderQuantItem(t) {
+    return `<div class="todo-item${t.done ? ' done' : ''}" id="item-${t.id}">
+      <div class="todo-row">
+        <div class="todo-check${t.done ? ' checked' : ''}" onclick="toggleDone('${t.id}')"></div>
+        <div class="todo-text">${escHtml(t.text)}</div>
+        <div class="todo-tag">${escHtml(t.tag)}</div>
+        <button class="todo-btn" onclick="deleteTodo('${t.id}')" title="삭제">✕</button>
+      </div>
+    </div>`;
+  }
+
+  function renderQualItem(t) {
+    const score = t.score || 3;
+    return `<div class="todo-item" id="item-${t.id}">
+      <div class="todo-row">
+        <div class="todo-text">${escHtml(t.text)}</div>
+        <div class="todo-tag">${escHtml(t.tag)}</div>
+        <button class="todo-btn" onclick="deleteTodo('${t.id}')" title="삭제">✕</button>
+      </div>
+      <div class="qual-area">
+        <div class="slider-wrap">
+          <input type="range" id="sl-${t.id}" min="1" max="5" step="1" value="${score}">
+          <div class="slider-val" id="sv-${t.id}">${score}</div>
+        </div>
+        <div class="slider-labels"><span>부족했어</span><span>충분했어</span></div>
+      </div>
+    </div>`;
+  }
+
+  function updateSliderBg(el, val) {
+    const pct = ((val - 1) / 4) * 100;
+    el.style.background = `linear-gradient(to right, #B5956A ${pct}%, #E4E2DC ${pct}%)`;
+  }
+
+  function renderStats() {
+    const md = getMonthData();
+    const quants = md.todos.filter(t => t.type === 'quant');
+    const quals = md.todos.filter(t => t.type === 'qual');
+    const doneCount = quants.filter(t => t.done).length;
+    const quantPct = quants.length > 0 ? Math.round(doneCount / quants.length * 100) : null;
+    const qualAvg = quals.length > 0 ? (quals.reduce((s,t) => s+(t.score||3), 0)/quals.length).toFixed(1) : null;
+    const allPcts = Object.values(data).map(m => {
+      const qs = (m.todos||[]).filter(t => t.type==='quant');
+      return qs.length > 0 ? qs.filter(t=>t.done).length/qs.length*100 : null;
+    }).filter(v => v !== null);
+    const overallAvg = allPcts.length > 0 ? Math.round(allPcts.reduce((a,b)=>a+b,0)/allPcts.length) : null;
+
+    document.getElementById('statQuant').innerHTML = quants.length > 0
+      ? `${doneCount}<span class="stat-unit">/ ${quants.length}</span>` : `–`;
+    document.getElementById('statQuantPct').innerHTML = quantPct !== null
+      ? `${quantPct}<span class="stat-unit">%</span>` : `–<span class="stat-unit">%</span>`;
+    document.getElementById('statQual').innerHTML = qualAvg !== null
+      ? `${qualAvg}<span class="stat-unit">/ 5</span>` : `–<span class="stat-unit">/ 5</span>`;
+    document.getElementById('statAvg').innerHTML = overallAvg !== null
+      ? `${overallAvg}<span class="stat-unit">%</span>` : `–<span class="stat-unit">%</span>`;
+  }
+
+  function renderChart() {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      let y = currentYear, m = currentMonth - i;
+      while (m < 0) { m += 12; y--; }
+      months.push({ y, m });
+    }
+    document.getElementById('barChart').innerHTML = months.map(({ y, m }) => {
+      const md = data[getMonthKey(y, m)];
+      const quants = md ? (md.todos||[]).filter(t => t.type==='quant') : [];
+      const pct = quants.length > 0 ? Math.round(quants.filter(t=>t.done).length/quants.length*100) : 0;
+      const isCurrent = y===currentYear && m===currentMonth;
+      return `<div class="bar-row">
+        <div class="bar-month" style="${isCurrent?'color:#B5956A;font-weight:600':''}">${MONTHS[m]}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <div class="bar-pct">${quants.length>0 ? pct+'%' : '–'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderCarry() {
+    const md = getMonthData();
+    const candidates = [
+      ...md.todos.filter(t => t.type==='quant' && !t.done),
+      ...md.todos.filter(t => t.type==='qual' && (t.score||3) <= 2)
+    ];
+    const wrap = document.getElementById('carryList');
+    wrap.innerHTML = candidates.length === 0
+      ? '<div class="carry-empty">이월할 항목이 없어요 👍</div>'
+      : candidates.map(t => `<div class="carry-item">
+          <div class="carry-dot"></div>
+          <span>${escHtml(t.text)}</span>
+          ${t.type==='qual' ? `<span class="carry-score">${t.score||3}점</span>` : ''}
+        </div>`).join('');
+    window._carryItems = candidates;
+  }
+
+  function renderMemo() {
+    document.getElementById('memoArea').value = getMonthData().memo || '';
+  }
+
+  // ── Actions ──
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    render();
+  }
+  function toggleDone(id) {
+    const t = getMonthData().todos.find(t => t.id===id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+  function updateTodoField(id, field, val) {
+    const t = getMonthData().todos.find(t => t.id===id);
+    if (t) { t[field] = val; save(); renderStats(); renderCarry(); }
+  }
+  function deleteTodo(id) {
+    const md = getMonthData();
+    md.todos = md.todos.filter(t => t.id!==id);
+    save(); render(); showToast('삭제했어요');
+  }
+  function saveMemo() {
+    getMonthData().memo = document.getElementById('memoArea').value;
+    save();
+  }
+  function doCarry() {
+    if (!window._carryItems?.length) { showToast('이월할 항목이 없어요'); return; }
+    let nm = currentMonth+1, ny = currentYear;
+    if (nm > 11) { nm = 0; ny++; }
+    const nk = getMonthKey(ny, nm);
+    if (!data[nk]) data[nk] = { todos: [], memo: '' };
+    window._carryItems.forEach(t => {
+      if (!data[nk].todos.find(x => x.text===t.text)) {
+        data[nk].todos.push({ ...t, id: genId(), done: false, score: t.type==='qual'?3:undefined });
+      }
+    });
+    save(); showToast(`${ny}년 ${MONTHS[nm]}으로 이월했어요`);
+  }
+  function skipCarry() { showToast('이월을 건너뛰었어요'); }
+
+  function showAddInline(type) {
+    const s = type==='quant'?'Quant':'Qual';
+    document.getElementById(`addForm${s}`).classList.add('show');
+    document.getElementById(`addText${s}`).focus();
+  }
+  function hideAddInline(type) {
+    const s = type==='quant'?'Quant':'Qual';
+    document.getElementById(`addForm${s}`).classList.remove('show');
+    document.getElementById(`addText${s}`).value = '';
+  }
+  function addTodoInline(type) {
+    const s = type==='quant'?'Quant':'Qual';
+    const text = document.getElementById(`addText${s}`).value.trim();
+    const tag = document.getElementById(`addTag${s}`).value;
+    if (!text) return;
+    addTodo(type, text, tag); hideAddInline(type);
+  }
+  function openAddModal() {
+    modalType = 'quant';
+    document.getElementById('typeOptQuant').classList.add('active');
+    document.getElementById('typeOptQual').classList.remove('active');
+    document.getElementById('modalText').value = '';
+    document.getElementById('addModal').classList.add('show');
+    document.getElementById('modalText').focus();
+  }
+  function selectType(t) {
+    modalType = t;
+    document.getElementById('typeOptQuant').classList.toggle('active', t==='quant');
+    document.getElementById('typeOptQual').classList.toggle('active', t==='qual');
+  }
+  function addTodoFromModal() {
+    const text = document.getElementById('modalText').value.trim();
+    const tag = document.getElementById('modalTag').value;
+    if (!text) return;
+    addTodo(modalType, text, tag); closeModal('addModal');
+  }
+  function addTodo(type, text, tag) {
+    getMonthData().todos.push({ id: genId(), type, text, tag, done: type==='quant'?false:undefined, score: type==='qual'?3:undefined, created: new Date().toISOString() });
+    save(); render(); showToast('추가했어요');
+  }
+
+  function openHistory() {
+    const keys = Object.keys(data).sort().reverse();
+    document.getElementById('historyContent').innerHTML = keys.length === 0
+      ? '<p style="font-size:13px;color:var(--text-muted);padding:10px 0">아직 기록이 없어요.</p>'
+      : keys.map(k => {
+          const [y, m] = k.split('-').map(Number);
+          const md = data[k];
+          const todos = md.todos || [];
+          if (!todos.length && !md.memo) return '';
+          const quants = todos.filter(t => t.type==='quant');
+          const quals = todos.filter(t => t.type==='qual');
+          const pct = quants.length > 0 ? Math.round(quants.filter(t=>t.done).length/quants.length*100) : null;
+          return `<div class="history-month">
+            <div class="history-month-label">${y}년 ${MONTHS[m-1]} ${pct!==null?'· '+pct+'%':''}</div>
+            ${quants.map(t=>`<div class="history-item"><div class="h-check">${t.done?'✓':'·'}</div><div class="h-text">${escHtml(t.text)}</div><div class="h-tag">${escHtml(t.tag)}</div></div>`).join('')}
+            ${quals.map(t=>`<div class="history-item"><div class="h-check">◆</div><div class="h-text">${escHtml(t.text)}</div><div class="h-tag">${escHtml(t.tag)}</div><div class="h-score">${t.score||3}점</div></div>`).join('')}
+            ${md.memo?`<div class="history-memo">${escHtml(md.memo)}</div>`:''}
+          </div>`;
+        }).join('');
+    document.getElementById('historyModal').classList.add('show');
+  }
+
+  // ── Utils ──
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function genId() { return Math.random().toString(36).slice(2,9); }
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      ['addModal','bulkModal','gistModal','historyModal'].forEach(closeModal);
+      hideAddInline('quant'); hideAddInline('qual');
+    }
+  });
+  ['addTextQuant','addTextQual'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key==='Enter') addTodoInline(id.includes('Quant')?'quant':'qual');
+    });
+  });
+  document.getElementById('modalText').addEventListener('keydown', e => { if(e.key==='Enter') addTodoFromModal(); });
+  ['addModal','bulkModal','gistModal','historyModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) { if(e.target===this) closeModal(id); });
+  });
+
+  // ── Init ──
+  load();
+  const cfg = getGistConfig();
+  if (cfg.token && cfg.gistId) {
+    loadFromGist();
+  } else if (cfg.token) {
+    setGistStatus('', 'Gist 미연결 — 설정에서 연결하세요');
+  }
+  render();
+</script>
+</body>
+</html>
