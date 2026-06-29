@@ -449,7 +449,17 @@
       <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
     </div>
     <div class="repeat-section">
-      <div class="analysis-title">반복 미달성 항목</div>
+      <div class="analysis-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>반복 미달성 항목</span>
+        <div style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:11px;color:var(--text-muted)">
+          기준:
+          <select id="repeatThresholdSel" onchange="setRepeatThreshold(this.value)" style="border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;color:var(--text-sub);background:white">
+            <option value="2">2개월 이상</option>
+            <option value="3">3개월 이상</option>
+            <option value="4">4개월 이상</option>
+          </select>
+        </div>
+      </div>
       <div id="repeatList"></div>
     </div>
     <div class="claude-export-card">
@@ -689,8 +699,9 @@ const DEFAULT_HABITS = {
   h3: '충분히 숙면하라\n아침에 운동하라\n책으로 명상하라\n우선순위를 정하라\n도파민 중독에서 벗어나라\n건강한 식습관을 유지하라\n주변 사람을 소중히 여겨라'
 };
 function renderFP(){
-  document.getElementById('fpVisionText').textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';
-  document.getElementById('fpVisionText').style.opacity=fp.vision?'1':'0.55';
+  const vEl=document.getElementById('fpVisionText');
+  if(fp.vision){vEl.innerHTML=escHtml(fp.vision).replace(/\n/g,'<br>');vEl.style.opacity='1';}
+  else{vEl.textContent='클릭해서 10년 뒤 모습을 입력하세요...';vEl.style.opacity='0.55';}
   document.getElementById('fpVisionInput').value=fp.vision||'';
   document.getElementById('fp3pInput').value=fp.mid||'';
   document.getElementById('fpNowInput').value=fp.now||'';
@@ -729,23 +740,43 @@ function selectPickerMonth(y,m){
   closeModal('monthPickerModal');
 }
 function editFpVision(){document.getElementById('fpVisionDisplay').style.display='none';const i=document.getElementById('fpVisionInput');i.style.display='block';i.focus();}
-function hideFpVision(){fp.vision=document.getElementById('fpVisionInput').value;saveFpStore();document.getElementById('fpVisionText').textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';document.getElementById('fpVisionText').style.opacity=fp.vision?'1':'0.55';document.getElementById('fpVisionDisplay').style.display='block';document.getElementById('fpVisionInput').style.display='none';updateGapBanner();}
-function saveFpVision(){fp.vision=document.getElementById('fpVisionInput').value;saveFpStore();}
-function saveFp(f){const map={mid:'fp3pInput',now:'fpNowInput',gap:'fpGapInput'};fp[f]=document.getElementById(map[f]).value;saveFpStore();}
-function updateGapBanner(){const t=fp.vision||fp.mid||'Future Plan을 입력하면 여기에 표시돼요';document.getElementById('gapBannerText').textContent=t.substring(0,90)+(t.length>90?'...':'');}
+function hideFpVision(){
+  fp.vision=document.getElementById('fpVisionInput').value.trim();
+  saveFpStore();
+  const el=document.getElementById('fpVisionText');
+  if(fp.vision){
+    el.innerHTML=escHtml(fp.vision).replace(/\n/g,'<br>');
+    el.style.opacity='1';
+  } else {
+    el.textContent='클릭해서 10년 뒤 모습을 입력하세요...';
+    el.style.opacity='0.55';
+  }
+  document.getElementById('fpVisionDisplay').style.display='block';
+  document.getElementById('fpVisionInput').style.display='none';
+  updateGapBanner();
+}
+function saveFpVision(){fp.vision=document.getElementById('fpVisionInput').value;saveFpStore();updateGapBanner();}
+function saveFp(f){const map={mid:'fp3pInput',now:'fpNowInput',gap:'fpGapInput'};fp[f]=document.getElementById(map[f]).value;saveFpStore();if(f==='mid'||f==='vision')updateGapBanner();}
+function updateGapBanner(){
+  const t=fp.vision||fp.mid||'Future Plan을 입력하면 여기에 표시돼요';
+  const short=t.substring(0,120)+(t.length>120?'...':'');
+  document.getElementById('gapBannerText').innerHTML=escHtml(short).replace(/\n/g,'<br>');
+}
 
 // Render
 function render(){renderLabel();renderLists();renderStats();renderChart();renderCarry();renderReflection();updateGapBanner();}
 function renderLabel(){document.getElementById('monthLabel').textContent=`${curY}년 ${MONTHS[curM]}`;}
 
+function getRepeatThreshold(){return parseInt(localStorage.getItem('mg-repeat-threshold')||'2');}
+function setRepeatThreshold(n){localStorage.setItem('mg-repeat-threshold',String(n));render();if(curTab==='analysis')renderAnalysis();}
 function getRepeats(){
-  const tc={};
+  const tc={};const threshold=getRepeatThreshold();
   Object.values(data).forEach(md=>(md.todos||[]).filter(t=>t.type==='todo').forEach(t=>{
     const k=t.text.trim().toLowerCase();
     if(!tc[k])tc[k]={text:t.text,tag:t.tag,total:0,undone:0};
     tc[k].total++;if(!t.highlighted)tc[k].undone++;
   }));
-  return Object.values(tc).filter(x=>x.undone>=2);
+  return Object.values(tc).filter(x=>x.undone>=threshold);
 }
 
 function renderLists(){
@@ -790,7 +821,7 @@ function renderItem(t,repeats){
         <div class="todo-top-row">
           <div class="todo-text">${escHtml(t.text)}</div>
           <div class="todo-right-meta">
-            ${isRepeat?'<span class="repeat-badge">반복</span>':''}
+            ${isRepeat?`<span class="repeat-badge">반복 ${getRepeatThreshold()}+회</span>`:''}
             <span class="todo-type-badge ${t.type==='todo'?'todo-type':'dir-type'}">${t.type==='todo'?'To-do':'방향성'}</span>
             <div class="todo-tag">${escHtml(t.tag)}</div>
             <button class="todo-btn" onclick="openEdit('${t.id}')" title="수정">✏️</button>
@@ -879,6 +910,7 @@ function renderAnalysis(){
   hm.innerHTML=html;
   // repeats
   const reps=getRepeats().sort((a,b)=>b.undone-a.undone);
+  const thSel=document.getElementById('repeatThresholdSel');if(thSel)thSel.value=String(getRepeatThreshold());
   document.getElementById('repeatList').innerHTML=reps.length===0?'<div class="empty-msg">반복 미달성 항목이 없어요 👍</div>':reps.map(r=>`<div class="repeat-item"><div style="flex-shrink:0"><div class="repeat-count">${r.undone}</div><div class="repeat-label-sm">회 미달성</div></div><div class="repeat-info"><div class="repeat-text">${escHtml(r.text)}</div><div class="repeat-meta"><span class="repeat-tag">${r.tag}</span>총 ${r.total}회 · 달성률 ${Math.round((r.total-r.undone)/r.total*100)}%</div></div></div>`).join('');
   renderExportPreview();
 }
