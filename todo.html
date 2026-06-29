@@ -69,9 +69,9 @@
   .fp-textarea::placeholder { color: var(--text-muted); }
   .fp-habits { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
   .fp-habit-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem; }
-  .fp-habit-item { display: flex; gap: 7px; font-size: 12px; color: var(--text-sub); padding: 3px 0; border-bottom: 1px solid var(--border); line-height: 1.4; }
-  .fp-habit-item:last-child { border-bottom: none; }
-  .fp-habit-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 5px; }
+  .fp-habit-textarea { width:100%; border:none; background:transparent; resize:none; font-family:inherit; font-size:12px; color:var(--text-sub); line-height:1.75; outline:none; min-height:130px; }
+  .fp-habit-textarea::placeholder { color:var(--text-muted); }
+  .fp-edit-hint { font-size:10px; color:var(--text-muted); font-weight:400; letter-spacing:0; text-transform:none; }
 
   /* ═══ GOALS PAGE ═══ */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
@@ -121,15 +121,19 @@
   .todo-btn:hover { background: var(--border); color: var(--text); }
   .todo-sub-progress { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
-  /* Sub items */
-  .sub-list { border-top: 1px solid var(--border); padding: 6px 10px 8px 36px; display: flex; flex-direction: column; gap: 4px; background: rgba(0,0,0,0.015); border-radius: 0 0 var(--radius) var(--radius); }
-  .sub-item { display: flex; align-items: center; gap: 7px; }
-  .sub-check { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-strong); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.15s; }
-  .sub-check:hover { border-color: var(--gold); }
-  .sub-check.checked { background: var(--gold); border-color: var(--gold); }
-  .sub-check.checked::after { content: ''; display: block; width: 4px; height: 6px; border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); }
-  .sub-text { font-size: 12px; color: var(--text-sub); flex: 1; line-height: 1.4; }
-  .sub-text.done { text-decoration: line-through; color: var(--text-muted); }
+  /* Todo top row with right-aligned meta */
+  .todo-top-row { display: flex; align-items: flex-start; gap: 6px; }
+  .todo-right-meta { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: auto; padding-left: 8px; }
+  /* Inline sub items */
+  .todo-inline-subs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .todo-inline-sub { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-sub); background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 2px 8px 2px 4px; cursor: default; transition: all 0.15s; }
+  .todo-inline-sub.done { text-decoration: line-through; color: var(--text-muted); opacity: 0.7; }
+  .todo-item.highlighted .todo-inline-sub { background: rgba(255,224,102,0.2); border-color: #E8D566; }
+  .inline-sub-check { width: 12px; height: 12px; border-radius: 2px; border: 1.5px solid var(--border-strong); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; background: white; transition: all 0.15s; }
+  .inline-sub-check:hover { border-color: var(--gold); }
+  .inline-sub-check.checked { background: var(--gold); border-color: var(--gold); }
+  .inline-sub-check.checked::after { content: ''; display: block; width: 4px; height: 6px; border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px); }
+  .todo-sub-progress { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 
   /* Direction slider */
   .dir-slider-area { border-top: 1px solid var(--border); padding: 8px 10px 9px 36px; background: rgba(0,0,0,0.015); border-radius: 0 0 var(--radius) var(--radius); }
@@ -259,6 +263,12 @@
   .empty-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: white; padding: 9px 18px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .picker-month-btn { padding: 8px 4px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; cursor: pointer; text-align: center; transition: all 0.15s; color: var(--text-sub); }
+  .picker-month-btn:hover { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); }
+  .picker-month-btn.active { background: var(--gold); border-color: var(--gold); color: white; font-weight: 600; }
+  .picker-month-btn.has-data::after { content: '•'; display: block; font-size: 8px; color: var(--gold); margin-top: -2px; }
+  .picker-month-btn.active::after { color: white; }
+  .picker-month-btn.no-data { opacity: 0.4; }
 </style>
 </head>
 <body>
@@ -267,7 +277,7 @@
     <div class="logo"><div class="logo-dot"></div>Future Plan<span class="logo-sub">· Monthly Goals</span></div>
     <div class="month-nav" id="monthNavWrap">
       <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-      <div class="month-label" id="monthLabel"></div>
+      <div class="month-label" id="monthLabel" onclick="openMonthPicker()" style="cursor:pointer;user-select:none" title="클릭해서 월 선택"></div>
       <button class="nav-btn" onclick="changeMonth(1)">›</button>
     </div>
     <div class="topbar-actions">
@@ -318,16 +328,25 @@
     </div>
     <div class="fp-habits">
       <div class="fp-habit-card">
-        <div class="fp-card-title">⚡ 기기제 프로세스</div>
-        ${['원하는 것을 구체적으로 머릿속에 그려라','설정한 목표를 글로 적어라','기한을 정하라','해야 하는 일의 목록을 작성하라','체크리스트를 활용하라','한 걸음만 내디뎌라','계속하라'].map(h=>`<div class="fp-habit-item"><div class="fp-habit-dot"></div>${h}</div>`).join('')}
+        <div class="fp-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>⚡ 3P 7가지 프로세스</span>
+          <span class="fp-edit-hint">클릭해서 수정</span>
+        </div>
+        <textarea class="fp-habit-textarea" id="fpHabit1" oninput="saveFpHabit(1)" placeholder="한 줄에 하나씩 입력하세요"></textarea>
       </div>
       <div class="fp-habit-card">
-        <div class="fp-card-title">🌟 성공하는 사람들의 7가지 습관</div>
-        ${['책을 가까이 하라','잠재의식 노트를 써라','하루의 계획을 세워라','중요한 것에 집중하라','중요한 일을 끝낸 후 질문하라','오디오북을 들어라','누구에게나 친절하라'].map(h=>`<div class="fp-habit-item"><div class="fp-habit-dot"></div>${h}</div>`).join('')}
+        <div class="fp-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>🌟 성공하는 사람들의 7가지 습관</span>
+          <span class="fp-edit-hint">클릭해서 수정</span>
+        </div>
+        <textarea class="fp-habit-textarea" id="fpHabit2" oninput="saveFpHabit(2)" placeholder="한 줄에 하나씩 입력하세요"></textarea>
       </div>
       <div class="fp-habit-card">
-        <div class="fp-card-title">🔄 7가지 루틴</div>
-        ${['충분히 숙면하라','아침에 운동하라','책으로 명상하라','우선순위를 정하라','도파민 중독에서 벗어나라','건강한 식습관을 유지하라','주변 사람을 소중히 여겨라'].map(h=>`<div class="fp-habit-item"><div class="fp-habit-dot"></div>${h}</div>`).join('')}
+        <div class="fp-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>🔄 7가지 루틴</span>
+          <span class="fp-edit-hint">클릭해서 수정</span>
+        </div>
+        <textarea class="fp-habit-textarea" id="fpHabit3" oninput="saveFpHabit(3)" placeholder="한 줄에 하나씩 입력하세요"></textarea>
       </div>
     </div>
   </div>
@@ -538,6 +557,21 @@
   </div>
 </div>
 
+<!-- Month Picker Modal -->
+<div class="modal-overlay" id="monthPickerModal">
+  <div class="modal" style="width:320px;padding:1.2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <button class="nav-btn" onclick="pickerChangeYear(-1)">‹</button>
+      <div id="pickerYearLabel" style="font-size:15px;font-weight:600"></div>
+      <button class="nav-btn" onclick="pickerChangeYear(1)">›</button>
+    </div>
+    <div id="pickerGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn-sm" onclick="closeModal('monthPickerModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -553,12 +587,12 @@ const PROMPTS={
 
 let curY=new Date().getFullYear(), curM=new Date().getMonth();
 let curTab='goals', modalType='todo', editType='todo', curPrompt='gap';
-let data={}, fp={vision:'',mid:'',now:'',gap:''}, bulkParsed=[];
+let data={}, fp={vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''}, bulkParsed=[];
 
 // Storage
 function load(){
   try{data=JSON.parse(localStorage.getItem('mg-data')||'{}');}catch(e){data={};}
-  try{const f=JSON.parse(localStorage.getItem('mg-fp')||'{}');fp=Object.assign({vision:'',mid:'',now:'',gap:''},f);}catch(e){}
+  try{const f=JSON.parse(localStorage.getItem('mg-fp')||'{}');fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''},f);}catch(e){}
 }
 function save(){localStorage.setItem('mg-data',JSON.stringify(data));if(getGistCfg().token)scheduleSync();}
 function saveFpStore(){localStorage.setItem('mg-fp',JSON.stringify(fp));if(getGistCfg().token)scheduleSync();}
@@ -610,7 +644,7 @@ async function loadFromGist(){
     if(!res.ok)throw new Error();
     const j=await res.json();
     const content=j.files['monthly-goals.json']?.content;
-    if(content){const p=JSON.parse(content);if(p.data)data=p.data;if(p.fp)fp=Object.assign({vision:'',mid:'',now:'',gap:''},p.fp);localStorage.setItem('mg-data',JSON.stringify(data));localStorage.setItem('mg-fp',JSON.stringify(fp));render();}
+    if(content){const p=JSON.parse(content);if(p.data)data=p.data;if(p.fp)fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''},p.fp);localStorage.setItem('mg-data',JSON.stringify(data));localStorage.setItem('mg-fp',JSON.stringify(fp));render();}
     setGistStatus('connected',`Gist 연결됨 · ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 동기화`);
   }catch(e){setGistStatus('error','Gist 불러오기 실패');}
 }
@@ -649,6 +683,11 @@ function switchTab(t){
 }
 
 // Future Plan
+const DEFAULT_HABITS = {
+  h1: '원하는 것을 구체적으로 머릿속에 그려라\n설정한 목표를 글로 적어라\n기한을 정하라\n해야 하는 일의 목록을 작성하라\n체크리스트를 활용하라\n한 걸음만 내디뎌라\n계속하라',
+  h2: '책을 가까이 하라\n잠재의식 노트를 써라\n하루의 계획을 세워라\n중요한 것에 집중하라\n중요한 일을 끝낸 후 질문하라\n오디오북을 들어라\n누구에게나 친절하라',
+  h3: '충분히 숙면하라\n아침에 운동하라\n책으로 명상하라\n우선순위를 정하라\n도파민 중독에서 벗어나라\n건강한 식습관을 유지하라\n주변 사람을 소중히 여겨라'
+};
 function renderFP(){
   document.getElementById('fpVisionText').textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';
   document.getElementById('fpVisionText').style.opacity=fp.vision?'1':'0.55';
@@ -656,6 +695,38 @@ function renderFP(){
   document.getElementById('fp3pInput').value=fp.mid||'';
   document.getElementById('fpNowInput').value=fp.now||'';
   document.getElementById('fpGapInput').value=fp.gap||'';
+  // habits - use saved or default
+  if(!fp.h1)fp.h1=DEFAULT_HABITS.h1;
+  if(!fp.h2)fp.h2=DEFAULT_HABITS.h2;
+  if(!fp.h3)fp.h3=DEFAULT_HABITS.h3;
+  document.getElementById('fpHabit1').value=fp.h1;
+  document.getElementById('fpHabit2').value=fp.h2;
+  document.getElementById('fpHabit3').value=fp.h3;
+}
+function saveFpHabit(n){fp['h'+n]=document.getElementById('fpHabit'+n).value;saveFpStore();}
+
+// Month Picker
+let pickerYear=new Date().getFullYear();
+function openMonthPicker(){
+  pickerYear=curY;
+  renderPickerGrid();
+  document.getElementById('monthPickerModal').classList.add('show');
+}
+function pickerChangeYear(d){pickerYear+=d;renderPickerGrid();}
+function renderPickerGrid(){
+  document.getElementById('pickerYearLabel').textContent=pickerYear+'년';
+  const grid=document.getElementById('pickerGrid');
+  grid.innerHTML=MONTHS.map((m,i)=>{
+    const k=key(pickerYear,i);
+    const hasData=!!(data[k]&&(data[k].todos||[]).length>0);
+    const isActive=pickerYear===curY&&i===curM;
+    return`<div class="picker-month-btn${isActive?' active':''}${hasData?' has-data':' no-data'}" onclick="selectPickerMonth(${pickerYear},${i})">${m}</div>`;
+  }).join('');
+}
+function selectPickerMonth(y,m){
+  curY=y;curM=m;
+  render();
+  closeModal('monthPickerModal');
 }
 function editFpVision(){document.getElementById('fpVisionDisplay').style.display='none';const i=document.getElementById('fpVisionInput');i.style.display='block';i.focus();}
 function hideFpVision(){fp.vision=document.getElementById('fpVisionInput').value;saveFpStore();document.getElementById('fpVisionText').textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';document.getElementById('fpVisionText').style.opacity=fp.vision?'1':'0.55';document.getElementById('fpVisionDisplay').style.display='block';document.getElementById('fpVisionInput').style.display='none';updateGapBanner();}
@@ -716,20 +787,21 @@ function renderItem(t,repeats){
     <div class="todo-item-header">
       <div class="todo-hl-btn" onclick="toggleHL('${t.id}')" title="달성 표시"></div>
       <div class="todo-content">
-        <div class="todo-text">${escHtml(t.text)}</div>
-        <div class="todo-meta">
-          <div class="todo-tag">${escHtml(t.tag)}</div>
-          <span class="todo-type-badge ${t.type==='todo'?'todo-type':'dir-type'}">${t.type==='todo'?'To-do':'방향성'}</span>
-          ${isRepeat?'<span class="repeat-badge">반복</span>':''}
-          ${subPct!==null?`<span class="todo-sub-progress" style="font-size:10px;color:var(--text-muted)">${subDone}/${subs.length} 달성</span>`:''}
+        <div class="todo-top-row">
+          <div class="todo-text">${escHtml(t.text)}</div>
+          <div class="todo-right-meta">
+            ${isRepeat?'<span class="repeat-badge">반복</span>':''}
+            <span class="todo-type-badge ${t.type==='todo'?'todo-type':'dir-type'}">${t.type==='todo'?'To-do':'방향성'}</span>
+            <div class="todo-tag">${escHtml(t.tag)}</div>
+            <button class="todo-btn" onclick="openEdit('${t.id}')" title="수정">✏️</button>
+            <button class="todo-btn" onclick="deleteTodo('${t.id}')" title="삭제">✕</button>
+          </div>
         </div>
-      </div>
-      <div class="todo-actions">
-        <button class="todo-btn" onclick="openEdit('${t.id}')" title="수정">✏️</button>
-        <button class="todo-btn" onclick="deleteTodo('${t.id}')" title="삭제">✕</button>
+        ${subs.length>0?`<div class="todo-inline-subs">${subs.map((s,i)=>`<span class="todo-inline-sub${s.done?' done':''}"><span class="inline-sub-check${s.done?' checked':''}" onclick="toggleSub('${t.id}',${i})"></span>${escHtml(s.text)}</span>`).join('')}</div>`:''}
+        ${subPct!==null?`<div class="todo-sub-progress">${subDone}/${subs.length} 세부 달성</div>`:''}
       </div>
     </div>
-    ${subHtml}${dirSlider}
+    ${dirSlider}
   </div>`;
 }
 
@@ -1043,11 +1115,11 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){['addModal','editModal','bulkModal','gistModal','historyModal'].forEach(closeModal);hideAddInline('todo');hideAddInline('dir');}
+  if(e.key==='Escape'){['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal'].forEach(closeModal);hideAddInline('todo');hideAddInline('dir');}
 });
 document.getElementById('modalText').addEventListener('keydown',e=>{if(e.key==='Enter')addTodoFromModal();});
 document.getElementById('editText').addEventListener('keydown',e=>{if(e.key==='Enter')saveEdit();});
-['addModal','editModal','bulkModal','gistModal','historyModal'].forEach(id=>{
+['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
 
