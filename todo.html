@@ -56,7 +56,8 @@
   /* ═══ FUTURE PLAN ═══ */
   .fp-header { background: linear-gradient(135deg, #2C2420 0%, #4A3728 100%); border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 1.5rem; color: white; }
   .fp-title { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .fp-vision-display { font-size: 17px; font-weight: 600; color: white; line-height: 1.65; cursor: pointer; min-height: 48px; white-space: pre-wrap; word-break: keep-all; }
+  .fp-vision-display { font-size: 17px; font-weight: 600; color: white; line-height: 1.65; cursor: pointer; min-height: 48px; white-space: pre-line; }
+  #fpVisionText { display: block; }
   .fp-vision-input { display: none; width: 100%; background: transparent; border: none; outline: none; color: white; font-family: inherit; font-size: 17px; font-weight: 600; line-height: 1.65; resize: none; min-height: 80px; }
   .fp-3p-wrap { background: var(--gold-bg); border-radius: var(--radius-lg); border: 1px solid #E8D5B8; padding: 1.1rem 1.2rem; margin-bottom: 1.5rem; }
   .fp-3p-label { font-size: 10px; font-weight: 600; color: #8B6F45; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
@@ -307,9 +308,7 @@
   <div id="pageFuture" class="page">
     <div class="fp-header">
       <div class="fp-title">10년 뒤 나의 모습 — Future Plan</div>
-      <div class="fp-vision-display" id="fpVisionDisplay" onclick="editFpVision()">
-        <span id="fpVisionText" style="opacity:0.55">클릭해서 10년 뒤 모습을 입력하세요...</span>
-      </div>
+      <div class="fp-vision-display" id="fpVisionDisplay" onclick="editFpVision()"><span id="fpVisionText" style="opacity:0.55">클릭해서 10년 뒤 모습을 입력하세요...</span></div>
       <textarea class="fp-vision-input" id="fpVisionInput" placeholder="10년 뒤 나의 모습..." oninput="saveFpVision()" onblur="hideFpVision()"></textarea>
     </div>
     <div class="fp-3p-wrap">
@@ -613,9 +612,14 @@ function curData(){const k=curKey();if(!data[k])data[k]={todos:[],memoStart:'',m
 // Sub parsing
 function parseSubs(raw){
   if(!raw||!raw.trim())return[];
-  // try numbered: 1) or 1. pattern
-  const numMatch=[...raw.matchAll(/\d+[.)]\s*([^,\d][^,]*?)(?=\s*\d+[.)]|$)/g)];
-  if(numMatch.length>1)return numMatch.map(m=>({text:m[1].trim(),done:false})).filter(s=>s.text);
+  // split by comma followed by number pattern
+  const hasNumbered=/\d+[.)]\s*/.test(raw);
+  if(hasNumbered){
+    return raw.split(/,\s*(?=\d+[.)])/).map(p=>{
+      const cleaned=p.trim().replace(/^\d+[.)]\s*/,'');
+      return{text:cleaned,done:false};
+    }).filter(s=>s.text);
+  }
   // try comma split
   const parts=raw.split(',').map(s=>s.trim()).filter(Boolean);
   if(parts.length>1)return parts.map(t=>({text:t,done:false}));
@@ -693,15 +697,20 @@ function switchTab(t){
 }
 
 // Future Plan
+function cleanVisionText(v){
+  return (v||'').split('\n').map(line=>line.trim()).join('\n').trim();
+}
+
 const DEFAULT_HABITS = {
   h1: '원하는 것을 구체적으로 머릿속에 그려라\n설정한 목표를 글로 적어라\n기한을 정하라\n해야 하는 일의 목록을 작성하라\n체크리스트를 활용하라\n한 걸음만 내디뎌라\n계속하라',
   h2: '책을 가까이 하라\n잠재의식 노트를 써라\n하루의 계획을 세워라\n중요한 것에 집중하라\n중요한 일을 끝낸 후 질문하라\n오디오북을 들어라\n누구에게나 친절하라',
   h3: '충분히 숙면하라\n아침에 운동하라\n책으로 명상하라\n우선순위를 정하라\n도파민 중독에서 벗어나라\n건강한 식습관을 유지하라\n주변 사람을 소중히 여겨라'
 };
 function renderFP(){
+  fp.vision=cleanVisionText(fp.vision);
   const vEl=document.getElementById('fpVisionText');
-  if(fp.vision){vEl.innerHTML=escHtml(fp.vision).replace(/\n/g,'<br>');vEl.style.opacity='1';}
-  else{vEl.textContent='클릭해서 10년 뒤 모습을 입력하세요...';vEl.style.opacity='0.55';}
+  vEl.textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';
+  vEl.style.opacity=fp.vision?'1':'0.55';
   document.getElementById('fpVisionInput').value=fp.vision||'';
   document.getElementById('fp3pInput').value=fp.mid||'';
   document.getElementById('fpNowInput').value=fp.now||'';
@@ -739,28 +748,33 @@ function selectPickerMonth(y,m){
   render();
   closeModal('monthPickerModal');
 }
-function editFpVision(){document.getElementById('fpVisionDisplay').style.display='none';const i=document.getElementById('fpVisionInput');i.style.display='block';i.focus();}
+function editFpVision(){
+  document.getElementById('fpVisionDisplay').style.display='none';
+  const i=document.getElementById('fpVisionInput');
+  i.value=cleanVisionText(i.value);
+  i.style.display='block';
+  i.focus();
+}
 function hideFpVision(){
-  fp.vision=document.getElementById('fpVisionInput').value.trim();
+  fp.vision=cleanVisionText(document.getElementById('fpVisionInput').value);
   saveFpStore();
   const el=document.getElementById('fpVisionText');
-  if(fp.vision){
-    el.innerHTML=escHtml(fp.vision).replace(/\n/g,'<br>');
-    el.style.opacity='1';
-  } else {
-    el.textContent='클릭해서 10년 뒤 모습을 입력하세요...';
-    el.style.opacity='0.55';
-  }
+  el.textContent=fp.vision||'클릭해서 10년 뒤 모습을 입력하세요...';
+  el.style.opacity=fp.vision?'1':'0.55';
   document.getElementById('fpVisionDisplay').style.display='block';
   document.getElementById('fpVisionInput').style.display='none';
   updateGapBanner();
 }
-function saveFpVision(){fp.vision=document.getElementById('fpVisionInput').value;saveFpStore();updateGapBanner();}
+function saveFpVision(){
+  fp.vision=cleanVisionText(document.getElementById('fpVisionInput').value);
+  saveFpStore();
+  updateGapBanner();
+}
 function saveFp(f){const map={mid:'fp3pInput',now:'fpNowInput',gap:'fpGapInput'};fp[f]=document.getElementById(map[f]).value;saveFpStore();if(f==='mid'||f==='vision')updateGapBanner();}
 function updateGapBanner(){
   const t=fp.vision||fp.mid||'Future Plan을 입력하면 여기에 표시돼요';
   const short=t.substring(0,120)+(t.length>120?'...':'');
-  document.getElementById('gapBannerText').innerHTML=escHtml(short).replace(/\n/g,'<br>');
+  document.getElementById('gapBannerText').textContent=short;
 }
 
 // Render
@@ -962,17 +976,20 @@ function parseBulk(){
     raw=raw.replace(/✓|✔|완료|\bO\b|\[done\]|☑/gi,'').trim();
     let text=raw,subRaw='';
     const ci=raw.indexOf(':');if(ci>0&&ci<raw.length-1){text=raw.slice(0,ci).trim();subRaw=raw.slice(ci+1).trim();}
-    // parse subs: look for 1) 2) or comma separated
+    // parse subs: split by ', 숫자)' pattern first, then fallback to comma
     let subs=[];
     if(subRaw){
-      const numM=[...subRaw.matchAll(/\d+[.)]\s*([^✓✔,\d][^,]*?)(?=\s*(?:\d+[.)]|[✓✔]|$))/g)];
-      if(numM.length>=1){
-        subs=numM.map(m=>{
-          const st=m[1].trim();
-          const sd=/✓|✔|\[done\]/i.test(st)||/✓|✔|\[done\]/i.test(m[0]);
-          return{text:st.replace(/✓|✔|\[done\]/gi,'').trim(),done:sd};
+      // 1) split by comma followed by number pattern: ", 1)" ", 2)" etc
+      const numbered=/,\s*(?=\d+[.)])/;
+      const hasNumbered=/\d+[.)]\s*/.test(subRaw);
+      if(hasNumbered){
+        subs=subRaw.split(numbered).map(p=>{
+          const cleaned=p.trim().replace(/^\d+[.)]\s*/,'');
+          const sd=/✓|✔|\[done\]/i.test(cleaned);
+          return{text:cleaned.replace(/✓|✔|\[done\]/gi,'').trim(),done:sd};
         }).filter(s=>s.text);
       } else {
+        // comma split fallback
         subs=subRaw.split(',').map(p=>{
           const p2=p.trim();const sd=/✓|✔|\[done\]/i.test(p2);
           return{text:p2.replace(/✓|✔|\[done\]/gi,'').trim(),done:sd};
