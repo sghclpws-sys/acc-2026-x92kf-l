@@ -562,7 +562,10 @@
   <div class="modal history-modal">
     <div class="modal-title">목표 히스토리</div>
     <div id="historyContent" style="max-height:500px;overflow-y:auto"></div>
-    <div class="modal-actions"><button class="btn-sm gold" onclick="closeModal('historyModal')">닫기</button></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="clearAllData()" style="color:var(--red);border-color:var(--red)">🗑 전체 데이터 삭제</button>
+      <button class="btn-sm gold" onclick="closeModal('historyModal')">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -1163,6 +1166,14 @@ function openHistory(){
 }
 
 // Utils
+function clearAllData(){
+  if(!confirm('⚠️ 모든 목표 데이터를 삭제할까요?\n\nFuture Plan 데이터는 유지됩니다.\n이 작업은 되돌릴 수 없어요.'))return;
+  data={};
+  save();
+  render();
+  closeModal('historyModal');
+  showToast('전체 데이터 삭제됐어요');
+}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function genId(){return Math.random().toString(36).slice(2,9);}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
