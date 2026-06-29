@@ -1246,30 +1246,44 @@ body {
   </div>
 </div>
 
-<!-- GIST 설정 모달 -->
+<!-- REPO 설정 모달 -->
 <div class="gist-modal-overlay" id="gistModal">
   <div class="gist-modal">
     <div class="modal-hd">
       <div>
-        <div class="modal-title">☁ Gist 동기화 설정</div>
+        <div class="modal-title">☁ GitHub 동기화 설정</div>
         <div class="modal-sub">토큰은 이 기기의 localStorage에만 저장됩니다</div>
       </div>
       <button class="modal-close" onclick="closeGistModal()">✕</button>
     </div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
       <div style="font-size:12px;line-height:1.7;background:var(--accent-l);padding:10px 14px;border-radius:8px;border-left:3px solid var(--accent);color:var(--text2)">
-        GitHub → Settings → Developer settings → Personal access tokens → <b>Tokens (classic)</b><br>
-        → Generate new token → <b>gist 권한만 체크</b> → 생성된 토큰 복사
+        GitHub → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b><br>
+        → Repository access: <b>advisor repo 하나만 선택</b><br>
+        → Permissions → Contents: <b>Read and write</b> (나머지 No access)
       </div>
       <div>
-        <div class="gist-label">GitHub Personal Access Token</div>
-        <input class="gist-input" type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-        <div class="gist-hint">토큰은 localStorage에만 저장되며 외부로 전송되지 않습니다</div>
+        <div class="gist-label">GitHub Username</div>
+        <input class="gist-input" type="text" id="gistOwnerInput" placeholder="github-username" autocomplete="off">
       </div>
       <div>
-        <div class="gist-label">Gist ID <span style="font-weight:400;color:var(--text3)">(최초 연결 시 자동 생성)</span></div>
-        <input class="gist-input" type="text" id="gistIdInput" placeholder="자동 입력됨 — 직접 입력도 가능">
-        <div class="gist-hint">기존 Gist를 연결하려면 Gist ID를 직접 입력하세요</div>
+        <div class="gist-label">Repository 이름</div>
+        <input class="gist-input" type="text" id="gistRepoInput" placeholder="advisor" autocomplete="off">
+        <div class="gist-hint">portfolio.json이 있는 private repo 이름</div>
+      </div>
+      <div>
+        <div class="gist-label">파일 경로</div>
+        <input class="gist-input" type="text" id="gistFileInput" placeholder="portfolio.json" autocomplete="off">
+        <div class="gist-hint">repo 내 portfolio.json 경로 (루트에 있으면 파일명만)</div>
+      </div>
+      <div>
+        <div class="gist-label">Fine-grained Personal Access Token</div>
+        <input class="gist-input" type="password" id="gistTokenInput" placeholder="github_pat_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <div class="gist-hint">토큰은 localStorage에만 저장되며 GitHub API 호출 외 외부로 전송되지 않습니다</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="gistSaveToken" checked style="width:14px;height:14px;cursor:pointer">
+        <label for="gistSaveToken" style="font-size:12px;color:var(--text2);cursor:pointer">이 브라우저에 토큰 저장 (집 PC에서만 체크 권장)</label>
       </div>
       <div id="gistModalStatus" style="display:none;font-size:12px;padding:8px 12px;border-radius:7px"></div>
     </div>
@@ -5415,95 +5429,127 @@ TAA House View: portfolio.json의 taa_house_view 기준
 
 
 // ══════════════════════════════════════════
-// GIST SYNC
+// GITHUB PRIVATE REPO SYNC
 // ══════════════════════════════════════════
-const GIST_FILE = 'portfolio-data.json';
-const GIST_CFG_KEY = 'gist-portfolio-config';
+const REPO_CFG_KEY = 'github-portfolio-config';
 
-function getGistConfig() {
-  try { return JSON.parse(localStorage.getItem(GIST_CFG_KEY) || '{}'); } catch(e) { return {}; }
+function getRepoConfig() {
+  try { return JSON.parse(localStorage.getItem(REPO_CFG_KEY) || '{}'); } catch(e) { return {}; }
 }
-function setGistConfig(cfg) {
-  localStorage.setItem(GIST_CFG_KEY, JSON.stringify(cfg));
+function setRepoConfig(cfg) {
+  localStorage.setItem(REPO_CFG_KEY, JSON.stringify(cfg));
+}
+
+// 세션 전용 토큰 (저장 안 함 옵션)
+let _sessionToken = null;
+
+function getToken() {
+  return _sessionToken || getRepoConfig().token || null;
 }
 
 function setGistUI(state, text) {
-  // state: 'ok' | 'busy' | 'err' | 'off'
   const dot = document.getElementById('gistDot');
   const txt = document.getElementById('gistStatusText');
   if (!dot || !txt) return;
   dot.className = 'gist-dot ' + state;
   txt.textContent = text;
-  txt.style.color = state === 'ok' ? 'var(--green)'
+  txt.style.color = state === 'ok'   ? 'var(--green)'
                   : state === 'busy' ? 'var(--yellow)'
                   : state === 'err'  ? 'var(--red)'
                   : 'var(--text3)';
 }
 
-async function loadFromGist() {
-  const cfg = getGistConfig();
-  if (!cfg.token || !cfg.gistId) return false;
+function getRepoApiUrl() {
+  const cfg = getRepoConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.file) return null;
+  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.file}`;
+}
+
+async function loadFromRepo() {
+  const token = getToken();
+  const url = getRepoApiUrl();
+  if (!token || !url) return false;
   setGistUI('busy', '불러오는 중...');
   try {
-    const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-      headers: { Authorization: `token ${cfg.token}`, Accept: 'application/vnd.github+json' }
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const content = json.files?.[GIST_FILE]?.content;
-    if (!content) { setGistUI('err', 'Gist 파일 없음'); return false; }
+    // Contents API는 base64 인코딩으로 반환
+    const content = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
     const parsed = JSON.parse(content);
     if (!parsed.accounts) throw new Error('invalid');
     P = normalizePortfolioData(parsed);
     localStorage.setItem('portfolio_data', content);
+    // sha는 업데이트 시 필요 — 저장
+    const c = getRepoConfig(); c._sha = json.sha; setRepoConfig(c);
     syncTAAtoTargets();
     const dd = document.getElementById('dataDate');
     if (dd) dd.textContent = P.updated_at || '—';
-    setGistUI('ok', 'Gist 연결됨');
+    setGistUI('ok', 'GitHub 연결됨');
     return true;
   } catch(e) {
-    console.error('[Gist] load error:', e);
+    console.error('[Repo] load error:', e);
     setGistUI('err', '로드 실패');
     return false;
   }
 }
 
-let _gistSyncTimer = null;
-async function syncToGist(raw) {
-  const cfg = getGistConfig();
-  if (!cfg.token) return;
+let _syncTimer = null;
+async function syncToRepo(raw) {
+  const token = getToken();
+  const url = getRepoApiUrl();
+  if (!token || !url) return;
   setGistUI('busy', '동기화 중...');
   try {
-    const body = { files: { [GIST_FILE]: { content: raw } } };
-    const isNew = !cfg.gistId;
-    if (isNew) { body.description = 'Portfolio Data · SONG'; body.public = false; }
-    const url = isNew ? 'https://api.github.com/gists' : `https://api.github.com/gists/${cfg.gistId}`;
+    const cfg = getRepoConfig();
+    // base64 인코딩
+    const encoded = btoa(unescape(encodeURIComponent(raw)));
+    const body = {
+      message: `portfolio update ${new Date().toISOString().slice(0,10)}`,
+      content: encoded,
+    };
+    if (cfg._sha) body.sha = cfg._sha; // 기존 파일 업데이트 시 sha 필요
     const res = await fetch(url, {
-      method: isNew ? 'POST' : 'PATCH',
-      headers: { Authorization: `token ${cfg.token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github+json' },
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/vnd.github+json'
+      },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
     const json = await res.json();
-    if (isNew) { const c = getGistConfig(); c.gistId = json.id; setGistConfig(c); }
-    setGistUI('ok', 'Gist 연결됨');
+    // 업데이트 후 새 sha 저장
+    const newSha = json.content?.sha;
+    if (newSha) { const c = getRepoConfig(); c._sha = newSha; setRepoConfig(c); }
+    setGistUI('ok', 'GitHub 연결됨');
   } catch(e) {
-    console.error('[Gist] sync error:', e);
+    console.error('[Repo] sync error:', e);
     setGistUI('err', '동기화 실패');
+    showToast('⚠ GitHub 동기화 실패: ' + e.message);
   }
 }
 
 function scheduleGistSync(raw) {
-  clearTimeout(_gistSyncTimer);
-  _gistSyncTimer = setTimeout(() => syncToGist(raw), 1500);
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => syncToRepo(raw), 1500);
 }
 
-// ── Gist 설정 모달 ──
+// ── 설정 모달 ──
 function openGistModal() {
-  const cfg = getGistConfig();
-  document.getElementById('gistTokenInput').value = cfg.token || '';
-  document.getElementById('gistIdInput').value    = cfg.gistId || '';
-  const s = document.getElementById('gistModalStatus'); s.style.display='none';
+  const cfg = getRepoConfig();
+  document.getElementById('gistOwnerInput').value = cfg.owner || '';
+  document.getElementById('gistRepoInput').value  = cfg.repo  || '';
+  document.getElementById('gistFileInput').value  = cfg.file  || 'portfolio.json';
+  document.getElementById('gistTokenInput').value = cfg.token || _sessionToken || '';
+  document.getElementById('gistSaveToken').checked = true;
+  const s = document.getElementById('gistModalStatus'); s.style.display = 'none';
   document.getElementById('gistModal').classList.add('open');
 }
 function closeGistModal() {
@@ -5523,40 +5569,46 @@ function setGistModalStatus(msg, ok) {
 
 async function connectGist() {
   const token  = document.getElementById('gistTokenInput').value.trim();
-  const gistId = document.getElementById('gistIdInput').value.trim();
-  if (!token) { setGistModalStatus('토큰을 입력해 주세요', false); return; }
+  const owner  = document.getElementById('gistOwnerInput').value.trim();
+  const repo   = document.getElementById('gistRepoInput').value.trim();
+  const file   = document.getElementById('gistFileInput').value.trim() || 'portfolio.json';
+  const save   = document.getElementById('gistSaveToken').checked;
+
+  if (!token || !owner || !repo) {
+    setGistModalStatus('토큰, Username, Repository를 모두 입력해 주세요', false); return;
+  }
   setGistModalStatus('연결 확인 중...', true);
   try {
-    // 토큰 유효성 확인
-    const r = await fetch('https://api.github.com/user', {
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github+json' }
+    // 토큰 + repo 접근 유효성 확인
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
     });
-    if (!r.ok) throw new Error('인증 실패');
-    const cfg = { token };
-    if (gistId) cfg.gistId = gistId;
-    setGistConfig(cfg);
+    if (!r.ok) throw new Error(`repo 접근 실패 (HTTP ${r.status})`);
+
+    // 설정 저장
+    const cfg = { owner, repo, file };
+    if (save) { cfg.token = token; setRepoConfig(cfg); _sessionToken = null; }
+    else       { setRepoConfig(cfg); _sessionToken = token; } // 토큰은 세션만
+
     setGistModalStatus('✓ 연결 성공! 데이터를 불러옵니다...', true);
     setTimeout(async () => {
-      if (cfg.gistId) {
-        const ok = await loadFromGist();
-        if (ok) { renderHome(); runCoastFire(); }
-      } else {
-        setGistUI('ok', 'Gist 연결됨');
-      }
+      const ok = await loadFromRepo();
+      if (ok) { renderHome(); runCoastFire(); }
       closeGistModal();
-      showToast('✓ Gist 연결 완료');
+      showToast('✓ GitHub 연결 완료');
     }, 800);
   } catch(e) {
-    setGistModalStatus('연결 실패: 토큰을 확인해 주세요', false);
+    setGistModalStatus('연결 실패: ' + e.message, false);
   }
 }
 
 function disconnectGist() {
-  if (!confirm('Gist 연결을 해제합니다. 로컬 데이터는 유지됩니다.')) return;
-  localStorage.removeItem(GIST_CFG_KEY);
-  setGistUI('off', 'Gist 미연결');
+  if (!confirm('GitHub 연결을 해제합니다. 로컬 데이터는 유지됩니다.')) return;
+  localStorage.removeItem(REPO_CFG_KEY);
+  _sessionToken = null;
+  setGistUI('off', 'GitHub 미연결');
   closeGistModal();
-  showToast('Gist 연결 해제됨');
+  showToast('GitHub 연결 해제됨');
 }
 
 // ══════════════════════════════════════════
@@ -5593,30 +5645,25 @@ function clearData() {
 }
 
 function loadSavedData() {
-  // 1) Gist 연결돼 있으면 Gist에서 먼저 로드 시도
-  const cfg = getGistConfig();
-  if (cfg.token && cfg.gistId) {
-    loadFromGist().then(ok => {
-      if (ok) { renderHome(); runCoastFire(); }
-    });
-    // Gist 로드하는 동안 일단 localStorage fallback으로 즉시 렌더
-  }
-  // 2) localStorage fallback (항상 실행 — Gist 로드 결과로 덮어쓸 수 있음)
+  // 1) localStorage fallback 먼저 (즉시 렌더)
   const saved = localStorage.getItem('portfolio_data');
-  if(saved) {
+  if (saved) {
     try {
       P = normalizePortfolioData(JSON.parse(saved));
       syncTAAtoTargets();
-      document.getElementById('dataDate').textContent = P.updated_at||'—';
+      document.getElementById('dataDate').textContent = P.updated_at || '—';
     } catch(e) { localStorage.removeItem('portfolio_data'); }
   }
-  // 3) Gist 설정 상태 UI 반영
-  if (cfg.token && cfg.gistId) {
+  // 2) GitHub repo 연결돼 있으면 최신 데이터로 덮어쓰기
+  const cfg = getRepoConfig();
+  const token = getToken();
+  if (token && cfg.owner && cfg.repo) {
     setGistUI('busy', '불러오는 중...');
-  } else if (cfg.token) {
-    setGistUI('ok', 'Gist 연결됨');
+    loadFromRepo().then(ok => {
+      if (ok) { renderHome(); runCoastFire(); }
+    });
   } else {
-    setGistUI('off', 'Gist 미연결');
+    setGistUI('off', 'GitHub 미연결');
   }
 }
 
