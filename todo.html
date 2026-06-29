@@ -82,7 +82,7 @@
   .stat-unit { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-left: 2px; }
   .gap-banner { background: linear-gradient(135deg, #2C2420, #4A3728); border-radius: var(--radius-lg); padding: 11px 16px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; cursor: pointer; }
   .gap-banner-label { font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 2px; }
-  .gap-banner-vision { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.5; word-break: keep-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .gap-banner-vision { font-size: 13px; color: rgba(255,255,255,0.88); line-height: 1.5; word-break: keep-all; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .gap-banner-arrow { color: rgba(255,255,255,0.35); font-size: 16px; flex-shrink: 0; }
   .reflection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
   .reflection-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem 1.1rem; }
@@ -1035,16 +1035,21 @@ function setBulkTag(bi,ii,v){bulkParsed[bi].items[ii].tag=v;}
 function setBulkType(bi,ii,v){bulkParsed[bi].items[ii].itemType=v;}
 function confirmBulk(){
   if(!bulkParsed.length){showToast('입력된 데이터가 없어요');return;}
-  let added=0;
+  let added=0, skipped=0;
   bulkParsed.forEach(b=>{
     const k=key(b.year,b.month);
     if(!data[k])data[k]={todos:[],memoStart:'',memoEnd:''};
     b.items.forEach(item=>{
+      // 중복 체크: 같은 달에 같은 텍스트가 이미 있으면 skip
+      const exists=data[k].todos.some(t=>t.text.trim()===item.text.trim());
+      if(exists){skipped++;return;}
       data[k].todos.push({id:item.id,type:item.itemType,text:item.text,subs:item.subs,tag:item.tag,highlighted:item.highlighted,score:item.itemType==='dir'?3:undefined,created:new Date().toISOString()});
       added++;
     });
   });
-  save();render();closeModal('bulkModal');showToast(`${added}개 항목 저장됐어요`);
+  save();render();closeModal('bulkModal');
+  if(skipped>0)showToast(`${added}개 저장, ${skipped}개 중복 건너뜀`);
+  else showToast(`${added}개 항목 저장됐어요`);
 }
 
 // Actions
