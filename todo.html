@@ -615,7 +615,7 @@ function curData(){const k=curKey();if(!data[k])data[k]={todos:[],memoStart:'',m
 // Sub parsing
 function parseSubs(raw){
   if(!raw||!raw.trim())return[];
-  // split by comma followed by number pattern
+  // 번호 패턴(1) 2) 3))이 있을 때만 분리, 없으면 통째로 하나
   const hasNumbered=/\d+[.)]\s*/.test(raw);
   if(hasNumbered){
     return raw.split(/,\s*(?=\d+[.)])/).map(p=>{
@@ -623,9 +623,7 @@ function parseSubs(raw){
       return{text:cleaned,done:false};
     }).filter(s=>s.text);
   }
-  // try comma split
-  const parts=raw.split(',').map(s=>s.trim()).filter(Boolean);
-  if(parts.length>1)return parts.map(t=>({text:t,done:false}));
+  // 번호 없으면 쉼표 포함 통째로 하나의 세부내용
   return raw.trim()?[{text:raw.trim(),done:false}]:[];
 }
 
@@ -979,24 +977,22 @@ function parseBulk(){
     raw=raw.replace(/✓|✔|완료|\bO\b|\[done\]|☑/gi,'').trim();
     let text=raw,subRaw='';
     const ci=raw.indexOf(':');if(ci>0&&ci<raw.length-1){text=raw.slice(0,ci).trim();subRaw=raw.slice(ci+1).trim();}
-    // parse subs: split by ', 숫자)' pattern first, then fallback to comma
+    // parse subs: 번호 패턴(1) 2) 3))이 있을 때만 분리, 없으면 통째로 하나의 세부내용
     let subs=[];
     if(subRaw){
-      // 1) split by comma followed by number pattern: ", 1)" ", 2)" etc
-      const numbered=/,\s*(?=\d+[.)])/;
       const hasNumbered=/\d+[.)]\s*/.test(subRaw);
       if(hasNumbered){
-        subs=subRaw.split(numbered).map(p=>{
+        // 번호 기준으로 split
+        subs=subRaw.split(/,\s*(?=\d+[.)])/).map(p=>{
           const cleaned=p.trim().replace(/^\d+[.)]\s*/,'');
           const sd=/✓|✔|\[done\]/i.test(cleaned);
           return{text:cleaned.replace(/✓|✔|\[done\]/gi,'').trim(),done:sd};
         }).filter(s=>s.text);
       } else {
-        // comma split fallback
-        subs=subRaw.split(',').map(p=>{
-          const p2=p.trim();const sd=/✓|✔|\[done\]/i.test(p2);
-          return{text:p2.replace(/✓|✔|\[done\]/gi,'').trim(),done:sd};
-        }).filter(s=>s.text);
+        // 번호 없으면 통째로 하나의 세부내용 (쉼표 포함 그대로 유지)
+        const sd=/✓|✔|\[done\]/i.test(subRaw);
+        const cleaned=subRaw.replace(/✓|✔|\[done\]/gi,'').trim();
+        if(cleaned)subs=[{text:cleaned,done:sd}];
       }
     }
     const last=bulkParsed[bulkParsed.length-1];
