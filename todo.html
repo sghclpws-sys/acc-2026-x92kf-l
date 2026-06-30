@@ -137,12 +137,6 @@
   .todo-sub-progress { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 
   /* Direction slider */
-  .dir-slider-area { border-top: 1px solid var(--border); padding: 8px 10px 9px 36px; background: rgba(0,0,0,0.015); border-radius: 0 0 var(--radius) var(--radius); }
-  .slider-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
-  .slider-wrap input[type=range] { flex: 1; height: 4px; -webkit-appearance: none; appearance: none; border-radius: 4px; cursor: pointer; outline: none; border: none; }
-  .slider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px var(--gold); }
-  .slider-val { font-size: 12px; font-weight: 600; color: var(--gold); min-width: 14px; text-align: right; }
-  .slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); }
 
   /* Add inline */
   .add-trigger { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 5px 0; transition: color 0.15s; }
@@ -262,6 +256,15 @@
   .history-reflection { font-size: 12px; color: var(--text-sub); background: var(--gold-bg); border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
   .hr-label { font-size: 10px; font-weight: 600; color: #8B6F45; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
   .empty-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px 0; }
+  .fp-link-grid { display: flex; flex-direction: column; gap: 4px; }
+  .fp-link-opt { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .fp-link-opt:hover { border-color: var(--gold); }
+  .fp-link-opt.checked { background: var(--gold-bg); border-color: var(--gold); }
+  .fp-link-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .fp-link-opt.checked .fp-link-check { background: var(--gold); border-color: var(--gold); }
+  .fp-link-opt.checked .fp-link-check::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+  .todo-fp-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+  .todo-fp-badge { font-size: 10px; padding: 1px 6px; border-radius: 8px; background: #FFF4E0; border: 1px solid #F0D9A8; color: #A07820; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: white; padding: 9px 18px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .picker-month-btn { padding: 8px 4px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; cursor: pointer; text-align: center; transition: all 0.15s; color: var(--text-sub); }
@@ -392,7 +395,7 @@
             <input type="text" id="addTextTodo" placeholder="목표 (예: 보험 점검하기)" />
             <textarea id="addSubTodo" placeholder="세부 내용 — 1) 항목A, 2) 항목B 형식으로 입력하면 개별 체크 가능" rows="2"></textarea>
             <div class="add-form-row">
-              <select id="addTagTodo"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>관계</option><option>루틴</option><option>관리</option><option>기타</option></select>
+              <select id="addTagTodo"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기개발</option><option>관계</option><option>기타</option></select>
             </div>
             <div class="add-form-actions">
               <button class="btn-sm" onclick="hideAddInline('todo')">취소</button>
@@ -411,7 +414,7 @@
             <input type="text" id="addTextDir" placeholder="방향성 (예: 빛이 나자, 그냥 하기)" />
             <textarea id="addSubDir" placeholder="구체적인 내용 (선택사항)" rows="2"></textarea>
             <div class="add-form-row">
-              <select id="addTagDir"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>관계</option><option>루틴</option><option>관리</option><option>기타</option></select>
+              <select id="addTagDir"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기개발</option><option>관계</option><option>기타</option></select>
             </div>
             <div class="add-form-actions">
               <button class="btn-sm" onclick="hideAddInline('dir')">취소</button>
@@ -439,9 +442,14 @@
 
   <!-- ANALYSIS -->
   <div id="pageAnalysis" class="page">
+    <div class="analysis-card" style="margin-bottom:20px">
+      <div class="analysis-title">🎯 Future Plan 기여도 — 각 목표를 향한 진행도</div>
+      <div id="fpProgress"></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.6">목표 추가/수정 시 어떤 Future Plan에 기여하는지 연결하면 여기에 진행도가 누적됩니다. 연결 안 된 항목은 집계에서 제외돼요.</div>
+    </div>
     <div class="analysis-grid">
       <div class="analysis-card"><div class="analysis-title">카테고리별 달성률</div><div id="catBars"></div></div>
-      <div class="analysis-card"><div class="analysis-title">방향성 자기평가 평균</div><div id="dirCatBars"></div></div>
+      <div class="analysis-card"><div class="analysis-title">방향성 항목 달성률</div><div id="dirCatBars"></div></div>
     </div>
     <div class="analysis-card" style="margin-bottom:20px">
       <div class="analysis-title">월별 × 카테고리 히트맵</div>
@@ -489,7 +497,9 @@
     <label>세부 내용 <span style="font-weight:400;color:var(--text-muted)">(선택 — 1) 항목A, 2) 항목B 형식으로 개별 체크 가능)</span></label>
     <textarea id="modalSub" rows="3" placeholder="1) 아파트 헬스장 PT 확인, 2) 회사 헬스장 신청, 3) 아침 운동 병행"></textarea>
     <label>카테고리</label>
-    <select id="modalTag"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>관계</option><option>루틴</option><option>관리</option><option>기타</option></select>
+    <select id="modalTag"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기개발</option><option>관계</option><option>기타</option></select>
+    <label>🎯 Future Plan 연결 <span style="font-weight:400;color:var(--text-muted)">(이 목표가 기여하는 장기 목표)</span></label>
+    <div id="modalFpLinks" class="fp-link-grid"></div>
     <div class="modal-actions">
       <button class="btn-sm" onclick="closeModal('addModal')">취소</button>
       <button class="btn-sm gold" onclick="addTodoFromModal()">추가</button>
@@ -511,7 +521,9 @@
     <label>세부 내용 <span style="font-weight:400;color:var(--text-muted)">(1) 항목A, 2) 항목B 형식)</span></label>
     <textarea id="editSub" rows="3"></textarea>
     <label>카테고리</label>
-    <select id="editTag"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기계발</option><option>관계</option><option>루틴</option><option>관리</option><option>기타</option></select>
+    <select id="editTag"><option>커리어</option><option>건강</option><option>재무</option><option>가족</option><option>자기개발</option><option>관계</option><option>기타</option></select>
+    <label>🎯 Future Plan 연결 <span style="font-weight:400;color:var(--text-muted)">(이 목표가 기여하는 장기 목표)</span></label>
+    <div id="editFpLinks" class="fp-link-grid"></div>
     <div class="modal-actions">
       <button class="btn-sm" onclick="closeModal('editModal')">취소</button>
       <button class="btn-sm gold" onclick="saveEdit()">저장</button>
@@ -588,10 +600,10 @@
 
 <script>
 const MONTHS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-const CATS=['커리어','건강','재무','가족','자기계발','관계','루틴','관리','기타'];
-const CAT_COLORS={'커리어':'#6B8FD4','건강':'#5BAD7A','재무':'#B5956A','가족':'#D4826B','자기계발':'#9B7FD4','관계':'#D4A76B','루틴':'#6BB8D4','관리':'#7FD4B0','기타':'#A09D96'};
+const CATS=['커리어','건강','재무','가족','자기개발','관계','기타'];
+const CAT_COLORS={'커리어':'#6B8FD4','건강':'#5BAD7A','재무':'#B5956A','가족':'#D4826B','자기개발':'#9B7FD4','관계':'#D4A76B','기타':'#A09D96'};
 const PROMPTS={
-  gap:t=>`아래는 내 Future Plan과 월별 목표 히스토리야. Future Plan(10년 뒤 목표)과 현재 달성 패턴 사이의 Gap을 분석해줘.\n\n${t}`,
+  gap:t=>`아래는 내 Future Plan과 월별 목표 히스토리야. 각 Future Plan 항목별 기여도와 달성 패턴을 보고, 어느 목표가 정체돼 있고 어느 목표가 잘 진행되는지, Gap을 줄이려면 다음 달에 뭘 해야 할지 구체적으로 조언해줘.\n\n${t}`,
   overall:t=>`아래는 내 월별 목표 달성 히스토리야. 전체적인 패턴을 분석해줘. 어떤 카테고리가 잘 되고 안 되는지 알려줘.\n\n${t}`,
   repeat:t=>`아래 목표 히스토리에서 반복적으로 미달성되는 항목들을 분석해줘. 왜 계속 안 되는지, 어떻게 바꾸면 좋을지 조언해줘.\n\n${t}`,
   next:t=>`아래는 내 월별 목표 히스토리야. 다음 달에 집중해야 할 것과 줄여야 할 것을 추천해줘.\n\n${t}`
@@ -599,12 +611,22 @@ const PROMPTS={
 
 let curY=new Date().getFullYear(), curM=new Date().getMonth();
 let curTab='goals', modalType='todo', editType='todo', curPrompt='gap';
-let data={}, fp={vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''}, bulkParsed=[];
+let data={}, fp={vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:'',fpItems:[]}, bulkParsed=[];
+let modalFpSel=[], editFpSel=[];
 
 // Storage
+function migrateCats(){
+  // 카테고리 재정의 마이그레이션: 루틴→자기개발, 관리→건강, 자기계발→자기개발
+  const map={'루틴':'자기개발','관리':'건강','자기계발':'자기개발'};
+  let changed=false;
+  Object.values(data).forEach(md=>(md.todos||[]).forEach(t=>{
+    if(map[t.tag]){t.tag=map[t.tag];changed=true;}
+  }));
+  if(changed)save();
+}
 function load(){
   try{data=JSON.parse(localStorage.getItem('mg-data')||'{}');}catch(e){data={};}
-  try{const f=JSON.parse(localStorage.getItem('mg-fp')||'{}');fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''},f);}catch(e){}
+  try{const f=JSON.parse(localStorage.getItem('mg-fp')||'{}');fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:'',fpItems:[]},f);}catch(e){}
 }
 function save(){localStorage.setItem('mg-data',JSON.stringify(data));if(getGistCfg().token)scheduleSync();}
 function saveFpStore(){localStorage.setItem('mg-fp',JSON.stringify(fp));if(getGistCfg().token)scheduleSync();}
@@ -659,7 +681,7 @@ async function loadFromGist(){
     if(!res.ok)throw new Error();
     const j=await res.json();
     const content=j.files['monthly-goals.json']?.content;
-    if(content){const p=JSON.parse(content);if(p.data)data=p.data;if(p.fp)fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:''},p.fp);localStorage.setItem('mg-data',JSON.stringify(data));localStorage.setItem('mg-fp',JSON.stringify(fp));render();}
+    if(content){const p=JSON.parse(content);if(p.data)data=p.data;if(p.fp)fp=Object.assign({vision:'',mid:'',now:'',gap:'',h1:'',h2:'',h3:'',fpItems:[]},p.fp);localStorage.setItem('mg-data',JSON.stringify(data));localStorage.setItem('mg-fp',JSON.stringify(fp));render();}
     setGistStatus('connected',`Gist 연결됨 · ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 동기화`);
   }catch(e){setGistStatus('error','Gist 불러오기 실패');}
 }
@@ -698,6 +720,19 @@ function switchTab(t){
 }
 
 // Future Plan
+// Future Plan 핵심 목표 (기여도 추적용)
+const DEFAULT_FP_ITEMS = [
+  {id:'fp1', icon:'💼', label:'커리어 전문성 · 리더'},
+  {id:'fp2', icon:'🌐', label:'영어 · MBA급 전문성'},
+  {id:'fp3', icon:'📈', label:'재테크 자산 증식'},
+  {id:'fp4', icon:'🤝', label:'나이스한 사람 · 관계'},
+  {id:'fp5', icon:'👨‍👩‍👧', label:'가족 1순위 · 화목한 가정'}
+];
+function getFpItems(){
+  if(!fp.fpItems||fp.fpItems.length===0){fp.fpItems=JSON.parse(JSON.stringify(DEFAULT_FP_ITEMS));}
+  return fp.fpItems;
+}
+
 function cleanVisionText(v){
   return (v||'').split('\n').map(line=>line.trim()).join('\n').trim();
 }
@@ -800,10 +835,6 @@ function renderLists(){
   document.getElementById('todoList').innerHTML=md.todos.filter(t=>t.type==='todo').map(t=>renderItem(t,repeats)).join('')||'<div style="padding:8px 0;font-size:12px;color:var(--text-muted)">To-do 항목이 없어요</div>';
   document.getElementById('dirList').innerHTML=md.todos.filter(t=>t.type==='dir').map(t=>renderItem(t,repeats)).join('')||'<div style="padding:8px 0;font-size:12px;color:var(--text-muted)">방향성 항목이 없어요</div>';
   // bind sliders
-  md.todos.filter(t=>t.type==='dir').forEach(t=>{
-    const sl=document.getElementById('sl-'+t.id);
-    if(sl){updateSliderBg(sl,t.score||3);sl.addEventListener('input',function(){const v=parseInt(this.value);document.getElementById('sv-'+t.id).textContent=v;updateSliderBg(this,v);updateField(t.id,'score',v);});}
-  });
 }
 
 function renderItem(t,repeats){
@@ -821,13 +852,6 @@ function renderItem(t,repeats){
       </div>`).join('')}</div>`;
   }
 
-  let dirSlider='';
-  if(t.type==='dir'){
-    dirSlider=`<div class="dir-slider-area">
-      <div class="slider-wrap"><input type="range" id="sl-${t.id}" min="1" max="5" step="1" value="${t.score||3}"><div class="slider-val" id="sv-${t.id}">${t.score||3}</div></div>
-      <div class="slider-labels"><span>부족했어</span><span>충분했어</span></div>
-    </div>`;
-  }
 
   return`<div class="todo-item${t.highlighted?' highlighted':''}${isRepeat?' repeat-flag':''}" id="item-${t.id}">
     <div class="todo-item-header">
@@ -845,13 +869,12 @@ function renderItem(t,repeats){
         </div>
         ${subs.length>0?`<div class="todo-inline-subs">${subs.map((s,i)=>`<span class="todo-inline-sub${s.done?' done':''}"><span class="inline-sub-check${s.done?' checked':''}" onclick="toggleSub('${t.id}',${i})"></span>${escHtml(s.text)}</span>`).join('')}</div>`:''}
         ${subPct!==null?`<div class="todo-sub-progress">${subDone}/${subs.length} 세부 달성</div>`:''}
+        ${(t.fpLinks||[]).length>0?`<div class="todo-fp-badges">${(t.fpLinks||[]).map(fid=>{const it=getFpItems().find(x=>x.id===fid);return it?`<span class="todo-fp-badge">${it.icon} ${escHtml(it.label.split(' ')[0])}</span>`:'';}).join('')}</div>`:''}
       </div>
     </div>
-    ${dirSlider}
   </div>`;
 }
 
-function updateSliderBg(el,v){const p=((v-1)/4)*100;el.style.background=`linear-gradient(to right,#B5956A ${p}%,#E4E2DC ${p}%)`;}
 
 function renderStats(){
   const md=curData();const all=md.todos;
@@ -882,7 +905,7 @@ function renderChart(){
 
 function renderCarry(){
   const md=curData();
-  const cands=[...md.todos.filter(t=>t.type==='todo'&&!t.highlighted),...md.todos.filter(t=>t.type==='dir'&&(t.score||3)<=2)];
+  const cands=md.todos.filter(t=>!t.highlighted);
   document.getElementById('carryList').innerHTML=cands.length===0?'<div class="carry-empty">이월할 항목이 없어요 👍</div>':cands.map(t=>`<div class="carry-item"><div class="carry-dot"></div><span>${escHtml(t.text)}</span></div>`).join('');
   window._carryItems=cands;
 }
@@ -894,15 +917,44 @@ function renderReflection(){
 }
 
 // Analysis
+function renderFpProgress(){
+  const items=getFpItems();
+  const stats={};items.forEach(it=>stats[it.id]={total:0,hl:0});
+  Object.values(data).forEach(md=>(md.todos||[]).forEach(t=>{
+    (t.fpLinks||[]).forEach(fpId=>{
+      if(stats[fpId]){stats[fpId].total++;if(t.highlighted)stats[fpId].hl++;}
+    });
+  }));
+  const el=document.getElementById('fpProgress');
+  el.innerHTML=items.map(it=>{
+    const s=stats[it.id];
+    const pct=s.total>0?Math.round(s.hl/s.total*100):null;
+    const barColor=pct===null?'#E4E2DC':pct<40?'#D4826B':pct<70?'#C8A87A':'#5BAD7A';
+    const warn=pct!==null&&pct<40&&s.total>=3;
+    return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:11px">
+      <div style="width:180px;flex-shrink:0;font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px">
+        <span style="font-size:15px">${it.icon}</span>${escHtml(it.label)}
+      </div>
+      <div style="flex:1;height:10px;border-radius:5px;background:var(--bg);overflow:hidden">
+        <div style="height:100%;border-radius:5px;width:${pct||0}%;background:${barColor};transition:width 0.5s"></div>
+      </div>
+      <div style="width:90px;flex-shrink:0;text-align:right;font-size:12px;color:var(--text-sub)">
+        ${pct!==null?`${pct}% <span style="color:var(--text-muted)">(${s.hl}/${s.total})</span>`:'<span style="color:var(--text-muted)">연결 없음</span>'}
+        ${warn?' <span style="color:#C0392B" title="정체 구간">⚠️</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
 function renderAnalysis(){
+  renderFpProgress();
   // cat bars (todo)
   const cs={};CATS.forEach(c=>cs[c]={total:0,hl:0});
   Object.values(data).forEach(md=>(md.todos||[]).filter(t=>t.type==='todo').forEach(t=>{const c=cs[t.tag]?t.tag:'기타';cs[c].total++;if(t.highlighted)cs[c].hl++;}));
   document.getElementById('catBars').innerHTML=CATS.filter(c=>cs[c].total>0).map(c=>{const p=Math.round(cs[c].hl/cs[c].total*100);return`<div class="cat-bar-row"><div class="cat-name">${c}</div><div class="cat-track"><div class="cat-fill" style="width:${p}%;background:${CAT_COLORS[c]}"></div></div><div class="cat-pct">${p}%</div><div class="cat-count">${cs[c].total}개</div></div>`;}).join('')||'<div class="empty-msg">데이터 없음</div>';
   // dir bars
-  const ds={};CATS.forEach(c=>ds[c]={total:0,sum:0});
-  Object.values(data).forEach(md=>(md.todos||[]).filter(t=>t.type==='dir').forEach(t=>{const c=ds[t.tag]?t.tag:'기타';ds[c].total++;ds[c].sum+=(t.score||3);}));
-  document.getElementById('dirCatBars').innerHTML=CATS.filter(c=>ds[c].total>0).map(c=>{const a=ds[c].sum/ds[c].total;return`<div class="cat-bar-row"><div class="cat-name">${c}</div><div class="cat-track"><div class="cat-fill" style="width:${(a/5)*100}%;background:${CAT_COLORS[c]}"></div></div><div class="cat-pct">${a.toFixed(1)}</div><div class="cat-count">${ds[c].total}개</div></div>`;}).join('')||'<div class="empty-msg">데이터 없음</div>';
+  const ds={};CATS.forEach(c=>ds[c]={total:0,hl:0});
+  Object.values(data).forEach(md=>(md.todos||[]).filter(t=>t.type==='dir').forEach(t=>{const c=ds[t.tag]?t.tag:'기타';ds[c].total++;if(t.highlighted)ds[c].hl++;}));
+  document.getElementById('dirCatBars').innerHTML=CATS.filter(c=>ds[c].total>0).map(c=>{const p=Math.round(ds[c].hl/ds[c].total*100);return`<div class="cat-bar-row"><div class="cat-name">${c}</div><div class="cat-track"><div class="cat-fill" style="width:${p}%;background:${CAT_COLORS[c]}"></div></div><div class="cat-pct">${p}%</div><div class="cat-count">${ds[c].total}개</div></div>`;}).join('')||'<div class="empty-msg">데이터 없음</div>';
   // heatmap
   const keys=Object.keys(data).sort();
   if(!keys.length){document.getElementById('heatmap').innerHTML='<div class="empty-msg">데이터 없음</div>';renderExportPreview();return;}
@@ -936,6 +988,15 @@ function buildExport(){
   if(fp.vision)t+=`10년 목표: ${fp.vision}\n`;
   if(fp.mid)t+=`중기 목표: ${fp.mid}\n`;
   if(fp.gap)t+=`Gap Closing: ${fp.gap}\n`;
+  // Future Plan 기여도
+  const items=getFpItems();
+  const fpStats={};items.forEach(it=>fpStats[it.id]={total:0,hl:0,label:it.label});
+  Object.values(data).forEach(md=>(md.todos||[]).forEach(x=>{(x.fpLinks||[]).forEach(fid=>{if(fpStats[fid]){fpStats[fid].total++;if(x.highlighted)fpStats[fid].hl++;}});}));
+  const hasLinks=items.some(it=>fpStats[it.id].total>0);
+  if(hasLinks){
+    t+=`\n[Future Plan 기여도]\n`;
+    items.forEach(it=>{const s=fpStats[it.id];if(s.total>0)t+=`  ${it.label}: ${Math.round(s.hl/s.total*100)}% (${s.hl}/${s.total})\n`;});
+  }
   const cs={};CATS.forEach(c=>cs[c]={total:0,hl:0});
   Object.values(data).forEach(md=>(md.todos||[]).filter(x=>x.type==='todo').forEach(x=>{const c=cs[x.tag]?x.tag:'기타';cs[c].total++;if(x.highlighted)cs[c].hl++;}));
   t+=`\n[카테고리별 달성률]\n`;CATS.filter(c=>cs[c].total>0).forEach(c=>t+=`  ${c}: ${Math.round(cs[c].hl/cs[c].total*100)}% (${cs[c].hl}/${cs[c].total})\n`);
@@ -1042,7 +1103,7 @@ function confirmBulk(){
       // 중복 체크: 같은 달에 같은 텍스트가 이미 있으면 skip
       const exists=data[k].todos.some(t=>t.text.trim()===item.text.trim());
       if(exists){skipped++;return;}
-      data[k].todos.push({id:item.id,type:item.itemType,text:item.text,subs:item.subs,tag:item.tag,highlighted:item.highlighted,score:item.itemType==='dir'?3:undefined,created:new Date().toISOString()});
+      data[k].todos.push({id:item.id,type:item.itemType,text:item.text,subs:item.subs,tag:item.tag,highlighted:item.highlighted,created:new Date().toISOString()});
       added++;
     });
   });
@@ -1069,8 +1130,8 @@ function openEdit(id){
   document.getElementById('editTag').value=t.tag;
   document.getElementById('editTypeOptTodo').classList.toggle('active',t.type==='todo');
   document.getElementById('editTypeOptDir').classList.toggle('active',t.type==='dir');
-  // set tag select
-  document.getElementById('editTag').value=t.tag;
+  editFpSel=[...(t.fpLinks||[])];
+  renderFpLinks('editFpLinks',editFpSel,'toggleEditFp');
   document.getElementById('editModal').classList.add('show');
   document.getElementById('editText').focus();
 }
@@ -1086,6 +1147,7 @@ function saveEdit(){
   const oldSubs=t.subs||[];
   const newSubs=parseSubs(subRaw);
   t.subs=newSubs.map((s,i)=>({text:s.text,done:oldSubs[i]?oldSubs[i].done:false}));
+  t.fpLinks=[...editFpSel];
   save();render();closeModal('editModal');showToast('수정됐어요');
 }
 
@@ -1106,13 +1168,34 @@ function addTodoInline(type){
   const text=document.getElementById(`addText${s}`).value.trim();
   const subRaw=document.getElementById(`addSub${s}`).value.trim();
   const tag=document.getElementById(`addTag${s}`).value;
-  if(!text)return;addItem(type,text,subRaw,tag);hideAddInline(type);
+  if(!text)return;addItem(type,text,subRaw,tag,[]);hideAddInline(type);
+}
+function renderFpLinks(containerId,selected,onToggle){
+  const items=getFpItems();
+  document.getElementById(containerId).innerHTML=items.map(it=>
+    `<div class="fp-link-opt${selected.includes(it.id)?' checked':''}" onclick="${onToggle}('${it.id}')">
+      <div class="fp-link-check"></div>
+      <span style="font-size:14px">${it.icon}</span>
+      <span>${escHtml(it.label)}</span>
+    </div>`).join('');
+}
+function toggleModalFp(id){
+  const i=modalFpSel.indexOf(id);
+  if(i>=0)modalFpSel.splice(i,1);else modalFpSel.push(id);
+  renderFpLinks('modalFpLinks',modalFpSel,'toggleModalFp');
+}
+function toggleEditFp(id){
+  const i=editFpSel.indexOf(id);
+  if(i>=0)editFpSel.splice(i,1);else editFpSel.push(id);
+  renderFpLinks('editFpLinks',editFpSel,'toggleEditFp');
 }
 function openAddModal(){
   modalType='todo';
   document.getElementById('typeOptTodo').classList.add('active');
   document.getElementById('typeOptDir').classList.remove('active');
   document.getElementById('modalText').value='';document.getElementById('modalSub').value='';
+  modalFpSel=[];
+  renderFpLinks('modalFpLinks',modalFpSel,'toggleModalFp');
   document.getElementById('addModal').classList.add('show');
   document.getElementById('modalText').focus();
 }
@@ -1121,11 +1204,11 @@ function addTodoFromModal(){
   const text=document.getElementById('modalText').value.trim();
   const subRaw=document.getElementById('modalSub').value.trim();
   const tag=document.getElementById('modalTag').value;
-  if(!text)return;addItem(modalType,text,subRaw,tag);closeModal('addModal');
+  if(!text)return;addItem(modalType,text,subRaw,tag,[...modalFpSel]);closeModal('addModal');
 }
-function addItem(type,text,subRaw,tag){
+function addItem(type,text,subRaw,tag,fpLinks){
   const subs=parseSubs(subRaw);
-  curData().todos.push({id:genId(),type,text,subs,tag,highlighted:false,score:type==='dir'?3:undefined,created:new Date().toISOString()});
+  curData().todos.push({id:genId(),type,text,subs,tag,fpLinks:fpLinks||[],highlighted:false,created:new Date().toISOString()});
   save();render();showToast('추가했어요');
 }
 
@@ -1133,7 +1216,7 @@ function doCarry(){
   if(!window._carryItems?.length){showToast('이월할 항목이 없어요');return;}
   let nm=curM+1,ny=curY;if(nm>11){nm=0;ny++;}
   const nk=key(ny,nm);if(!data[nk])data[nk]={todos:[],memoStart:'',memoEnd:''};
-  window._carryItems.forEach(t=>{if(!data[nk].todos.find(x=>x.text===t.text))data[nk].todos.push({...t,id:genId(),highlighted:false,subs:(t.subs||[]).map(s=>({...s,done:false})),score:t.type==='dir'?3:undefined});});
+  window._carryItems.forEach(t=>{if(!data[nk].todos.find(x=>x.text===t.text))data[nk].todos.push({...t,id:genId(),highlighted:false,subs:(t.subs||[]).map(s=>({...s,done:false}))});});
   save();showToast(`이월했어요`);
 }
 function skipCarry(){showToast('이월을 건너뛰었어요');}
@@ -1185,6 +1268,7 @@ document.getElementById('editText').addEventListener('keydown',e=>{if(e.key==='E
 });
 
 load();
+migrateCats();
 const cfg=getGistCfg();
 if(cfg.token&&cfg.gistId)loadFromGist();
 render();renderFP();updateGapBanner();
