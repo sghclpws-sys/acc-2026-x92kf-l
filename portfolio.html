@@ -973,8 +973,8 @@ body {
     <div class="card" style="margin-top:14px">
       <div class="card-hd">
         <div>
-          <div class="card-title">TAA 판단 지표</div>
-          <div class="card-sub">portfolio.json macro_assumptions 기반 · TAA 결정의 인풋 변수</div>
+          <div class="card-title">TAA 스코어카드</div>
+          <div class="card-sub">밸류에이션·추세·신용·사이클·심리 5축 · 축별 점수 표시 · SAA 판단은 변경하지 않는 참고값</div>
         </div>
         <span id="taa-updated-badge" style="font-size:10px;color:var(--text3)">—</span>
       </div>
@@ -2720,13 +2720,33 @@ const TDF_LOOKTHROUGH = {
   irp_tdf2050_mirae: { equity_global: 0.80, bond_us: 0.20 },
   irp_tdf2050_hanwha:{ equity_global: 0.80, bond_us: 0.20 },
 };
-  
+// 종목명 부분일치 폴백 — portfolio.json에서 id 필드가 누락되는 사고가 재발해도
+// TDF 명칭에 'TDF2055'/'TDF2050'이 포함돼 있으면 분해가 계속 동작하게 한다.
+const TDF_LOOKTHROUGH_BY_NAME = {
+  'TDF2055': { equity_global: 0.85, bond_us: 0.15 },
+  'TDF2050': { equity_global: 0.80, bond_us: 0.20 },
+};
+
+// TDF 비율 조회 — 우선순위: JSON 명시비율(_tdf_equity_ratio/_tdf_bond_ratio) → id 매핑 → 종목명 부분일치
+// JSON에 비율을 직접 적어두면 글라이드패스가 바뀌어도 코드 수정 없이 갱신할 수 있다.
+function getTdfRatio(h) {
+  if (h._tdf_equity_ratio != null && h._tdf_bond_ratio != null) {
+    return { equity_global: Number(h._tdf_equity_ratio), bond_us: Number(h._tdf_bond_ratio) };
+  }
+  if (h.id && TDF_LOOKTHROUGH[h.id]) return TDF_LOOKTHROUGH[h.id];
+  const name = h.name || '';
+  for (const key in TDF_LOOKTHROUGH_BY_NAME) {
+    if (name.indexOf(key) !== -1) return TDF_LOOKTHROUGH_BY_NAME[key];
+  }
+  return null;
+}
+
 // TDF Look-through 분해 함수
 function expandTdfLookthrough(assets) {
   const result = [];
   (assets||[]).forEach(h => {
-    const lt = TDF_LOOKTHROUGH[h.id];
-    if (lt && (h.asset_type === 'fund' || h.asset_class === 'fund')) {
+    const lt = getTdfRatio(h);
+    if (lt) {
       // TDF를 내부 자산군별로 분해
       Object.entries(lt).forEach(([cls, ratio]) => {
         result.push({ ...h, asset_class: cls, amount: h.amount * ratio, _tdf_source: h.name });
@@ -5059,14 +5079,184 @@ function syncTAAtoTargets() {
 // ══════════════════════════════════════════
 // MACRO PAGE
 // ══════════════════════════════════════════
-function renderMacroPage() { updateBTC(); updateFG(); renderRates(); renderCrypto(); renderPBMacroComment(); if(document.getElementById('taaSignalPanel')) renderTAASignalPanel(); }
+function renderMacroPage() {
+  updateBTC(); updateFG(); renderRates(); renderCrypto(); renderPBMacroComment();
+  if (document.getElementById('taaSignalPanel')) {
+    renderTAASignalPanel();
+    if (!TAA) loadTAAScorecard().then(function(ok) { if (ok) renderTAASignalPanel(); });
+  }
+}
+
+// ── TAA 스코어카드: private repo의 taa_scorecard.json 로드 ──
+let TAA = null;
+
+const TAA_AXES = [
+  { key:'valuation', label:'밸류에이션', desc:'ERP·금리레벨·실질금리' },
+  { key:'trend',     label:'추세',       desc:'200일 이동평균 대비 위치' },
+  { key:'credit',    label:'신용',       desc:'HY OAS 레벨·4주 변화' },
+  { key:'cycle',     label:'사이클',     desc:'10y-3m 커브·실업수당 4주평균' },
+  { key:'sentiment', label:'심리',       desc:'VIX' },
+];
+const TAA_ASSET_ORDER = ['equity_global','equity_kr','bond_us','gold','oil','crypto'];
+
+async function loadTAAScorecard() {
+  const token = getToken(), cfg = getRepoConfig();
+  if (!token || !cfg.owner || !cfg.repo) return null;
+  try {
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/taa_scorecard.json`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
+    if (!res.ok) return null;
+    const json = await res.json();
+    TAA = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
+    return TAA;
+  } catch (e) {
+    console.warn('[TAA] scorecard load failed:', e);
+    return null;
+  }
+}
+
+function taaScoreCell(v) {
+  if (v === null || v === undefined) return '<span style="color:var(--text3);font-weight:600">—</span>';
+  const col = v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--text3)';
+  const bg  = v > 0 ? 'var(--green-l)' : v < 0 ? 'var(--red-l)' : 'var(--bg)';
+  return '<span style="display:inline-block;min-width:26px;padding:2px 6px;border-radius:6px;background:'
+       + bg + ';color:' + col + ';font-weight:800;font-size:11px">' + (v > 0 ? '+' : '') + v + '</span>';
+}
+
+function taaBiasPill(bias, triggered) {
+  const map = {
+    OVERWEIGHT:        ['비중확대',  'var(--green)', 'var(--green-l)'],
+    SLIGHT_OVERWEIGHT: ['소폭확대',  'var(--green)', 'var(--green-l)'],
+    NEUTRAL:           ['중립',      'var(--text3)', 'var(--bg)'],
+    SLIGHT_UNDERWEIGHT:['소폭축소',  'var(--red)',   'var(--red-l)'],
+    UNDERWEIGHT:       ['비중축소',  'var(--red)',   'var(--red-l)'],
+    FROZEN:            ['동결',      'var(--orange)','var(--orange-l)'],
+  };
+  const m = map[bias] || map.NEUTRAL;
+  return '<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:'
+       + m[2] + ';color:' + m[1] + '">' + m[0] + (triggered ? ' ★' : '') + '</span>';
+}
 
 function renderTAASignalPanel() {
+  const el = document.getElementById('taaSignalPanel');
+  const badge = document.getElementById('taa-updated-badge');
+  if (!el) return;
+  if (!TAA || !TAA.scorecard || !TAA.scorecard.assets) { renderTAALegacyPanel(); return; }
+
+  const sc = TAA.scorecard, assets = sc.assets || {}, inp = sc.inputs || {};
+  if (badge) badge.textContent = 'updated ' + (TAA.updated_at || '-').slice(0, 16).replace('T', ' ');
+
+  const fired = Object.values(assets).filter(function(a) { return a.triggered; }).length;
+  const bColor = fired ? 'var(--accent)' : 'var(--text2)';
+  const bBg    = fired ? 'var(--accent-l)' : 'var(--bg)';
+  const bText  = fired ? fired + '개 자산군에서 복수 축 동조 — 신규자금 배분 순서 조정 후보'
+                       : '동조 축 부족 — SAA 배분 순서 유지';
+
+  let html = '<div style="padding:10px 14px;border-radius:8px;background:' + bBg
+    + ';margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+    + '<span style="font-size:12px;font-weight:700;color:' + bColor + '">' + bText + '</span>'
+    + '<span style="font-size:10px;color:var(--text3)">발동조건 ' + (sc.trigger_rule || '') + '</span></div>';
+
+  const cols = '112px repeat(5, minmax(0,1fr)) 54px 46px 82px';
+  html += '<div style="overflow-x:auto"><div style="min-width:660px">';
+  html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:6px;padding:0 8px 7px;'
+        + 'border-bottom:2px solid var(--border);font-size:10px;font-weight:800;color:var(--text3)">'
+        + '<span>자산군</span>'
+        + TAA_AXES.map(function(a) { return '<span style="text-align:center" title="' + a.desc + '">' + a.label + '</span>'; }).join('')
+        + '<span style="text-align:center">총점</span><span style="text-align:center">동조</span>'
+        + '<span style="text-align:right">판단</span></div>';
+
+  TAA_ASSET_ORDER.forEach(function(k) {
+    const s = assets[k];
+    if (!s) return;
+    const col = CLS_COLOR[k] || '#9ca3af';
+    const tCol = s.total > 0 ? 'var(--green)' : s.total < 0 ? 'var(--red)' : 'var(--text3)';
+    html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:6px;align-items:center;padding:8px;'
+          + 'border-bottom:1px solid var(--border);background:' + (s.triggered ? 'var(--accent-l)' : 'transparent') + ';border-radius:6px">'
+          + '<span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700">'
+          + '<span style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></span>'
+          + (ASSET_LABEL_KO[k] || k) + '</span>'
+          + TAA_AXES.map(function(a) { return '<span style="text-align:center">' + taaScoreCell(s.axes[a.key]) + '</span>'; }).join('')
+          + '<span style="text-align:center;font-size:13px;font-weight:850;color:' + tCol + '">' + (s.total > 0 ? '+' : '') + s.total + '</span>'
+          + '<span style="text-align:center;font-size:11px;color:var(--text2);font-weight:700">' + s.agree_count + '/' + s.axes_available + '</span>'
+          + '<span style="text-align:right">' + taaBiasPill(s.bias, s.triggered) + '</span></div>';
+  });
+  html += '</div></div>';
+
+  const f = function(v, d, sfx) { return (v === null || v === undefined) ? '—' : Number(v).toFixed(d) + (sfx || ''); };
+  const cards = [
+    ['Forward ERP', f(inp.erp, 2, '%p')], ['CAPE', f(inp.cape, 1)], ['VIX', f(inp.vix, 1)],
+    ['US10Y', f(inp.us10y, 2, '%')], ['실질금리', f(inp.real_rate, 2, '%')],
+    ['HY OAS', f(inp.hy_oas, 2, '%')], ['HY 4주변화', f(inp.hy_chg, 2, '%p')],
+    ['10y-3m 커브', f(inp.curve, 2, '%p')], ['실업수당 4주', f(inp.claims_chg, 1, '%')],
+    ['USD/KRW', inp.usd_krw ? Math.round(inp.usd_krw).toLocaleString() : '—'],
+  ];
+  html += '<div style="margin-top:12px"><div style="font-size:10px;font-weight:800;color:var(--text3);'
+        + 'text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">축 입력값 · 밸류/신용/사이클/심리</div>'
+        + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">'
+        + cards.map(function(c) {
+            return '<div style="padding:7px 9px;background:var(--bg);border-radius:7px">'
+                 + '<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:2px">' + c[0] + '</div>'
+                 + '<div style="font-size:12px;font-weight:800">' + c[1] + '</div></div>';
+          }).join('') + '</div></div>';
+
+  // 추세 축 원시값 — 200일선 대비 % + 데이터 출처(FRED/Yahoo) + stale 표시
+  var tin = sc.trend_inputs || {};
+  var traw = sc.trend_raw || {};
+  var trendCards = TAA_ASSET_ORDER.filter(function(k) { return tin[k] != null; }).map(function(k) {
+    var v = Number(tin[k]);
+    var col = v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--text3)';
+    var src = (traw[k] && traw[k].source) ? traw[k].source : '';
+    var stale = (traw[k] && traw[k].is_stale) ? ' <span style="color:var(--yellow)">stale</span>' : '';
+    return '<div style="padding:7px 9px;background:var(--bg);border-radius:7px">'
+         + '<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:2px">'
+         + (ASSET_LABEL_KO[k] || k) + stale + '</div>'
+         + '<div style="font-size:12px;font-weight:800;color:' + col + '">' + (v > 0 ? '+' : '') + v.toFixed(1) + '%</div>'
+         + (src ? '<div style="font-size:8px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + src + '</div>' : '')
+         + '</div>';
+  }).join('');
+  if (trendCards) {
+    html += '<div style="margin-top:10px"><div style="font-size:10px;font-weight:800;color:var(--text3);'
+          + 'text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">축 입력값 · 추세 (200일선 대비)</div>'
+          + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">' + trendCards + '</div></div>';
+  }
+
+  // 참고 지표 — 수집만 하고 스코어에는 반영하지 않는 항목 (IG OAS·NFCI·10y-2y 커브·12-1 모멘텀 등)
+  var refs = sc.reference_inputs || [];
+  if (refs.length) {
+    var refRows = refs.map(function(r) {
+      return '<div style="display:grid;grid-template-columns:150px 92px 1fr;gap:8px;align-items:baseline;'
+           + 'padding:6px 8px;border-bottom:1px solid var(--border);font-size:11px">'
+           + '<span style="font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + r.label + '</span>'
+           + '<span style="text-align:right;font-weight:850;font-size:12px">' + r.display + '</span>'
+           + '<span style="color:var(--text3);font-size:10px;line-height:1.5">'
+           + (r.source ? '<b style="color:var(--text2)">' + r.source + '</b> · ' : '') + (r.note || '') + '</span>'
+           + '</div>';
+    }).join('');
+    html += '<div style="margin-top:14px">'
+          + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+          + '<span style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.4px">참고 지표</span>'
+          + '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;background:var(--bg);color:var(--text3)">스코어 미반영</span>'
+          + '<span style="font-size:10px;color:var(--text3)">' + refs.length + '개 · 축 확장 및 교차검증용</span></div>'
+          + '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 6px">' + refRows + '</div></div>';
+  }
+
+  html += '<div style="margin-top:12px;padding:9px 13px;background:var(--yellow-l);border-radius:7px;'
+        + 'font-size:11px;color:var(--text2);line-height:1.7;border-left:3px solid var(--yellow)">'
+        + '<b>읽는 법</b> · 총점보다 축별 점수를 먼저 본다. 밸류에이션이 나빠도 추세·신용이 우호적이면 상충 구간이므로 '
+        + 'SAA를 그대로 유지한다. 발동(★)은 신규자금 배분 순서만 바꾸며 보유분 매도는 어떤 점수에서도 트리거하지 않는다. '
+        + '추세 축은 -1~+1로 폭이 좁게 설계돼 있어 밸류에이션·심리(평균회귀)와 방향이 자주 엇갈린다.</div>';
+
+  el.innerHTML = html;
+}
+
+// ── 폴백: taa_scorecard.json을 못 읽었을 때 기존 macro_assumptions 단일 지표 테이블 ──
+function renderTAALegacyPanel() {
   var el = document.getElementById('taaSignalPanel');
   var badge = document.getElementById('taa-updated-badge');
   if (!el || !P) return;
   var ma = P.macro_assumptions || {};
-  if (badge) badge.textContent = 'updated ' + (ma.updated_at || '-');
+  if (badge) badge.textContent = 'macro_assumptions ' + (ma.updated_at || '-');
 
   function sig(label, color, bg) {
     return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:' + bg + ';color:' + color + '">' + label + '</span>';
@@ -5095,37 +5285,20 @@ function renderTAASignalPanel() {
            : t10 >= 3.5 ? sig('중립','var(--text2)','var(--bg)')
                         : sig('채권저수익','var(--text3)','var(--bg)');
 
-  var wstar = ma.merton_w_star;
-  var curEq = 62;
-  var wstarS = wstar == null ? '-'
-    : wstar > curEq + 10 ? sig('추가매수여력','var(--green)','var(--green-l)')
-    : wstar > curEq      ? sig('적정하단','var(--text2)','var(--bg)')
-    : wstar > curEq - 10 ? sig('적정상단','var(--yellow)','var(--yellow-l)')
-                         : sig('과다노출','var(--red)','var(--red-l)');
-
-  var bearCount = 0;
-  if (cape != null && cape >= 35) bearCount++;
-  if (vix != null && vix < 16) bearCount++;
-  if (erp != null && erp < 0.005) bearCount++;
-
-  var overallColor = bearCount >= 2 ? 'var(--red)' : 'var(--text2)';
-  var overallBg    = bearCount >= 2 ? 'var(--red-l)' : 'var(--bg)';
-  var overallLabel = bearCount >= 2 ? '주식 비중 축소 압력' : '중립 - SAA 유지';
-
   var rows = [
     { label:'CAPE (Shiller PE)',   val: cape != null ? cape.toFixed(2) : '-',         signal: capeS,  note: ma._cape_note || '' },
     { label:'VIX (내재변동성)',     val: vix  != null ? vix.toFixed(2)  : '-',         signal: vixS,   note: ma._vix_note  || '' },
     { label:'Forward ERP (%)',     val: erp  != null ? (erp*100).toFixed(2)+'%' : '-', signal: erpS,   note: ma._forward_erp_note || '' },
     { label:'US 10Y 금리 (%)',     val: t10  != null ? t10.toFixed(2)+'%' : '-',       signal: t10S,   note: ma._us10y_note || '' },
     { label:'Forward P/E',         val: ma.forward_pe != null ? ma.forward_pe.toFixed(1) : '-', signal: '', note: ma._forward_pe_note || '' },
-    { label:'Merton w* (주식적정)', val: wstar != null ? wstar.toFixed(1)+'%' : '-',   signal: wstarS, note: ma._merton_note || '' },
+    { label:'Merton w* (주식적정)', val: ma.merton_w_star != null ? ma.merton_w_star.toFixed(1)+'%' : '-', signal: '', note: ma._merton_note || '' },
     { label:'USD/KRW',             val: ma.usd_krw != null ? ma.usd_krw.toLocaleString() : '-', signal: '', note: ma._usd_krw_note || '' },
     { label:'Fed Rate (%)',         val: ma.fed_rate != null ? ma.fed_rate.toFixed(2)+'%' : '-', signal: '', note: ma._fed_note || '' },
   ];
 
-  var html = '<div style="padding:10px 14px;border-radius:8px;background:' + overallBg + ';margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'
-    + '<span style="font-size:12px;font-weight:600;color:' + overallColor + '">종합 TAA 신호: ' + overallLabel + '</span>'
-    + '<span style="font-size:11px;color:var(--text3)">약세신호 ' + bearCount + '개</span></div>';
+  var html = '<div style="padding:9px 13px;background:var(--yellow-l);border-radius:7px;margin-bottom:12px;'
+    + 'font-size:11px;color:var(--text2);border-left:3px solid var(--yellow)">'
+    + 'taa_scorecard.json을 읽지 못해 단일 지표 테이블로 표시 중. GitHub 연결(☁ 설정) 또는 파이프라인 실행 여부를 확인하세요.</div>';
 
   html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
   html += '<thead><tr style="border-bottom:1px solid var(--border)">'
