@@ -118,16 +118,15 @@
     --danger: #C43A3A;
     --success: #3AA87D;
     --cat-외식: #E8734A;
-    --cat-생필품: #5B8DD9;
     --cat-여행: #7B62B8;
     --cat-쇼핑: #E8A84A;
     --cat-관계비용: #4ABCE8;
-    --cat-가스비: #D95B5B;
     --cat-주유: #E07B2A;
     --cat-교육놀이: #4AB87B;
     --cat-관리비: #8DD95B;
     --cat-통신렌탈: #B87B4A;
-    --cat-세금기타: #9B9B9B;
+    --cat-세금: #9B9B9B;
+    --cat-기타: #C8B89A;
     --cat-미분류: #CCCCCC;
     --shadow: 0 1px 8px rgba(0,0,0,0.06);
     --radius: 12px;
@@ -334,6 +333,8 @@
   .cat-관리비 { background: #EEF8E0; color: #4A8020; }
   .cat-통신렌탈 { background: #F5EAE0; color: #7A4820; }
   .cat-세금기타 { background: #EFEFEF; color: #555; }
+  .cat-세금 { background: #EFEFEF; color: #555; }
+  .cat-기타 { background: #F5EDE0; color: #7A6040; }
   .cat-미분류 { background: #F0F0F0; color: #888; }
 
   /* Category dropdown */
@@ -1467,7 +1468,7 @@ window.showPage = function(page) {
       <!-- 필터: 카테고리+카드사 한 줄 -->
       <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
-        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생필품">🛒 생필품</option><option value="생활비">🚌 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="가스비">🔥 가스비</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금/기타">📄 세금/기타</option><option value="미분류">❓ 미분류</option></select>
+        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생활비">🛒 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금">📄 세금</option><option value="기타">🗂 기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option><option value="BC카드">BC카드</option></select>
       </div>
       <!-- 검색 + 선택/삭제 + 건수 한 줄 -->
@@ -2880,17 +2881,16 @@ window.showPage = function(page) {
           <input type="text" id="ruleKeyword" placeholder="가맹점명에 포함된 단어 (예: 쿠팡)" style="width:200px;height:38px">
           <select id="ruleCat" style="height:38px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border)">
             <option value="외식">🍽 외식</option>
-            <option value="생필품">🛒 생필품</option>
-            <option value="생활비">🚌 생활비</option>
+            <option value="생활비">🛒 생활비</option>
             <option value="여행">✈️ 여행</option>
             <option value="쇼핑">🛍 쇼핑</option>
             <option value="관계비용">🎁 관계비용</option>
-            <option value="가스비">🔥 가스비</option>
             <option value="교육/놀이">📚 교육/놀이</option>
             <option value="관리비">🏠 관리비</option>
             <option value="통신/렌탈">📡 통신/렌탈</option>
             <option value="주유">⛽ 주유</option>
-            <option value="세금/기타">📄 세금/기타</option>
+            <option value="세금">📄 세금</option>
+            <option value="기타">🗂 기타</option>
           </select>
           <button class="btn btn-ghost" onclick="addRule()" style="border-color:var(--border)">+ 규칙 추가</button>
         </div>
@@ -3054,7 +3054,7 @@ window.showPage = function(page) {
     
       <tr>
         <td><code style="background:var(--surface2);padding:2px 8px;border-radius:4px;font-size:12px">우정사업본부(우체국)</code></td>
-        <td><span class="cat-badge cat-세금기타">📄 세금/기타</span></td>
+        <td><span class="cat-badge cat-세금">📄 세금</span></td>
         <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;color:var(--text-muted)">1건</td>
         <td>
           <button class="btn btn-ghost btn-sm" onclick="deleteRule(15)" style="color:var(--danger)">삭제</button>
@@ -3327,17 +3327,16 @@ window.showPage = function(page) {
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore">유니폼브릿지 · 369,730</p>
     <select id="catModalSelect" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">
       <option value="외식">🍽 외식</option>
-      <option value="생필품">🛒 생필품</option>
-      <option value="생활비">🚌 생활비</option>
+      <option value="생활비">🛒 생활비</option>
       <option value="여행">✈️ 여행</option>
       <option value="쇼핑">🛍 쇼핑</option>
       <option value="관계비용">🎁 관계비용</option>
-      <option value="가스비">🔥 가스비</option>
       <option value="교육/놀이">📚 교육/놀이</option>
       <option value="관리비">🏠 관리비</option>
       <option value="통신/렌탈">📡 통신/렌탈</option>
       <option value="주유">⛽ 주유</option>
-      <option value="세금/기타">📄 세금/기타</option>
+      <option value="세금">📄 세금</option>
+      <option value="기타">🗂 기타</option>
       <option value="미분류">❓ 미분류</option>
     </select>
     <div style="margin-top:12px">
@@ -3390,17 +3389,16 @@ window.showPage = function(page) {
         <div class="input-label">카테고리 <span id="addCatHint" style="color:var(--accent);font-size:11px;margin-left:6px"></span></div>
         <select id="addCat" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text)">
           <option value="외식">🍽 외식</option>
-          <option value="생필품">🛒 생필품</option>
-          <option value="생활비">🚌 생활비</option>
+          <option value="생활비">🛒 생활비</option>
           <option value="여행">✈️ 여행</option>
           <option value="쇼핑">🛍 쇼핑</option>
           <option value="관계비용">🎁 관계비용</option>
-          <option value="가스비">🔥 가스비</option>
           <option value="교육/놀이">📚 교육/놀이</option>
           <option value="관리비">🏠 관리비</option>
           <option value="통신/렌탈">📡 통신/렌탈</option>
           <option value="주유">⛽ 주유</option>
-          <option value="세금/기타">📄 세금/기타</option>
+          <option value="세금">📄 세금</option>
+          <option value="기타">🗂 기타</option>
           <option value="미분류" selected="">❓ 미분류</option>
         </select>
       </div>
@@ -3445,17 +3443,16 @@ window.showPage = function(page) {
           <select id="txDetailCatSelect" class="cat-select" style="width:100%;max-width:180px"
             onchange="handleTxDetailCategoryChange(this.value)">
             <option value="외식">🍽 외식</option>
-            <option value="생필품">🛒 생필품</option>
-            <option value="생활비">🚌 생활비</option>
+            <option value="생활비">🛒 생활비</option>
             <option value="여행">✈️ 여행</option>
             <option value="쇼핑">🛍 쇼핑</option>
             <option value="관계비용">🎁 관계비용</option>
-            <option value="가스비">🔥 가스비</option>
             <option value="교육/놀이">📚 교육/놀이</option>
             <option value="관리비">🏠 관리비</option>
             <option value="통신/렌탈">📡 통신/렌탈</option>
             <option value="주유">⛽ 주유</option>
-            <option value="세금/기타">📄 세금/기타</option>
+            <option value="세금">📄 세금</option>
+            <option value="기타">🗂 기타</option>
             <option value="미분류">❓ 미분류</option>
           </select>
         </div>
@@ -3533,7 +3530,7 @@ let uploadedSourceText = '';
 let uploadedCardLabel = '';
 
 const INIT_INCOME = {"2026-01":{"yejin":3000000,"gihyuk":3000000,"etc":200000,"interestExpense":3823086},"2026-02":{"yejin":3000000,"gihyuk":3000000,"etc":0,"interestExpense":3502453},"2026-03":{"yejin":3000000,"gihyuk":3000000,"etc":0,"interestIncome":0,"interestExpense":3823154}};
-const INIT_RULES = [{"keyword":"송","category":"외식","type":"store"},{"keyword":"한와담소반","category":"외식","type":"store"},{"keyword":"주식회사 버드뷰","category":"쇼핑","type":"store"},{"keyword":"매트블랙커피","category":"외식","type":"store"},{"keyword":"카카오T일반택시_0","category":"생필품","type":"store"},{"keyword":"스타벅스코리아_상품권","category":"생필품","type":"store"},{"keyword":"파리바게뜨 동화마을점","category":"여행","type":"store"},{"keyword":"주식회사미스터밀크송당","category":"여행","type":"store"},{"keyword":"모뉴에트","category":"여행","type":"store"},{"keyword":"고슬고슬제주","category":"여행","type":"store"},{"keyword":"쿠팡이츠","category":"외식"},{"keyword":"키즈카페","category":"교육/놀이"},{"keyword":"경희궁자이 상가 관리위원회","category":"생필품","type":"store"},{"keyword":"씨유(CU)신촌힐스테이트점","category":"생필품","type":"store"},{"keyword":"오아시스 아현점","category":"생필품","type":"store"},{"keyword":"우정사업본부(우체국)","category":"세금/기타","type":"store"},{"keyword":"크린토피아 이대점","category":"생필품","type":"store"},{"keyword":"마이리틀타이거&PLAY","category":"교육/놀이","type":"store"},{"keyword":"(주) 모드니","category":"쇼핑","type":"store"},{"keyword":"하이패스","category":"생활비"},{"keyword":"씨유","category":"생필품"},{"keyword":"중구청(중림종합복지센터주차장","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터중림점","category":"미분류","type":"store"},{"keyword":"GS25웨스턴돔점","category":"생필품","type":"store"},{"keyword":"서울형키즈카페 보문동점","category":"교육/놀이","type":"store"},{"keyword":"코리아세븐경희궁자이점","category":"생필품","type":"store"},{"keyword":"마포구시설관리공단","category":"생활비","type":"store"},{"keyword":"아성다이소","category":"생필품","type":"store"},{"keyword":"프렌디노","category":"교육/놀이","type":"store"},{"keyword":"주식회사 아성다이소","category":"생활비","type":"store"},{"keyword":"롯데월드몰점-파오슈와츠(월드몰)","category":"생활비","type":"store"},{"keyword":"바나나","category":"생활비","type":"store"},{"keyword":"의원","category":"생활비"},{"keyword":"약국","category":"생활비"},{"keyword":"파킹","category":"생활비"},{"keyword":"카페오가다제주점","category":"여행","type":"store"},{"keyword":"푸디스트(주) 고메이플레이스 국립중앙박물관점","category":"외식","type":"store"},{"keyword":"(주)  모드니","category":"쇼핑","type":"store"},{"keyword":"마리안","category":"외식","type":"store"},{"keyword":"SK브로드밴드(주)","category":"통신/렌탈","type":"store"},{"keyword":"CU","category":"생필품"},{"keyword":"봄봄소아청소년과의원","category":"생활비","type":"store"},{"keyword":"산들약국","category":"생활비","type":"store"},{"keyword":"두더지약국","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터","category":"생활비","type":"store"},{"keyword":"KIOSK_나이스-워커스하이","category":"생활비","type":"store"},{"keyword":"자라미소아청소년과의원","category":"생활비","type":"store"},{"keyword":"롯데물산(주)롯데 분홍공주","category":"쇼핑","type":"store"},{"keyword":"팡파르","category":"쇼핑","type":"store"},{"keyword":"지에스25 성북보문점","category":"생필품","type":"store"},{"keyword":"시온약국","category":"생활비","type":"store"},{"keyword":"아이파킹 주식회사","category":"생활비","type":"store"},{"keyword":"초록웰빙스토어","category":"생필품","type":"store"}];
+const INIT_RULES = [{"keyword":"송","category":"외식","type":"store"},{"keyword":"한와담소반","category":"외식","type":"store"},{"keyword":"주식회사 버드뷰","category":"쇼핑","type":"store"},{"keyword":"매트블랙커피","category":"외식","type":"store"},{"keyword":"카카오T일반택시_0","category":"생활비","type":"store"},{"keyword":"스타벅스코리아_상품권","category":"생활비","type":"store"},{"keyword":"파리바게뜨 동화마을점","category":"여행","type":"store"},{"keyword":"주식회사미스터밀크송당","category":"여행","type":"store"},{"keyword":"모뉴에트","category":"여행","type":"store"},{"keyword":"고슬고슬제주","category":"여행","type":"store"},{"keyword":"쿠팡이츠","category":"외식"},{"keyword":"키즈카페","category":"교육/놀이"},{"keyword":"경희궁자이 상가 관리위원회","category":"생활비","type":"store"},{"keyword":"씨유(CU)신촌힐스테이트점","category":"생활비","type":"store"},{"keyword":"오아시스 아현점","category":"생활비","type":"store"},{"keyword":"우정사업본부(우체국)","category":"기타","type":"store"},{"keyword":"크린토피아 이대점","category":"생활비","type":"store"},{"keyword":"마이리틀타이거&PLAY","category":"교육/놀이","type":"store"},{"keyword":"(주) 모드니","category":"쇼핑","type":"store"},{"keyword":"하이패스","category":"생활비"},{"keyword":"씨유","category":"생활비"},{"keyword":"중구청(중림종합복지센터주차장","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터중림점","category":"미분류","type":"store"},{"keyword":"GS25웨스턴돔점","category":"생활비","type":"store"},{"keyword":"서울형키즈카페 보문동점","category":"교육/놀이","type":"store"},{"keyword":"코리아세븐경희궁자이점","category":"생활비","type":"store"},{"keyword":"마포구시설관리공단","category":"생활비","type":"store"},{"keyword":"아성다이소","category":"생활비","type":"store"},{"keyword":"프렌디노","category":"교육/놀이","type":"store"},{"keyword":"주식회사 아성다이소","category":"생활비","type":"store"},{"keyword":"롯데월드몰점-파오슈와츠(월드몰)","category":"생활비","type":"store"},{"keyword":"바나나","category":"생활비","type":"store"},{"keyword":"의원","category":"생활비"},{"keyword":"약국","category":"생활비"},{"keyword":"파킹","category":"생활비"},{"keyword":"카페오가다제주점","category":"여행","type":"store"},{"keyword":"푸디스트(주) 고메이플레이스 국립중앙박물관점","category":"외식","type":"store"},{"keyword":"(주)  모드니","category":"쇼핑","type":"store"},{"keyword":"마리안","category":"외식","type":"store"},{"keyword":"SK브로드밴드(주)","category":"통신/렌탈","type":"store"},{"keyword":"CU","category":"생활비"},{"keyword":"봄봄소아청소년과의원","category":"생활비","type":"store"},{"keyword":"산들약국","category":"생활비","type":"store"},{"keyword":"두더지약국","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터","category":"생활비","type":"store"},{"keyword":"KIOSK_나이스-워커스하이","category":"생활비","type":"store"},{"keyword":"자라미소아청소년과의원","category":"생활비","type":"store"},{"keyword":"롯데물산(주)롯데 분홍공주","category":"쇼핑","type":"store"},{"keyword":"팡파르","category":"쇼핑","type":"store"},{"keyword":"지에스25 성북보문점","category":"생활비","type":"store"},{"keyword":"시온약국","category":"생활비","type":"store"},{"keyword":"아이파킹 주식회사","category":"생활비","type":"store"},{"keyword":"초록웰빙스토어","category":"생활비","type":"store"}];
 
 
 // Load from localStorage
@@ -3554,6 +3551,18 @@ function mergeAuthoritativeJanFeb(storedTx) {
     };
   });
   return [...preserved, ...mergedAuthoritative];
+}
+
+
+// 카테고리 통합 마이그레이션 (v1: 생필품→생활비, 가스비→관리비, 세금/기타→세금)
+function _applyCatMigration() {
+  const catMigKey = 'gaegebu_cat_migration_v1';
+  if (localStorage.getItem(catMigKey) === 'done') return;
+  const catMap = {'생필품': '생활비', '가스비': '관리비', '세금/기타': '세금'};
+  transactions.forEach(t => { if (catMap[t.category]) t.category = catMap[t.category]; });
+  rules.forEach(r => { if (catMap[r.category]) r.category = catMap[r.category]; });
+  localStorage.setItem(catMigKey, 'done');
+  saveData();
 }
 
 // ===== 동기화 상태 표시 =====
@@ -3583,6 +3592,7 @@ async function loadData() {
       rules = fbData.rules || [];
       cashData = fbData.cashData || {};
       incomeData = fbData.incomeData || JSON.parse(JSON.stringify(INIT_INCOME));
+      _applyCatMigration();
       _startRealtimeSync();
       return;
     }
@@ -3603,6 +3613,7 @@ async function loadData() {
   rules = JSON.parse(localStorage.getItem('gaegebu_rules') || 'null') || JSON.parse(JSON.stringify(INIT_RULES));
   cashData = JSON.parse(localStorage.getItem('gaegebu_cash') || '{}');
   incomeData = JSON.parse(localStorage.getItem('gaegebu_income') || 'null') || JSON.parse(JSON.stringify(INIT_INCOME));
+  _applyCatMigration();
 }
 
 function saveData() {
@@ -3647,20 +3658,22 @@ function _startRealtimeSync() {
 }
 
 // ===== CONSTANTS =====
-const CATEGORIES = ['외식','생필품','생활비','여행','쇼핑','관계비용','가스비','교육/놀이','관리비','통신/렌탈','주유','세금/기타','미분류'];
+const CATEGORIES = ['외식','생활비','여행','쇼핑','관계비용','교육/놀이','관리비','통신/렌탈','주유','세금','기타','미분류'];
 const CAT_COLORS = {
-  '외식': '#E8734A', '생필품': '#5B8DD9', '생활비': '#3ABFB3', '여행': '#7B62B8', '쇼핑': '#E8A84A',
-  '관계비용': '#4ABCE8', '가스비': '#D95B5B', '교육/놀이': '#4AB87B', '관리비': '#8DD95B',
-  '통신/렌탈': '#B87B4A', '세금/기타': '#9B9B9B', '미분류': '#CCCCCC'
+  '외식': '#E8734A', '생활비': '#3ABFB3', '여행': '#7B62B8', '쇼핑': '#E8A84A',
+  '관계비용': '#4ABCE8', '교육/놀이': '#4AB87B', '관리비': '#8DD95B',
+  '통신/렌탈': '#B87B4A', '주유': '#E07B2A', '세금': '#9B9B9B', '기타': '#C8B89A', '미분류': '#CCCCCC'
 };
 const CAT_CLASS = {
-  '외식': 'cat-외식', '생필품': 'cat-생필품', '생활비': 'cat-생활비', '여행': 'cat-여행', '쇼핑': 'cat-쇼핑',
-  '관계비용': 'cat-관계비용', '가스비': 'cat-가스비', '교육/놀이': 'cat-교육놀이',
-  '관리비': 'cat-관리비', '통신/렌탈': 'cat-통신렌탈', '세금/기타': 'cat-세금기타', '미분류': 'cat-미분류'
+  '외식': 'cat-외식', '생활비': 'cat-생활비', '여행': 'cat-여행', '쇼핑': 'cat-쇼핑',
+  '관계비용': 'cat-관계비용', '교육/놀이': 'cat-교육놀이',
+  '관리비': 'cat-관리비', '통신/렌탈': 'cat-통신렌탈', '주유': 'cat-주유',
+  '세금': 'cat-세금', '기타': 'cat-기타', '미분류': 'cat-미분류'
 };
 const CAT_ICON = {
-  '외식':'🍽','생필품':'🛒','생활비':'🚌','여행':'✈️','쇼핑':'🛍','관계비용':'🎁',
-  '가스비':'🔥','교육/놀이':'📚','관리비':'🏠','통신/렌탈':'📡','주유':'⛽','세금/기타':'📄','미분류':'❓'
+  '외식':'🍽','생활비':'🛒','여행':'✈️','쇼핑':'🛍','관계비용':'🎁',
+  '교육/놀이':'📚','관리비':'🏠','통신/렌탈':'📡','주유':'⛽',
+  '세금':'📄','기타':'🗂','미분류':'❓'
 };
 
 // ===== NAVIGATION =====
@@ -3938,7 +3951,7 @@ function renderSummary() {
   const _prevM = month > 1 ? month - 1 : 12;
 
   // 하단 인사이트 카드 3개: 고정지출 · 건당 평균 · 저축률
-  const fixedCats = ['관리비', '가스비', '통신/렌탈'];
+  const fixedCats = ['관리비', '통신/렌탈'];
   const fixedTotal = txs.filter(t => fixedCats.includes(t.category)).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
   const fixedPct = totalExpense > 0 ? (fixedTotal/totalExpense*100).toFixed(1) : 0;
 
@@ -3957,7 +3970,7 @@ function renderSummary() {
     <div class="insight-card">
       <div class="insight-label">🏠 고정 지출</div>
       <div class="insight-value">${fmt(fixedTotal)}원</div>
-      <div class="insight-sub">관리비·가스비·통신/렌탈 · 전체의 ${fixedPct}%</div>
+      <div class="insight-sub">관리비·통신/렌탈 · 전체의 ${fixedPct}%</div>
     </div>
     <div class="insight-card blue">
       <div class="insight-label">🧾 건당 평균 지출</div>
@@ -4142,7 +4155,7 @@ function renderSmartInsights(txs, totalExpense, prevExpense, year, month, totalI
         icon: '⚠️',
         color: 'var(--danger)',
         title: '지출이 수익의 80%를 초과했어요',
-        body: `수익 대비 지출이 <strong>${spendRatio.toFixed(1)}%</strong>에 달해요. 저축 여력이 줄어들 수 있어요. 고정 지출(관리비·통신/렌탈·가스비) 합계 ${fmt((bdMap['관리비']||0)+(bdMap['통신/렌탈']||0)+(bdMap['가스비']||0))}원을 먼저 점검해보세요.`,
+        body: `수익 대비 지출이 <strong>${spendRatio.toFixed(1)}%</strong>에 달해요. 저축 여력이 줄어들 수 있어요. 고정 지출(관리비·통신/렌탈) 합계 ${fmt((bdMap['관리비']||0)+(bdMap['통신/렌탈']||0))}원을 먼저 점검해보세요.`,
         action: null
       });
     } else if (spendRatio < 60) {
@@ -4375,19 +4388,18 @@ function initClaimControls() {
 }
 
 const CLAIM_CAT_OPTIONS = [
-  {value:'생필품', label:'🛒 생필품'},
-  {value:'생활비', label:'🚌 생활비'},
+  {value:'생활비', label:'🛒 생활비'},
   {value:'외식',   label:'🍽 외식'},
   {value:'쇼핑',   label:'🛍 쇼핑'},
   {value:'여행',   label:'✈️ 여행'},
   {value:'관계비용',label:'🎁 관계비용'},
-  {value:'가스비', label:'🔥 가스비'},
   {value:'교육/놀이',label:'📚 교육/놀이'},
   {value:'관리비', label:'🏠 관리비'},
   {value:'통신/렌탈',label:'📡 통신/렌탈'},
   {value:'주유',   label:'⛽ 주유'},
-  {value:'세금/기타',label:'📄 세금/기타'},
-  {value:'미분류', label:'❓ 기타'},
+  {value:'세금',   label:'📄 세금'},
+  {value:'기타',   label:'🗂 기타'},
+  {value:'미분류', label:'❓ 미분류'},
 ];
 
 function addClaimItem() {
@@ -6376,20 +6388,20 @@ function importData() {
 
 function autoCategory(store, note) {
   const noteRules = {
-    '외식':'외식','가스비':'가스비','관리비':'관리비','통신/렌탈':'통신/렌탈',
+    '외식':'외식','가스비':'관리비','관리비':'관리비','통신/렌탈':'통신/렌탈',
     '교육비':'교육/놀이','놀이방':'교육/놀이','문센':'교육/놀이',
-    '생필품':'생필품','커피캡슐':'생필품','영양제':'생필품','화장품':'생필품',
+    '생필품':'생활비','커피캡슐':'생활비','영양제':'생활비','화장품':'생활비',
     '생활비':'생활비','주차':'생활비','택시':'생활비','버스':'생활비','지하철':'생활비',
     '여행':'여행','제주':'여행','속초':'여행','부산':'여행','강릉':'여행',
     '선물':'관계비용','정산':'관계비용',
-    '재산세':'세금/기타','자동차보험':'세금/기타','자동차세':'세금/기타',
+    '재산세':'세금','자동차보험':'세금','자동차세':'세금',
   };
   
   const storeRules = {
-    '가스':'가스비','도시가스':'가스비','예스코':'가스비','관리비':'관리비',
+    '가스':'관리비','도시가스':'관리비','예스코':'관리비','관리비':'관리비',
     '코웨이':'통신/렌탈','SK매직':'통신/렌탈',
-    '쿠팡':'생필품','컬리':'생필품','이마트':'생필품','GS수퍼':'생필품',
-    '올리브영':'생필품','iHerb':'생필품','IHERB':'생필품',
+    '쿠팡':'생활비','컬리':'생활비','이마트':'생활비','GS수퍼':'생활비',
+    '올리브영':'생활비','iHerb':'생활비','IHERB':'생활비',
     '우아한형제':'외식','배달':'외식','쿠팡이츠':'외식',
     '호텔':'여행','리조트':'여행','항공':'여행','철도':'여행','렌터카':'여행',
     '백화점':'쇼핑','아울렛':'쇼핑','신세계':'쇼핑',
