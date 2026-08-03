@@ -6310,6 +6310,11 @@ function importData() {
     return;
   }
   
+  // 현대백화점카드: '상품명'(브랜드) + '이용점'(백화점지점) 두 열 결합
+  const sangpumIdx = guessCol(uploadedHeaders, ['상품명']);
+  const iyongjeomIdx = guessCol(uploadedHeaders, ['이용점']);
+  const combineStore = sangpumIdx >= 0 && iyongjeomIdx >= 0;
+
   let added = 0;
   const selectedCard = document.getElementById('uploadCard') ? (document.getElementById('uploadCard').value || '') : '';
   let maxId = Math.max(...transactions.map(t => t.id), 0);
@@ -6326,7 +6331,9 @@ function importData() {
   
   for (const row of uploadedRows) {
     const dateRaw = String(row[dateIdx]||'').trim();
-    const store = String(row[storeIdx]||'').trim();
+    const store = combineStore
+      ? [String(row[sangpumIdx]||'').trim(), String(row[iyongjeomIdx]||'').trim()].filter(Boolean).join(' ')
+      : String(row[storeIdx]||'').trim();
     const amountRaw = row[amountIdx];
     const note = noteIdx !== '' ? String(row[parseInt(noteIdx)]||'').trim() : '';
     
