@@ -1353,9 +1353,9 @@ function normalizeHouseViewViews(rawViews) {
 }
 
 function buildHouseViewFromScorecard(sc, updatedAt) {
-  const BIAS_LABEL = { OVERWEIGHT: '비중확대', UNDERWEIGHT: '비중축소', NEUTRAL: '중립', FROZEN: '동결' };
+  const BIAS_MAP = { OVERWEIGHT: 'overweight', UNDERWEIGHT: 'underweight', NEUTRAL: 'neutral', FROZEN: 'neutral' };
   const views = Object.entries(sc.assets || {}).map(function([asset, data]) {
-    return { asset: asset, stance: BIAS_LABEL[data.bias] || '중립', adj: data.total || 0, reason: data.notes || '' };
+    return { asset: asset, stance: BIAS_MAP[data.bias] || 'neutral', adj: data.total || 0, reason: data.notes || '' };
   });
   return {
     updated_at: updatedAt || '—',
