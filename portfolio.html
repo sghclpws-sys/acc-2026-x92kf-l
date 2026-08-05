@@ -584,7 +584,6 @@ body {
     <div class="nav-section">전략</div>
     <div class="nav-item" data-page="analytics"><span class="nav-icon">◈</span>투자 분석</div>
     <div class="nav-item" data-page="strategy"><span class="nav-icon">◫</span>WM 전략</div>
-    <div class="nav-item" data-page="taa"><span class="nav-icon">⊞</span>TAA</div>
   </div>
   <div class="sidebar-footer">
     <div class="data-date">포트폴리오 기준일<br><span id="dataDate">데이터 없음</span></div>
@@ -971,6 +970,16 @@ body {
       <div class="card-hd"><div class="card-title">암호화폐 시장</div><span style="font-size:10px;color:var(--text3)">CoinGecko</span></div>
       <div class="card-body"><div class="crypto-grid" id="cryptoGrid"><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div></div></div>
     </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">TAA 스코어카드</div>
+          <div class="card-sub">밸류에이션·추세·신용·사이클·심리 5축 · 축별 점수 표시 · SAA 판단은 변경하지 않는 참고값</div>
+        </div>
+        <span id="taa-updated-badge" style="font-size:10px;color:var(--text3)">—</span>
+      </div>
+      <div class="card-body" id="taaSignalPanel"><div class="skel" style="height:120px"></div></div>
+    </div>
   </div>
 
 
@@ -1140,7 +1149,19 @@ body {
       </div>
     </div>
 
-    <!-- ③ 현재 포트폴리오 vs SAA -->
+    <!-- ③ TAA House View -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">TAA House View</div>
+          <div class="card-sub">Tactical Asset Allocation · 현재 시장 맥락 기반 SAA 대비 전술적 조정 · 분기 업데이트</div>
+        </div>
+        <span id="taa-update-date" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+      <div class="card-body" id="wm-taa-view"></div>
+    </div>
+
+    <!-- ④ 현재 포트폴리오 vs SAA -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-hd">
         <div>
@@ -1203,35 +1224,6 @@ body {
     </div>
   </div>
 
-
-  <!-- ══ TAA ══ -->
-  <div class="content page" id="page-taa">
-
-    <!-- TAA House View -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-hd">
-        <div>
-          <div class="card-title">TAA House View</div>
-          <div class="card-sub">Tactical Asset Allocation · 시장 맥락 기반 SAA 대비 전술적 조정 · 파이프라인 자동 업데이트</div>
-        </div>
-        <span id="taa-update-date" style="font-size:11px;color:var(--text3)"></span>
-      </div>
-      <div class="card-body" id="wm-taa-view"></div>
-    </div>
-
-    <!-- TAA 스코어카드 -->
-    <div class="card">
-      <div class="card-hd">
-        <div>
-          <div class="card-title">TAA 스코어카드</div>
-          <div class="card-sub">밸류에이션·추세·신용·사이클·심리 5축 · 축별 점수 표시 · SAA 판단은 변경하지 않는 참고값</div>
-        </div>
-        <span id="taa-updated-badge" style="font-size:10px;color:var(--text3)">—</span>
-      </div>
-      <div class="card-body" id="taaSignalPanel"><div class="skel" style="height:120px"></div></div>
-    </div>
-
-  </div>
 
 </div><!-- /main -->
 </div><!-- /app -->
@@ -1318,7 +1310,7 @@ const COLORS = ['#2563eb','#059669','#d97706','#dc2626','#7c3aed','#0891b2','#ea
 const CLS_COLOR = { equity_global:'#2563eb', equity_kr:'#059669', bond_us:'#7c3aed', gold:'#d97706', oil:'#92400e', commodity:'#d97706', reit:'#0891b2', crypto:'#ea580c', cash:'#9ca3af', irp:'#65a30d', 기타:'#d1d5db' };
 const CLS_LABEL = { equity_global:'글로벌주식', equity_kr:'국내주식', bond_us:'미국채권', gold:'금', oil:'유가', commodity:'원자재', reit:'리츠', crypto:'암호화폐', cash:'현금', irp:'IRP', fund:'펀드' };
 const ACCT_PURPOSE = { taxable:'일반계좌', isa:'ISA', pension:'연금저축', irp:'IRP', crypto_exchange:'암호화폐' };
-const PAGE_TITLES = { home:'지금 상태', accounts:'계좌 현황', rebalance:'리밸런싱', snapshots:'스냅샷', macro:'매크로', strategy:'WM 전략', analytics:'투자 분석', taa:'TAA 전략' };
+const PAGE_TITLES = { home:'지금 상태', accounts:'계좌 현황', rebalance:'리밸런싱', snapshots:'스냅샷', macro:'매크로', strategy:'WM 전략', analytics:'투자 분석' };
 
 const REBALANCE_BAND = 5;
 const ASSET_ORDER = ['equity_global','equity_kr','bond_us','gold','oil','reit','crypto','cash'];
@@ -1329,10 +1321,10 @@ function getMacroAssumptions() {
 
 function getDefaultHouseView() {
   return {
-    updated_at: '—',
-    macro_summary: '파이프라인 자동 업데이트 대기 중 — 다음 Telegram 브리핑 실행 시 반영됩니다.',
+    updated_at: '수동 입력 필요',
+    macro_summary: 'taa_house_view 입력 필요',
     views: ASSET_ORDER.map(function(asset) {
-      return { asset: asset, stance: 'neutral', adj: 0, reason: '파이프라인 업데이트 대기 중' };
+      return { asset: asset, stance: 'neutral', adj: 0, reason: 'taa_house_view 입력 필요' };
     })
   };
 }
@@ -1348,34 +1340,16 @@ function normalizeHouseViewViews(rawViews) {
     map.oil  = Object.assign({}, map.commodity, { asset:'oil', adj:0, reason:'구버전 commodity TAA 입력은 유가에는 자동 가산하지 않음. oil_pct 별도 관리 필요.' });
   }
   return ASSET_ORDER.map(function(asset) {
-    return map[asset] || { asset: asset, stance: 'neutral', adj: 0, reason: '파이프라인 업데이트 대기 중' };
+    return map[asset] || { asset: asset, stance: 'neutral', adj: 0, reason: 'taa_house_view 입력 필요' };
   });
-}
-
-function buildHouseViewFromScorecard(sc, updatedAt) {
-  const BIAS_MAP = { OVERWEIGHT: 'overweight', UNDERWEIGHT: 'underweight', NEUTRAL: 'neutral', FROZEN: 'neutral' };
-  const views = Object.entries(sc.assets || {}).map(function([asset, data]) {
-    return { asset: asset, stance: BIAS_MAP[data.bias] || 'neutral', adj: data.total || 0, reason: data.notes || '' };
-  });
-  return {
-    updated_at: updatedAt || '—',
-    macro_summary: sc.trigger_rule ? ('트리거 조건: ' + sc.trigger_rule) : '파이프라인 자동 생성',
-    views: views
-  };
 }
 
 function getHouseView() {
-  // taa_scorecard.json 우선 사용 (파이프라인 자동 업데이트)
-  const sc = P?._taa_scorecard;
-  if (sc?.scorecard?.assets) {
-    return buildHouseViewFromScorecard(sc.scorecard, sc.updated_at);
-  }
-  // fallback: portfolio.json의 taa_house_view
   const hv = P?.taa_house_view;
   if (!hv) return getDefaultHouseView();
   return {
-    updated_at: hv.updated_at || '—',
-    macro_summary: hv.macro_summary || '파이프라인 업데이트 대기 중',
+    updated_at: hv.updated_at || '수동 입력 필요',
+    macro_summary: hv.macro_summary || 'taa_house_view 입력 필요',
     views: normalizeHouseViewViews(hv.views)
   };
 }
@@ -1397,8 +1371,14 @@ function getExpandedHoldings() {
 }
 
 function isUsdExposureHolding(h) {
+  // currency_exposure 태그를 최우선으로 신뢰한다.
+  // 예전에는 asset_class가 equity_global/bond_us/reit이면 태그를 무시하고
+  // 무조건 USD로 집계했는데, 이러면 (H)/(합성 H) 환헤지 ETF(currency_exposure: "KRW")까지
+  // USD 익스포저에 잡혀 실제보다 부풀려졌다. (2026-08 확인: 6.3%p 과대계상)
   if (h.currency_exposure === 'USD') return true;
-  if (['equity_global','bond_us','reit'].indexOf(h.asset_class) !== -1) return true;
+  if (h.currency_exposure === 'KRW') return false;
+  // currency_exposure 자체가 없는 구버전 데이터에 한해서만 자산군 기반 추정으로 폴백한다.
+  if (h.currency_exposure == null && ['equity_global','bond_us','reit'].indexOf(h.asset_class) !== -1) return true;
   return false;
 }
 
@@ -1575,7 +1555,6 @@ document.querySelectorAll('.nav-item').forEach(el => {
     if(id === 'macro') renderMacroPage();
     if(id === 'strategy') renderWMStrategy();
     if(id === 'analytics') renderAnalyticsPage();
-    if(id === 'taa') renderTAAPage();
   });
 });
 
@@ -4743,17 +4722,11 @@ function renderDecisionMatrix(lambda, mu, rf, sigma) {
 // ══════════════════════════════════════════
 // WM STRATEGY PAGE
 // ══════════════════════════════════════════
-function renderTAAPage() {
-  syncTAAtoTargets();
-  renderTAAView();
-  renderTAASignalPanel();
-  if (!TAA) loadTAAScorecard().then(function(ok) { if (ok) renderTAASignalPanel(); });
-}
-
 function renderWMStrategy() {
   syncTAAtoTargets(); // JSON SAA/TAA 참고값 최신화
   renderRiskProfile();
   renderSAATarget();
+  renderTAAView();
   renderGapAnalysis();
 }
 
@@ -5077,7 +5050,7 @@ function syncTAAtoTargets() {
   var _st = P.saa_targets || {};
   var _eqEtf = _st.equity_global_etf_pct || _st.equity_us_etf_pct || 0;
   var saaMap = {
-    equity_global: _eqEtf + (_st.equity_us_individual_pct||_st.equity_individual_pct||0) + (_st.equity_dividend_pct||0),
+    equity_global: _eqEtf + (_st.equity_us_individual_pct||0) + (_st.equity_dividend_pct||0),
     equity_kr:     _st.equity_kr_pct   || 0,
     bond_us:       _st.bond_us_pct     || 0,
     gold:          (_st.gold_pct !== undefined ? _st.gold_pct : ((_st.commodity_pct || 0) * 0.8)),
@@ -5114,6 +5087,10 @@ function syncTAAtoTargets() {
 // ══════════════════════════════════════════
 function renderMacroPage() {
   updateBTC(); updateFG(); renderRates(); renderCrypto(); renderPBMacroComment();
+  if (document.getElementById('taaSignalPanel')) {
+    renderTAASignalPanel();
+    if (!TAA) loadTAAScorecard().then(function(ok) { if (ok) renderTAASignalPanel(); });
+  }
 }
 
 // ── TAA 스코어카드: private repo의 taa_scorecard.json 로드 ──
@@ -5667,12 +5644,6 @@ function getRepoApiUrl() {
   return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.file}`;
 }
 
-function getTAAApiUrl() {
-  const cfg = getRepoConfig();
-  if (!cfg.owner || !cfg.repo) return null;
-  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/taa_scorecard.json`;
-}
-
 async function loadFromRepo() {
   const token = getToken();
   const url = getRepoApiUrl();
@@ -5693,22 +5664,6 @@ async function loadFromRepo() {
     // sha는 업데이트 시 필요 — 저장
     const c = getRepoConfig(); c._sha = json.sha; setRepoConfig(c);
     syncTAAtoTargets();
-    // taa_scorecard.json 병행 로드 (실패해도 portfolio 로드는 성공으로 처리)
-    const taaUrl = getTAAApiUrl();
-    if (taaUrl) {
-      try {
-        const taaRes = await fetch(taaUrl, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-        });
-        if (taaRes.ok) {
-          const taaJson = await taaRes.json();
-          const taaContent = decodeURIComponent(escape(atob(taaJson.content.replace(/\n/g, ''))));
-          P._taa_scorecard = JSON.parse(taaContent);
-        }
-      } catch(e) {
-        console.warn('[Repo] taa_scorecard load skipped:', e);
-      }
-    }
     const dd = document.getElementById('dataDate');
     if (dd) dd.textContent = P.updated_at || '—';
     setGistUI('ok', 'GitHub 연결됨');
