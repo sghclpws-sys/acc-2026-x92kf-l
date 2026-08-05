@@ -1352,7 +1352,25 @@ function normalizeHouseViewViews(rawViews) {
   });
 }
 
+function buildHouseViewFromScorecard(sc, updatedAt) {
+  const BIAS_LABEL = { OVERWEIGHT: '비중확대', UNDERWEIGHT: '비중축소', NEUTRAL: '중립', FROZEN: '동결' };
+  const views = Object.entries(sc.assets || {}).map(function([asset, data]) {
+    return { asset: asset, stance: BIAS_LABEL[data.bias] || '중립', adj: data.total || 0, reason: data.notes || '' };
+  });
+  return {
+    updated_at: updatedAt || '—',
+    macro_summary: sc.trigger_rule ? ('트리거 조건: ' + sc.trigger_rule) : '파이프라인 자동 생성',
+    views: views
+  };
+}
+
 function getHouseView() {
+  // taa_scorecard.json 우선 사용 (파이프라인 자동 업데이트)
+  const sc = P?._taa_scorecard;
+  if (sc?.scorecard?.assets) {
+    return buildHouseViewFromScorecard(sc.scorecard, sc.updated_at);
+  }
+  // fallback: portfolio.json의 taa_house_view
   const hv = P?.taa_house_view;
   if (!hv) return getDefaultHouseView();
   return {
@@ -5649,6 +5667,12 @@ function getRepoApiUrl() {
   return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.file}`;
 }
 
+function getTAAApiUrl() {
+  const cfg = getRepoConfig();
+  if (!cfg.owner || !cfg.repo) return null;
+  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/taa_scorecard.json`;
+}
+
 async function loadFromRepo() {
   const token = getToken();
   const url = getRepoApiUrl();
@@ -5669,6 +5693,22 @@ async function loadFromRepo() {
     // sha는 업데이트 시 필요 — 저장
     const c = getRepoConfig(); c._sha = json.sha; setRepoConfig(c);
     syncTAAtoTargets();
+    // taa_scorecard.json 병행 로드 (실패해도 portfolio 로드는 성공으로 처리)
+    const taaUrl = getTAAApiUrl();
+    if (taaUrl) {
+      try {
+        const taaRes = await fetch(taaUrl, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+        });
+        if (taaRes.ok) {
+          const taaJson = await taaRes.json();
+          const taaContent = decodeURIComponent(escape(atob(taaJson.content.replace(/\n/g, ''))));
+          P._taa_scorecard = JSON.parse(taaContent);
+        }
+      } catch(e) {
+        console.warn('[Repo] taa_scorecard load skipped:', e);
+      }
+    }
     const dd = document.getElementById('dataDate');
     if (dd) dd.textContent = P.updated_at || '—';
     setGistUI('ok', 'GitHub 연결됨');
