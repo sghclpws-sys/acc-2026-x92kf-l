@@ -2947,13 +2947,38 @@ window.showPage = function(page) {
       
       <div class="card">
         <div class="card-title">현재 규칙 목록</div>
-        <div class="card" style="margin-top:20px">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>키워드</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
+            <tbody id="rulesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">AI 조언 설정</div>
+        <div id="geminiKeyStatus" style="font-size:12px;margin-bottom:12px">확인 중...</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
+          <input type="password" id="geminiKeyInput" placeholder="Gemini API 키 붙여넣기" autocomplete="off"
+            style="flex:1;min-width:0;height:38px;padding:0 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;background:var(--surface);color:var(--text);outline:none;box-sizing:border-box;font-family:inherit">
+          <button class="btn btn-action" onclick="saveGeminiKey()" style="white-space:nowrap">저장</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearGeminiKey()" style="white-space:nowrap">삭제</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.6">
+          키는 Firestore에 저장되며 로그인한 사용자만 접근할 수 있습니다.<br>
+          aistudio.google.com에서 발급받으세요.
+        </p>
+      </div>
+
+      <div class="card" style="margin-top:20px">
         <div class="card-title">계정</div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
           <div style="font-size:13px;color:var(--text-muted)" id="authWhoami">로그인 상태</div>
           <button class="btn btn-ghost" onclick="doLogout()">로그아웃</button>
         </div>
       </div>
+    </div>
+        
         <div class="table-wrap">
           <table>
             <thead><tr><th>키워드</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
@@ -6527,6 +6552,7 @@ function renderRules() {
   }
   const who = document.getElementById('authWhoami');
   if (who && window._fbUser && window._fbUser()) who.textContent = window._fbUser().email;
+  renderGeminiKeyStatus();
 }
 
 
@@ -6609,10 +6635,58 @@ function saveAdd() {
 }
 
 // ===== AI 조언 =====
-const GEMINI_KEY = '여기에_API_키_붙여넣기';
 const GEMINI_MODEL = 'gemini-3.7-flash';
 
 let _adviceLoaded = false;
+let _geminiKey = null;      // Firestore에서 로드
+let _geminiKeyLoaded = false;
+
+async function loadGeminiKey(force) {
+  if (_geminiKeyLoaded && !force) return _geminiKey;
+  if (window._fbLoadAdvice) {
+    const d = await window._fbLoadAdvice('_config');
+    _geminiKey = (d && d.geminiKey) ? d.geminiKey : null;
+  }
+  _geminiKeyLoaded = true;
+  return _geminiKey;
+}
+
+async function saveGeminiKey() {
+  const input = document.getElementById('geminiKeyInput');
+  const val = (input.value || '').trim();
+  if (!val) { showToast('키를 입력하세요'); return; }
+  if (val.indexOf('AIza') !== 0) {
+    if (!confirm('일반적인 Gemini 키 형식이 아닙니다. 그래도 저장할까요?')) return;
+  }
+  const ok = await window._fbSaveAdvice('_config', { geminiKey: val, updatedAt: new Date().toISOString() });
+  if (ok) {
+    _geminiKey = val;
+    _geminiKeyLoaded = true;
+    input.value = '';
+    renderGeminiKeyStatus();
+    showToast('API 키가 저장됐어요');
+  } else {
+    showToast('저장에 실패했어요');
+  }
+}
+
+async function clearGeminiKey() {
+  if (!confirm('저장된 API 키를 삭제할까요?')) return;
+  await window._fbSaveAdvice('_config', { geminiKey: '', updatedAt: new Date().toISOString() });
+  _geminiKey = null;
+  _geminiKeyLoaded = true;
+  renderGeminiKeyStatus();
+  showToast('삭제됐어요');
+}
+
+async function renderGeminiKeyStatus() {
+  const el = document.getElementById('geminiKeyStatus');
+  if (!el) return;
+  const k = await loadGeminiKey(true);
+  el.innerHTML = k
+    ? '<span style="color:var(--success);font-weight:600">● 저장됨</span> <span style="color:var(--text-muted)">' + k.slice(0, 8) + '…' + k.slice(-4) + '</span>'
+    : '<span style="color:var(--text-muted)">키가 저장되어 있지 않습니다</span>';
+}
 
 function _adviceDocKey() {
   const months = getMonthRange();
@@ -6672,8 +6746,10 @@ async function requestAdvice() {
   const key = _adviceDocKey();
   if (!key) { showToast('분석할 데이터가 없습니다'); return; }
 
-  if (!GEMINI_KEY || GEMINI_KEY.indexOf('여기에') === 0) {
-    body.innerHTML = '<div style="font-size:13px;color:var(--danger)">API 키가 설정되지 않았습니다</div>';
+  const apiKey = await loadGeminiKey();
+  if (!apiKey) {
+    body.innerHTML = '<div style="font-size:13px;color:var(--danger);line-height:1.6">API 키가 설정되지 않았습니다.<br>'
+      + '<span style="font-size:12px;color:var(--text-muted)">설정 탭 → AI 조언 설정에서 키를 입력하세요.</span></div>';
     return;
   }
 
@@ -6684,7 +6760,7 @@ async function requestAdvice() {
   try {
     const data = buildAdvicePayload();
     const res = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_KEY,
+      'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + api key,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
