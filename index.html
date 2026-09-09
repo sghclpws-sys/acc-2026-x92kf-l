@@ -104,7 +104,21 @@
       }
     });
   };
-
+  
+  // 조언 캐시 (advice 컬렉션)
+  window._fbSaveAdvice = async function(key, payload) {
+    try {
+      await setDoc(doc(db, 'advice', key), payload);
+      return true;
+    } catch(e) { console.error('조언 저장 오류:', e); return false; }
+  };
+  window._fbLoadAdvice = async function(key) {
+    try {
+      const snap = await getDoc(doc(db, 'advice', key));
+      return snap.exists() ? snap.data() : null;
+    } catch(e) { console.error('조언 로드 오류:', e); return null; }
+  };
+  
   window._fbReady = true;
   // Firebase 준비 완료 이벤트
   document.dispatchEvent(new Event('firebase-ready'));
@@ -2695,7 +2709,17 @@ window.showPage = function(page) {
         <h2>소비 분석</h2>
         <p>월별 손익 · 패턴 · 이상 탐지</p>
       </div>
-
+      
+      <!-- AI 조언 -->
+      <div class="card" id="adviceCard" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">🤖 AI 소비 조언</div>
+          <button class="btn btn-ghost btn-sm" id="adviceBtn" onclick="requestAdvice()" style="white-space:nowrap">조언 받기</button>
+        </div>
+        <div id="adviceMeta" style="font-size:11px;color:var(--text-muted);margin-bottom:10px"></div>
+        <div id="adviceBody"></div>
+      </div>
+      
       <!-- 월별 손익 차트 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 손익</div>
@@ -5373,6 +5397,7 @@ function closeModal() {
 
 // ===== TRENDS PAGE =====
 function renderTrends() {
+  try { renderAdviceCard(); } catch(e) { console.error('renderAdviceCard', e); }
   try { renderMonthlyPnl(); } catch(e) { console.error('renderMonthlyPnl', e); }
 
   try {
@@ -6583,7 +6608,181 @@ function saveAdd() {
   }
 }
 
+// ===== AI 조언 =====
+const GEMINI_KEY = '여기에_API_키_붙여넣기';
+const GEMINI_MODEL = 'gemini-3.7-flash';
 
+let _adviceLoaded = false;
+
+function _adviceDocKey() {
+  const months = getMonthRange();
+  if (!months.length) return null;
+  const last = months[months.length - 1];
+  return last.year + '-' + String(last.month).padStart(2, '0');
+}
+
+// 데이터 변경 감지용 서명
+function _adviceSig() {
+  const total = transactions.reduce(function(s, t) { return s + (t.amount - (t.settlement || 0)); }, 0);
+  return transactions.length + ':' + total;
+}
+
+function buildAdvicePayload() {
+  return getMonthRange().map(function(m) {
+    const key = m.year + '-' + String(m.month).padStart(2, '0');
+    const inc = getIncomeForMonth(key);
+    const txs = getMonthlyTx(m.year, m.month);
+    const cats = {};
+    getCatBreakdown(txs).forEach(function(r) { if (r.total > 0) cats[r.cat] = r.total; });
+    const card = txs.reduce(function(s, t) { return s + (t.amount - (t.settlement || 0)); }, 0);
+    const interest = inc.interestExpense || 0;
+    const income = (inc.yejin || 0) + (inc.gihyuk || 0) + (inc.etc || 0);
+    return {
+      월: key, 수익: income, 카드지출: card, 대출이자: interest,
+      총지출: card + interest, 손익: income - card - interest,
+      거래건수: txs.length, 카테고리별: cats
+    };
+  });
+}
+
+function _advicePrompt(data) {
+  return [
+    '당신은 한국의 가계 재무 상담사입니다. 4인 가구가 아닌 맞벌이 부부와 어린 자녀 한 명의 가계부 데이터를 분석합니다.',
+    '',
+    '아래는 월별 집계 데이터입니다. 금액 단위는 원입니다.',
+    '대출이자는 매달 고정으로 나가는 항목이며 단기간에 줄이기 어렵습니다.',
+    '',
+    JSON.stringify(data, null, 1),
+    '',
+    '다음 기준으로 조언 3~4개를 작성하세요.',
+    '- 여러 달에 걸친 흐름이나 카테고리 사이의 관계를 읽어낼 것',
+    '- "쇼핑이 늘었다" 같은 단순 증감 통보는 제외. 그건 이미 앱이 보여주고 있음',
+    '- 계절성, 일회성 지출과 반복 지출의 구분, 구조적 문제에 집중',
+    '- 추측이 필요한 부분은 단정하지 말고 확인해볼 지점으로 제시',
+    '- 각 항목은 2~3문장, 존댓말, 구체적인 숫자 포함',
+    '',
+    '아래 JSON 배열 형식으로만 응답하세요. 다른 텍스트는 넣지 마세요.',
+    '[{"title":"제목(15자 이내)","body":"내용","level":"warn 또는 good 또는 info"}]'
+  ].join('\n');
+}
+
+async function requestAdvice() {
+  const btn = document.getElementById('adviceBtn');
+  const body = document.getElementById('adviceBody');
+  const key = _adviceDocKey();
+  if (!key) { showToast('분석할 데이터가 없습니다'); return; }
+
+  if (!GEMINI_KEY || GEMINI_KEY.indexOf('여기에') === 0) {
+    body.innerHTML = '<div style="font-size:13px;color:var(--danger)">API 키가 설정되지 않았습니다</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '분석 중...';
+  body.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0">데이터를 분석하고 있어요. 10초 정도 걸립니다.</div>';
+
+  try {
+    const data = buildAdvicePayload();
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + GEMINI_KEY,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: _advicePrompt(data) }] }],
+          generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const errTxt = await res.text();
+      throw new Error('HTTP ' + res.status + ' · ' + errTxt.slice(0, 200));
+    }
+
+    const json = await res.json();
+    const raw = ((((json.candidates || [])[0] || {}).content || {}).parts || [])
+      .map(function(p) { return p.text || ''; }).join('').trim();
+    if (!raw) throw new Error('빈 응답을 받았습니다');
+
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    let items;
+    try { items = JSON.parse(cleaned); } catch (e) { throw new Error('응답 형식 오류'); }
+    if (!Array.isArray(items) || !items.length) throw new Error('조언을 생성하지 못했습니다');
+
+    const payload = {
+      items: JSON.stringify(items),
+      generatedAt: new Date().toISOString(),
+      sig: _adviceSig()
+    };
+    if (window._fbSaveAdvice) await window._fbSaveAdvice(key, payload);
+
+    _paintAdvice(items, payload.generatedAt, false);
+    showToast('조언이 도착했어요');
+  } catch (e) {
+    console.error(e);
+    var msg = String(e.message || e);
+    var hint = '';
+    if (msg.indexOf('403') >= 0) hint = 'API 키 제한 설정을 확인하세요. 로컬 파일에서는 동작하지 않습니다.';
+    else if (msg.indexOf('404') >= 0) hint = '모델명이 유효하지 않습니다. GEMINI_MODEL 값을 확인하세요.';
+    else if (msg.indexOf('429') >= 0) hint = '무료 할당량을 초과했어요. 잠시 후 다시 시도하세요.';
+    body.innerHTML = '<div style="font-size:13px;color:var(--danger);line-height:1.6">조언을 받지 못했어요.<br>'
+      + '<span style="font-size:11px;color:var(--text-muted)">' + msg.replace(/</g, '&lt;') + '</span>'
+      + (hint ? '<br><span style="font-size:12px;color:var(--text-muted)">' + hint + '</span>' : '') + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '다시 받기';
+  }
+}
+
+function _paintAdvice(items, generatedAt, stale) {
+  const body = document.getElementById('adviceBody');
+  const meta = document.getElementById('adviceMeta');
+  const colors = { warn: 'var(--danger)', good: 'var(--success)', info: 'var(--accent2)' };
+  const icons = { warn: '⚠️', good: '✅', info: '💡' };
+
+  body.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">'
+    + items.map(function(it) {
+        const c = colors[it.level] || 'var(--text-muted)';
+        return '<div style="display:flex;gap:12px;padding:13px 15px;background:var(--surface2);border-radius:10px;border-left:3px solid ' + c + '">'
+          + '<div style="font-size:18px;flex-shrink:0;line-height:1.4">' + (icons[it.level] || '💡') + '</div>'
+          + '<div style="flex:1;min-width:0">'
+          + '<div style="font-size:13px;font-weight:700;margin-bottom:3px;color:' + c + '">' + (it.title || '') + '</div>'
+          + '<div style="font-size:13px;line-height:1.65">' + (it.body || '') + '</div>'
+          + '</div></div>';
+      }).join('')
+    + '</div>';
+
+  if (meta) {
+    const d = generatedAt ? new Date(generatedAt) : null;
+    const when = d ? (d.getMonth() + 1) + '월 ' + d.getDate() + '일 생성' : '';
+    meta.innerHTML = when + (stale ? ' <span style="color:var(--danger)">· 이후 데이터가 바뀌었어요</span>' : '');
+  }
+}
+
+async function renderAdviceCard() {
+  if (_adviceLoaded) return;
+  _adviceLoaded = true;
+
+  const body = document.getElementById('adviceBody');
+  const btn = document.getElementById('adviceBtn');
+  const key = _adviceDocKey();
+  if (!body || !key) return;
+
+  if (window._fbLoadAdvice) {
+    const cached = await window._fbLoadAdvice(key);
+    if (cached && cached.items) {
+      try {
+        _paintAdvice(JSON.parse(cached.items), cached.generatedAt, cached.sig !== _adviceSig());
+        if (btn) btn.textContent = '다시 받기';
+        return;
+      } catch (e) { /* 파싱 실패 시 아래로 */ }
+    }
+  }
+  body.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:6px 0">'
+    + '전체 기간 데이터를 바탕으로 소비 흐름을 분석해드려요. 위 버튼을 눌러주세요.</div>';
+}
+  
 // ===== AUTH =====
 let _appBooted = false;
 
