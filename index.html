@@ -30,7 +30,8 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  
   const firebaseConfig = {
     apiKey: "AIzaSyCfLJ8p3IThaRsX3RaLle3gGSalE-ALgmg",
     authDomain: "yeyjsgh-792cc.firebaseapp.com",
@@ -41,6 +42,13 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(function(){});
+
+  window._fbSignIn  = function(email, pw) { return signInWithEmailAndPassword(auth, email, pw); };
+  window._fbSignOut = function() { return signOut(auth); };
+  window._fbOnAuth  = function(cb) { return onAuthStateChanged(auth, cb); };
+  window._fbUser    = function() { return auth.currentUser; };
 
   // Firestore 저장
   window._fbSaveData = async function(transactions, rules, cashData, incomeData) {
@@ -918,6 +926,23 @@ window.showPage = function(page) {
 </script>
 </head>
 <body>
+<!-- ===== 로그인 게이트 ===== -->
+<div id="authGate" style="position:fixed;inset:0;background:#1E2128;z-index:5000;display:none;align-items:center;justify-content:center;padding:24px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif">
+  <div style="width:100%;max-width:320px">
+    <div style="text-align:center;margin-bottom:30px">
+      <div style="font-size:36px;margin-bottom:12px">🏠</div>
+      <div style="color:#fff;font-size:19px;font-weight:700;letter-spacing:-.3px">우리 가계부</div>
+      <div style="color:rgba(255,255,255,.42);font-size:12px;margin-top:6px">로그인이 필요합니다</div>
+    </div>
+    <input type="email" id="authEmail" placeholder="아이디" autocomplete="username" autocapitalize="off" spellcheck="false"
+      style="width:100%;height:46px;padding:0 14px;margin-bottom:10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit">
+    <input type="password" id="authPw" placeholder="비밀번호" autocomplete="current-password"
+      style="width:100%;height:46px;padding:0 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit">
+    <div id="authError" style="display:none;margin-top:10px;font-size:12.5px;color:#FF8A7A;line-height:1.5"></div>
+    <button id="authBtn" onclick="doLogin()"
+      style="width:100%;height:46px;margin-top:16px;border-radius:10px;border:none;background:#E8EAED;color:#1E2128;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">로그인</button>
+  </div>
+</div>
 
 <!-- 모바일 하단 탭바 -->
 <nav class="mobile-tabbar" id="mobileTabbar">
@@ -2898,6 +2923,13 @@ window.showPage = function(page) {
       
       <div class="card">
         <div class="card-title">현재 규칙 목록</div>
+        <div class="card" style="margin-top:20px">
+        <div class="card-title">계정</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+          <div style="font-size:13px;color:var(--text-muted)" id="authWhoami">로그인 상태</div>
+          <button class="btn btn-ghost" onclick="doLogout()">로그아웃</button>
+        </div>
+      </div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>키워드</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
@@ -6468,7 +6500,10 @@ function renderRules() {
   if (!rules.length) {
     body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">등록된 규칙이 없습니다. 새 규칙을 추가하거나, 거래 내역에서 카테고리를 변경하면 자동으로 추가됩니다.</td></tr>';
   }
+  const who = document.getElementById('authWhoami');
+  if (who && window._fbUser && window._fbUser()) who.textContent = window._fbUser().email;
 }
+
 
 function addRule() {
   const kw = document.getElementById('ruleKeyword').value.trim();
@@ -6548,6 +6583,80 @@ function saveAdd() {
   }
 }
 
+
+// ===== AUTH =====
+let _appBooted = false;
+
+function showAuthGate() {
+  const g = document.getElementById('authGate');
+  if (g) g.style.display = 'flex';
+}
+function hideAuthGate() {
+  const g = document.getElementById('authGate');
+  if (g) g.style.display = 'none';
+}
+function _authErr(msg) {
+  const e = document.getElementById('authError');
+  if (!e) return;
+  if (!msg) { e.style.display = 'none'; return; }
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+async function doLogin() {
+  const email = (document.getElementById('authEmail').value || '').trim();
+  const pw = document.getElementById('authPw').value || '';
+  const btn = document.getElementById('authBtn');
+  if (!email || !pw) { _authErr('아이디와 비밀번호를 입력하세요'); return; }
+  if (!window._fbSignIn) { _authErr('연결 준비 중입니다. 잠시 후 다시 시도하세요'); return; }
+
+  _authErr('');
+  btn.disabled = true;
+  btn.textContent = '로그인 중...';
+  try {
+    await window._fbSignIn(email, pw);
+    document.getElementById('authPw').value = '';
+  } catch (e) {
+    const code = (e && e.code) || '';
+    let msg = '로그인에 실패했습니다';
+    if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) msg = '아이디 또는 비밀번호가 맞지 않습니다';
+    else if (code.includes('invalid-email')) msg = '아이디 형식이 올바르지 않습니다';
+    else if (code.includes('too-many-requests')) msg = '시도가 너무 많습니다. 잠시 후 다시 시도하세요';
+    else if (code.includes('network')) msg = '네트워크 연결을 확인해주세요';
+    _authErr(msg);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+}
+
+async function doLogout() {
+  if (!confirm('로그아웃 할까요?')) return;
+  if (window._fbSignOut) await window._fbSignOut();
+}
+
+function _waitForFirebase() {
+  return new Promise(function(resolve) {
+    if (window._fbReady) return resolve();
+    document.addEventListener('firebase-ready', function(){ resolve(); }, { once: true });
+    setTimeout(resolve, 6000);
+  });
+}
+
+async function _bootApp() {
+  await loadData();
+  initSummaryFilters();
+  initDetailFilters();
+  renderRules();
+  showPage('summary');
+}
+
+document.addEventListener('keydown', function(e) {
+  const gate = document.getElementById('authGate');
+  if (!gate || gate.style.display !== 'flex') return;
+  if (e.key === 'Enter') doLogin();
+});
+  
 // ===== INIT =====
 async function _init() {
   // 실제 showPage로 교체 (프록시 해제)
@@ -6596,27 +6705,26 @@ async function _init() {
   window.addEventListener('orientationchange', applyMobileLayout);
   window.addEventListener('pageshow', applyMobileLayout);
 
-  await loadData();
-  initSummaryFilters();
-  initDetailFilters();
-  renderRules();
-  showPage('summary');
-  if (!window._fbReady) {
-    // Firebase 아직 안 뜬 경우 → 준비되면 재로드
-    document.addEventListener('firebase-ready', async () => {
-      const fbData = await window._fbLoadData();
-      if (fbData) {
-        transactions = fbData.transactions || transactions;
-        rules = fbData.rules || rules;
-        cashData = fbData.cashData || cashData;
-        incomeData = fbData.incomeData || incomeData;
-        renderSummary();
-        _startRealtimeSync();
-      }
-    });
-  }
-}
+  await _waitForFirebase();
 
+  if (!window._fbOnAuth) {
+    // Firebase 로드 실패 → localStorage 오프라인 모드
+    await _bootApp();
+    return;
+  }
+
+  window._fbOnAuth(async function(user) {
+    if (!user) {
+      _appBooted = false;
+      showAuthGate();
+      return;
+    }
+    hideAuthGate();
+    if (_appBooted) return;
+    _appBooted = true;
+    await _bootApp();
+  });
+}
 
 document.addEventListener('DOMContentLoaded', _init);
 
