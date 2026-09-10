@@ -2728,11 +2728,17 @@ window.showPage = function(page) {
 
       <!-- 월별 지출 추이 라인차트 -->
       <div class="card" style="margin-bottom:20px">
-        <div class="card-title">월별 지출 추이</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+          <div class="card-title" style="margin-bottom:0">월별 카드 지출 추이 (이자 제외)</div>
+          <button class="btn btn-ghost btn-sm" onclick="resetTrendFilter()" style="white-space:nowrap">전체 보기</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px">카테고리를 눌러 제외하면 나머지 합계로 다시 그려집니다</p>
+        <div id="trendChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px"></div>
         <div style="overflow-x:auto">
           <svg id="trendSvg" style="width:100%;display:block" viewBox="0 0 800 200"></svg>
         </div>
         <div id="trendXLabels" style="position:relative;height:20px;margin-top:4px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif"></div>
+        <div id="trendSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"></div>
       </div>
 
       <!-- 평균 대비 이번 달 초과/절약 -->
@@ -5005,20 +5011,8 @@ function closeModal() {
 function renderTrends() {
   try { renderAdviceCard(); } catch(e) { console.error('renderAdviceCard', e); }
   try { renderMonthlyPnl(); } catch(e) { console.error('renderMonthlyPnl', e); }
-
-  try {
-    const months = getMonthRange();
-    const monthlyData = months.map(({year, month}) => {
-      const txs = getMonthlyTx(year, month);
-      return {
-        label: `${String(year).slice(2)}.${String(month).padStart(2,'0')}`,
-        total: txs.reduce((s,t) => s + (t.amount - (t.settlement||0)), 0),
-        year, month
-      };
-    });
-    renderTrendChart(monthlyData);
-  } catch(e) { console.error('renderTrendChart', e); }
-
+  try { _loadTrendFilter(); } catch(e) { console.error('_loadTrendFilter', e); }
+  try { renderTrendSection(); } catch(e) { console.error('renderTrendSection', e); }
   try { renderBudgetAlert(); } catch(e) { console.error('renderBudgetAlert', e); }
   try { renderHeatmap(); } catch(e) { console.error('renderHeatmap', e); }
   try { renderTopCatAnalysis(); } catch(e) { console.error('renderTopCatAnalysis', e); }
@@ -5059,7 +5053,7 @@ function renderMonthlyPnl() {
     return { h, label };
   });
 
-  let html = '<div style="overflow-x:auto"><div style="min-width:' + (data.length * 64 + 44) + 'px">';
+  let html = '<div style="overflow-x:auto"><div style="min-width:' + (data.length * 72 + 44) + 'px">';
 
   // 막대 + Y축 영역
   html += '<div style="display:flex;gap:0;align-items:flex-end">';
@@ -5073,7 +5067,7 @@ function renderMonthlyPnl() {
   html += '</div>';
 
   // 막대 영역
-  html += '<div style="flex:1;display:flex;align-items:flex-end;gap:8px;height:' + (BAR_H + 4) + 'px;border-left:1px solid var(--border);border-bottom:1.5px solid var(--border);padding-left:4px;position:relative">';
+  html += '<div style="flex:1;display:flex;align-items:flex-end;gap:8px;height:' + (BAR_H + 4) + 'px;border-left:1px solid var(--border);border-bottom:1.5px solid var(--border);padding-left:4px;position:relative;overflow:visible">';
 
   // Y축 보조선
   ySteps.slice(0, -1).forEach(v => {
@@ -5086,18 +5080,28 @@ function renderMonthlyPnl() {
     const incH = hasIncome ? Math.max(Math.round(d.inc / maxVal * BAR_H), d.inc > 0 ? 3 : 0) : 0;
     const isPos = d.pnl >= 0;
     const pnlColor = isPos ? 'var(--success)' : 'var(--danger)';
+    const BAR_W = 16;
 
     html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0;min-width:0">';
-    html += '<div style="font-size:9px;font-weight:700;color:' + pnlColor + ';margin-bottom:3px;white-space:nowrap">';
+
+    // 손익
+    html += '<div style="font-size:9px;font-weight:700;color:' + pnlColor + ';margin-bottom:2px;white-space:nowrap">';
     if (hasIncome) html += (isPos ? '+' : '') + Math.round(d.pnl / 10000) + '만';
     else html += Math.round(d.exp / 10000) + '만';
     html += '</div>';
-    html += '<div style="display:flex;align-items:flex-end;gap:2px;height:' + BAR_H + 'px">';
+
+    // 막대 + 막대별 수치
+    html += '<div style="display:flex;align-items:flex-end;gap:3px;height:' + BAR_H + 'px">';
     if (hasIncome) {
-      html += '<div style="width:12px;height:' + incH + 'px;background:var(--accent2);border-radius:3px 3px 0 0;opacity:.85" title="수입 ' + fmt(d.inc) + '원"></div>';
+      html += '<div style="width:' + BAR_W + 'px;height:' + incH + 'px;background:var(--accent2);border-radius:3px 3px 0 0;opacity:.85;position:relative" title="수입 ' + fmt(d.inc) + '원">'
+        + (d.inc > 0 ? '<span style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:var(--accent2);white-space:nowrap;line-height:1;padding-bottom:2px">' + Math.round(d.inc / 10000) + '</span>' : '')
+        + '</div>';
     }
-    html += '<div style="width:12px;height:' + expH + 'px;background:var(--danger);border-radius:3px 3px 0 0;opacity:.7" title="지출 ' + fmt(d.exp) + '원"></div>';
+    html += '<div style="width:' + BAR_W + 'px;height:' + expH + 'px;background:var(--danger);border-radius:3px 3px 0 0;opacity:.7;position:relative" title="지출 ' + fmt(d.exp) + '원">'
+      + (d.exp > 0 ? '<span style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:var(--danger);white-space:nowrap;line-height:1;padding-bottom:2px">' + Math.round(d.exp / 10000) + '</span>' : '')
+      + '</div>';
     html += '</div>';
+
     html += '</div>';
   });
   html += '</div></div>'; // 막대영역 + flex row 닫기
@@ -5115,6 +5119,7 @@ function renderMonthlyPnl() {
     html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--accent2);border-radius:2px;opacity:.85"></div>수입</div>';
   }
   html += '<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;background:var(--danger);border-radius:2px;opacity:.7"></div>지출</div>';
+  html += '<div style="font-size:10px;color:var(--text-muted);margin-left:auto">단위: 만원</div>';
   html += '</div>';
 
   html += '</div></div>';
@@ -5426,6 +5431,101 @@ function renderYearlyChart() {
     </div>`;
 }
 
+// ===== 추이 카테고리 필터 =====
+let _trendExcluded = new Set();
+
+function _loadTrendFilter() {
+  try {
+    const raw = localStorage.getItem('gaegebu_trend_excluded');
+    if (raw) _trendExcluded = new Set(JSON.parse(raw));
+  } catch (e) { _trendExcluded = new Set(); }
+}
+
+function _saveTrendFilter() {
+  try {
+    localStorage.setItem('gaegebu_trend_excluded', JSON.stringify([..._trendExcluded]));
+  } catch (e) {}
+}
+
+function toggleTrendCat(cat) {
+  if (_trendExcluded.has(cat)) _trendExcluded.delete(cat);
+  else _trendExcluded.add(cat);
+  _saveTrendFilter();
+  renderTrendSection();
+}
+
+function resetTrendFilter() {
+  _trendExcluded.clear();
+  _saveTrendFilter();
+  renderTrendSection();
+}
+
+function renderTrendChips() {
+  const el = document.getElementById('trendChips');
+  if (!el) return;
+  const active = CATEGORIES.filter(function(cat) {
+    return transactions.some(function(t) { return t.category === cat; });
+  });
+  el.innerHTML = active.map(function(cat) {
+    const off = _trendExcluded.has(cat);
+    const color = CAT_COLORS[cat] || '#aaa';
+    return '<span onclick="toggleTrendCat(\'' + cat + '\')" '
+      + 'style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:4px;'
+      + 'padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;'
+      + 'transition:all .15s;'
+      + (off
+          ? 'background:var(--surface2);color:#BBB;border:1.5px solid var(--border);text-decoration:line-through'
+          : 'background:' + color + '1f;color:' + color + ';border:1.5px solid ' + color + '66')
+      + '">' + (CAT_ICON[cat] || '') + ' ' + cat + '</span>';
+  }).join('');
+}
+
+function renderTrendSection() {
+  const months = getMonthRange();
+  const data = months.map(function(m) {
+    const txs = getMonthlyTx(m.year, m.month).filter(function(t) {
+      return !_trendExcluded.has(t.category);
+    });
+    const excl = getMonthlyTx(m.year, m.month).filter(function(t) {
+      return _trendExcluded.has(t.category);
+    });
+    return {
+      label: String(m.year).slice(2) + '.' + String(m.month).padStart(2, '0'),
+      total: txs.reduce(function(s, t) { return s + (t.amount - (t.settlement || 0)); }, 0),
+      excluded: excl.reduce(function(s, t) { return s + (t.amount - (t.settlement || 0)); }, 0),
+      year: m.year, month: m.month
+    };
+  });
+
+  renderTrendChips();
+  renderTrendChart(data);
+
+  const sum = document.getElementById('trendSummary');
+  if (!sum) return;
+  if (!data.length) { sum.innerHTML = ''; return; }
+
+  const avg = Math.round(data.reduce(function(s, d) { return s + d.total; }, 0) / data.length);
+  const last = data[data.length - 1];
+  const exclAvg = Math.round(data.reduce(function(s, d) { return s + d.excluded; }, 0) / data.length);
+  const diff = last.total - avg;
+
+  function cell(label, value, sub, color) {
+    return '<div style="text-align:center">'
+      + '<div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">' + label + '</div>'
+      + '<div style="font-size:15px;font-weight:700;' + (color ? 'color:' + color : '') + '">' + value + '</div>'
+      + (sub ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px">' + sub + '</div>' : '')
+      + '</div>';
+  }
+
+  sum.innerHTML =
+    cell('월평균', fmt(avg) + '원', data.length + '개월 기준')
+    + cell(last.label + ' 실적', fmt(last.total) + '원',
+        (diff >= 0 ? '평균 +' : '평균 ') + fmt(diff) + '원',
+        diff > 0 ? 'var(--danger)' : 'var(--success)')
+    + cell('제외한 금액', _trendExcluded.size ? fmt(exclAvg) + '원' : '-',
+        _trendExcluded.size ? [..._trendExcluded].join(', ') + ' · 월평균' : '제외 항목 없음');
+}
+  
 function getMonthRange() {
   const dates = transactions.map(t => t.date.slice(0,7)).filter(Boolean);
   if (!dates.length) return [];
@@ -6441,28 +6541,36 @@ async function requestAdvice() {
   try {
     const data = buildAdvicePayload();
 
-    async function _callGemini(attempt) {
-      const r = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + apiKey,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: _advicePrompt(data) }] }],
-            generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
-          })
+    async function _callGemini() {
+      let last = null;
+      for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
+        const model = GEMINI_MODELS[mi];
+        for (let attempt = 0; attempt < 2; attempt++) {
+          btn.textContent = '분석 중...' + (mi > 0 || attempt > 0 ? ' (' + (mi + 1) + '-' + (attempt + 1) + ')' : '');
+          const r = await fetch(
+            'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: _advicePrompt(data) }] }],
+                generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
+              })
+            }
+          );
+          if (r.ok) return r;
+          last = r;
+          if (r.status === 503) {
+            await new Promise(function(res2) { setTimeout(res2, 1500 * Math.pow(2, attempt)); });
+            continue;
+          }
+          break;
         }
-      );
-      if ((r.status === 503 || r.status === 429) && attempt < 3) {
-        const wait = 2000 * Math.pow(2, attempt);   // 2초 → 4초 → 8초
-        btn.textContent = '재시도 중... (' + (attempt + 1) + '/3)';
-        await new Promise(function(res2) { setTimeout(res2, wait); });
-        return _callGemini(attempt + 1);
       }
-      return r;
+      return last;
     }
 
-    const res = await _callGemini(0);
+    const res = await _callGemini();
 
     if (!res.ok) {
       const errTxt = await res.text();
