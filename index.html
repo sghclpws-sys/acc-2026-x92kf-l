@@ -2731,7 +2731,7 @@ window.showPage = function(page) {
       <div class="card" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
           <div class="card-title" style="margin-bottom:0">월별 카드 지출 추이 (이자 제외)</div>
-          <button class="btn btn-ghost btn-sm" onclick="resetTrendFilter()" style="white-space:nowrap">전체 보기</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAllTrendCats()" style="white-space:nowrap">전체보기/해제</button>
         </div>
         <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px">카테고리를 눌러 제외하면 나머지 합계로 다시 그려집니다</p>
         <div id="trendChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px"></div>
@@ -5455,8 +5455,13 @@ function toggleTrendCat(cat) {
   renderTrendSection();
 }
 
-function resetTrendFilter() {
-  _trendExcluded.clear();
+function toggleAllTrendCats() {
+  const active = CATEGORIES.filter(function(cat) {
+    return transactions.some(function(t) { return t.category === cat; });
+  });
+  const allVisible = active.every(function(cat) { return !_trendExcluded.has(cat); });
+  if (allVisible) active.forEach(function(cat) { _trendExcluded.add(cat); });
+  else _trendExcluded.clear();
   _saveTrendFilter();
   renderTrendSection();
 }
@@ -5505,10 +5510,17 @@ function renderTrendSection() {
   if (!sum) return;
   if (!data.length) { sum.innerHTML = ''; return; }
 
-  const avg = Math.round(data.reduce(function(s, d) { return s + d.total; }, 0) / data.length);
   const last = data[data.length - 1];
+  const priorMonths = data.slice(Math.max(0, data.length - 4), -1);
+  const priorTotals = priorMonths.map(function(d) { return d.total; }).sort(function(a, b) { return a - b; });
+  const mid = Math.floor(priorTotals.length / 2);
+  const baseline = priorTotals.length
+    ? (priorTotals.length % 2
+        ? priorTotals[mid]
+        : Math.round((priorTotals[mid - 1] + priorTotals[mid]) / 2))
+    : null;
   const exclAvg = Math.round(data.reduce(function(s, d) { return s + d.excluded; }, 0) / data.length);
-  const diff = last.total - avg;
+  const diff = baseline === null ? null : last.total - baseline;
 
   function cell(label, value, sub, color) {
     return '<div style="text-align:center">'
@@ -5519,10 +5531,11 @@ function renderTrendSection() {
   }
 
   sum.innerHTML =
-    cell('월평균', fmt(avg) + '원', data.length + '개월 기준')
+    cell('이전 3개월 중앙값', baseline === null ? '-' : fmt(baseline) + '원',
+        priorMonths.length ? '직전 ' + priorMonths.length + '개월 기준' : '이전 데이터 없음')
     + cell(last.label + ' 실적', fmt(last.total) + '원',
-        (diff >= 0 ? '평균 +' : '평균 ') + fmt(diff) + '원',
-        diff > 0 ? 'var(--danger)' : 'var(--success)')
+        diff === null ? '비교할 이전 데이터 없음' : (diff >= 0 ? '기준 +' : '기준 ') + fmt(diff) + '원',
+        diff === null ? '' : (diff > 0 ? 'var(--danger)' : 'var(--success)'))
     + cell('제외한 금액', _trendExcluded.size ? fmt(exclAvg) + '원' : '-',
         _trendExcluded.size ? [..._trendExcluded].join(', ') + ' · 월평균' : '제외 항목 없음');
 }
