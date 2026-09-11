@@ -2739,14 +2739,7 @@ window.showPage = function(page) {
           <svg id="trendSvg" style="width:100%;display:block" viewBox="0 0 800 200"></svg>
         </div>
         <div id="trendXLabels" style="position:relative;height:20px;margin-top:4px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif"></div>
-        <div id="trendSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"></div>
-      </div>
-
-      <!-- 평균 대비 이번 달 초과/절약 -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">이번 달 vs 평균</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">카테고리별 과거 평균 대비 이번 달 증감</p>
-        <div id="budgetAlert"></div>
+        <div id="trendSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"></div>
       </div>
 
       <!-- 분기별 지출 히트맵 -->
@@ -2754,6 +2747,13 @@ window.showPage = function(page) {
         <div class="card-title">지출 히트맵</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">월 × 카테고리 격자로 소비 패턴을 한눈에 파악</p>
         <div style="overflow-x:auto"><div id="heatmapChart"></div></div>
+      </div>
+
+      <!-- 평균 대비 이번 달 초과/절약 -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">이번 달 vs 평균</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">카테고리별 과거 평균 대비 이번 달 증감</p>
+        <div id="budgetAlert"></div>
       </div>
 
       <!-- 카테고리별 집중 분석 (절감 시뮬 없이) -->
@@ -5246,13 +5246,11 @@ function renderHeatmap() {
 
     allMonths.forEach(({year, month}, mi) => {
       const val = grid[ci][mi];
-      const opacity = val > 0 ? 0.1 + (val / maxVal) * 0.82 : 0;
+      const opacity = val > 0 ? 0.1 + (val / maxVal) * 0.82 : 0.1;
       const x = labelW + mi * cellW;
       svgHtml += `<rect x="${x + 2}" y="${y + 2}" width="${cellW - 4}" height="${cellH - 4}" rx="5" fill="${color}" fill-opacity="${opacity.toFixed(2)}"/>`;
-      if (val > 0) {
-        const label = val >= 10000 ? `${Math.round(val/10000)}만` : `${(val/10000).toFixed(1)}만`;
-        svgHtml += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 4}" text-anchor="middle" font-size="10" fill="${opacity > 0.55 ? '#fff' : '#444'}" font-family="Pretendard" font-weight="600">${label}</text>`;
-      }
+      const label = val === 0 ? '0만' : (val >= 10000 ? `${Math.round(val/10000)}만` : `${(val/10000).toFixed(1)}만`);
+      svgHtml += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 4}" text-anchor="middle" font-size="10" fill="${opacity > 0.55 ? '#fff' : '#444'}" font-family="Pretendard" font-weight="600">${label}</text>`;
     });
   });
 
@@ -5519,6 +5517,7 @@ function renderTrendSection() {
         ? priorTotals[mid]
         : Math.round((priorTotals[mid - 1] + priorTotals[mid]) / 2))
     : null;
+  const overallAvg = Math.round(data.reduce(function(s, d) { return s + d.total; }, 0) / data.length);
   const exclAvg = Math.round(data.reduce(function(s, d) { return s + d.excluded; }, 0) / data.length);
   const diff = baseline === null ? null : last.total - baseline;
 
@@ -5533,6 +5532,7 @@ function renderTrendSection() {
   sum.innerHTML =
     cell('이전 3개월 중앙값', baseline === null ? '-' : fmt(baseline) + '원',
         priorMonths.length ? '직전 ' + priorMonths.length + '개월 기준' : '이전 데이터 없음')
+    + cell('전체 월평균', fmt(overallAvg) + '원', data.length + '개월 누적 기준')
     + cell(last.label + ' 실적', fmt(last.total) + '원',
         diff === null ? '비교할 이전 데이터 없음' : (diff >= 0 ? '기준 +' : '기준 ') + fmt(diff) + '원',
         diff === null ? '' : (diff > 0 ? 'var(--danger)' : 'var(--success)'))
