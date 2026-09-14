@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function householdMember() {
+      return request.auth != null && request.auth.uid in [
+        'ERsh4CeHgDNMLtMW7YS2ePl8Xwj1',
+        'v8AbxGNH1GNSna54k5sgd5DAxJV2'
+      ];
+    }
+    match /gaegebu/main {
+      allow read, write: if householdMember();
+      match /summaries/{month} {
+        allow read: if householdMember();
+        allow create, update: if householdMember()
+          && month.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+          && request.resource.data.month == month
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.keys().hasOnly([
+            'schemaVersion', 'month', 'currency', 'generatedAt', 'source', 'status',
+            'calculationVersion', 'grossCardAmount', 'settlementAmount', 'netCardExpense',
+            'interestExpense', 'income', 'totalExpense', 'balance', 'surplusRate',
+            'transactionCount', 'categories', 'quality'
+          ]);
+        allow delete: if householdMember();
+      }
+    }
+    match /advice/{key} {
+      allow read, write: if householdMember();
+    }
+    match /security/householdSummary {
+      allow read: if householdMember();
+      allow write: if false;
+    }
+  }
+}

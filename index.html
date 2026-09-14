@@ -50,8 +50,27 @@
   window._fbOnAuth  = function(cb) { return onAuthStateChanged(auth, cb); };
   window._fbUser    = function() { return auth.currentUser; };
 
+  const householdUsers = ['ERsh4CeHgDNMLtMW7YS2ePl8Xwj1', 'v8AbxGNH1GNSna54k5sgd5DAxJV2'];
+  function requireHouseholdUser() {
+    if (!auth.currentUser || !householdUsers.includes(auth.currentUser.uid)) {
+      throw new Error('이 가계부에 접근할 수 있는 계정으로 로그인해주세요.');
+    }
+  }
+  window._fbAllowed = function() { return !!auth.currentUser && householdUsers.includes(auth.currentUser.uid); };
+  window._fbSaveHouseholdSummary = async function(payload) {
+    requireHouseholdUser();
+    const policy = await getDoc(doc(db, 'security', 'householdSummary'));
+    if (!policy.exists() || policy.data().rulesVersion !== 'household-uids-v1') {
+      throw new Error('서버 보안 규칙 적용 확인 후 요약 저장을 사용할 수 있습니다.');
+    }
+    requireHouseholdUser();
+    if (!payload || payload.schemaVersion !== 1 || !/^\d{4}-\d{2}$/.test(payload.month)) throw new Error('요약 형식 오류');
+    await setDoc(doc(db, 'gaegebu', 'main', 'summaries', payload.month), payload);
+  };
+
   // Firestore 저장
   window._fbSaveData = async function(transactions, rules, cashData, incomeData) {
+    requireHouseholdUser();
     try {
       await setDoc(doc(db, 'gaegebu', 'main'), {
         transactions: JSON.stringify(transactions),
@@ -67,11 +86,13 @@
       localStorage.setItem('gaegebu_rules', JSON.stringify(rules));
       localStorage.setItem('gaegebu_cash', JSON.stringify(cashData));
       localStorage.setItem('gaegebu_income', JSON.stringify(incomeData));
+      throw e;
     }
   };
 
   // Firestore 로드
   window._fbLoadData = async function() {
+    requireHouseholdUser();
     try {
       const snap = await getDoc(doc(db, 'gaegebu', 'main'));
       if (snap.exists()) {
@@ -86,12 +107,13 @@
       return null;
     } catch(e) {
       console.error('Firebase 로드 오류:', e);
-      return null;
+      throw e;
     }
   };
 
   // 실시간 리스너 - 다른 기기에서 변경 시 자동 반영
   window._fbListen = function(callback) {
+    requireHouseholdUser();
     return onSnapshot(doc(db, 'gaegebu', 'main'), (snap) => {
       if (snap.exists()) {
         const d = snap.data();
@@ -107,12 +129,14 @@
   
   // 조언 캐시 (advice 컬렉션)
   window._fbSaveAdvice = async function(key, payload) {
+    requireHouseholdUser();
     try {
       await setDoc(doc(db, 'advice', key), payload);
       return true;
     } catch(e) { console.error('조언 저장 오류:', e); return false; }
   };
   window._fbLoadAdvice = async function(key) {
+    requireHouseholdUser();
     try {
       const snap = await getDoc(doc(db, 'advice', key));
       return snap.exists() ? snap.data() : null;
@@ -2977,6 +3001,15 @@ window.showPage = function(page) {
       </div>
 
       <div class="card" style="margin-top:20px">
+        <div class="card-title">통합 Advisor 월별 요약</div>
+        <p style="font-size:12px;color:var(--text-muted)">월별 수입·지출과 카테고리 합계를 저장합니다. 가맹점 분석은 기존 가계부 AI에서 계속 사용할 수 있습니다.</p>
+        <input type="month" id="householdSummaryMonth" aria-label="요약할 월">
+        <button class="btn btn-ghost" onclick="previewHouseholdSummary()">미리보기</button>
+        <button class="btn btn-action" id="householdSummarySave" onclick="saveHouseholdSummary()" disabled>요약 저장</button>
+        <pre id="householdSummaryPreview" style="white-space:pre-wrap;font-size:12px"></pre>
+        <div id="householdSummaryStatus" role="status" style="font-size:12px"></div>
+      </div>
+      <div class="card" style="margin-top:20px">
         <div class="card-title">계정</div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
           <div style="font-size:13px;color:var(--text-muted)" id="authWhoami">로그인 상태</div>
@@ -3183,8 +3216,9 @@ window.showPage = function(page) {
 <script>
 // ===== DATA =====
 </script>
+<script src="./household-summary.js"></script>
 <script id="txDataScript">
-window._INIT_TX = [{"id":2923,"date":"2026-03-03","store":"문화센터수강료","amount":130711,"note":"","category":"교육/놀이","card":"현대백화점카드"},{"id":2924,"date":"2026-03-08","store":"유니폼브릿지","amount":369730,"note":"예진 지원","category":"미분류","card":"현대백화점카드","settlement":369730},{"id":2925,"date":"2026-03-08","store":"한와담소반","amount":31000,"note":"","category":"외식","card":"현대백화점카드"},{"id":2926,"date":"2026-03-08","store":"매트블랙커피","amount":11500,"note":"","category":"외식","card":"현대백화점카드"},{"id":2927,"date":"2026-03-13","store":"딸기","amount":8900,"note":"","category":"생필품","card":"현대백화점카드"},{"id":2928,"date":"2026-03-13","store":"마이리틀타이거&PLAY","amount":29900,"note":"","category":"교육/놀이","card":"현대백화점카드"},{"id":2929,"date":"2026-03-13","store":"다르다김밥","amount":10000,"note":"","category":"외식","card":"현대백화점카드"},{"id":2930,"date":"2026-03-22","store":"매트블랙커피","amount":11500,"note":"","category":"외식","card":"현대백화점카드"},{"id":2931,"date":"2026-03-22","store":"한와담소반","amount":28500,"note":"","category":"외식","card":"현대백화점카드"},{"id":2932,"date":"2026-03-29","store":"송","amount":32000,"note":"","category":"외식","card":"현대백화점카드"},{"id":3074,"date":"2026-03-29","store":"현대아울렛 김포점","amount":8900,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3075,"date":"2026-03-29","store":"현대아울렛 김포점","amount":7000,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3076,"date":"2026-03-29","store":"현대아울렛 김포점","amount":43900,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3077,"date":"2026-03-29","store":"현대아울렛 김포점","amount":104040,"note":"지유옷","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3078,"date":"2026-03-29","store":"현대아울렛 김포점","amount":29000,"note":"지유 장난감","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3079,"date":"2026-03-29","store":"현대아울렛 김포점","amount":3800,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3080,"date":"2026-03-29","store":"현대아울렛 김포점","amount":20000,"note":"지유 샘플북","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3081,"date":"2026-03-29","store":"주식회사 무신사","amount":25329,"note":"베개커버","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3082,"date":"2026-03-29","store":"쿠팡","amount":21930,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3083,"date":"2026-03-28","store":"쿠팡","amount":13900,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3084,"date":"2026-03-27","store":"쿠팡","amount":29050,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3085,"date":"2026-03-27","store":"네이버페이 네이버","amount":26900,"note":"유산균 구매","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3086,"date":"2026-03-27","store":"쿠팡이츠","amount":36800,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3087,"date":"2026-03-26","store":"쿠팡","amount":12650,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3088,"date":"2026-03-26","store":"주식회사 버드뷰","amount":15200,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3089,"date":"2026-03-26","store":"쿠팡","amount":9900,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3090,"date":"2026-03-25","store":"하이파킹(주)","amount":3000,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3091,"date":"2026-03-23","store":"산들약국","amount":4300,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3092,"date":"2026-03-23","store":"봄봄소아청소년과의원","amount":2900,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3093,"date":"2026-03-22","store":"연못카페","amount":8500,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3094,"date":"2026-03-22","store":"쿠팡","amount":30180,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3095,"date":"2026-03-22","store":"(주)고암","amount":4900,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3096,"date":"2026-03-21","store":"쿠팡","amount":39800,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3097,"date":"2026-03-21","store":"쿠팡","amount":8900,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3098,"date":"2026-03-21","store":"쿠팡이츠","amount":20300,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3099,"date":"2026-03-20","store":"하이파킹(주)","amount":3000,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3100,"date":"2026-03-20","store":"주식회사 카카오","amount":32300,"note":"기혁정산","category":"미분류","card":"삼성카드","rowType":"cancel","settlement":32300},{"id":3101,"date":"2026-03-18","store":"주식회사 카카오","amount":39000,"note":"기혁정산","category":"미분류","card":"삼성카드","rowType":"cancel","settlement":39000},{"id":3102,"date":"2026-03-17","store":"크린토피아 이대점","amount":109760,"note":"패딩정리","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3103,"date":"2026-03-16","store":"배민클럽_우아한형제들","amount":1990,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3104,"date":"2026-03-15","store":"에이치디씨아이파크몰 주식회사","amount":16500,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3105,"date":"2026-03-15","store":"카카오T일반택시_0","amount":10700,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3106,"date":"2026-03-15","store":"쿠팡이츠","amount":13300,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3107,"date":"2026-03-14","store":"주식회사 버드뷰","amount":22750,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3108,"date":"2026-03-14","store":"주식회사 버드뷰","amount":40522,"note":"","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3109,"date":"2026-03-14","store":"한화커넥트(주)","amount":31000,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3110,"date":"2026-03-14","store":"한화커넥트(주)","amount":12500,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3111,"date":"2026-03-14","store":"주식회사 카카오","amount":26100,"note":"기혁정산","category":"미분류","card":"삼성카드","rowType":"cancel","settlement":26100},{"id":3112,"date":"2026-03-14","store":"카카오T일반택시_0","amount":6700,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3113,"date":"2026-03-13","store":"경희궁자이 상가 관리위원회","amount":2400,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3114,"date":"2026-03-13","store":"쿠팡","amount":17974,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3115,"date":"2026-03-10","store":"컬리","amount":26094,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3116,"date":"2026-03-08","store":"(주)  모드니","amount":109700,"note":"그릇쇼핑","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3117,"date":"2026-03-08","store":"GS25웨스턴돔점","amount":600,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3118,"date":"2026-03-08","store":"마리안","amount":29000,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3119,"date":"2026-03-08","store":"프렌디노","amount":4000,"note":"","category":"교육/놀이","card":"삼성카드","rowType":"cancel"},{"id":3120,"date":"2026-03-07","store":"(주)이마트 용산점","amount":5500,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3121,"date":"2026-03-07","store":"서울중구육아종합지원센터중림점","amount":500,"note":"","category":"교육/놀이","card":"삼성카드","rowType":"cancel"},{"id":3122,"date":"2026-03-07","store":"푸디스트(주) 고메이플레이스 국립중앙박물관점","amount":2000,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3123,"date":"2026-03-07","store":"푸디스트(주) 고메이플레이스 국립중앙박물관점","amount":21500,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3124,"date":"2026-03-07","store":"국립중앙박물관","amount":1800,"note":"","category":"생활비","card":"삼성카드","rowType":"cancel"},{"id":3125,"date":"2026-03-06","store":"네이버페이 네이버","amount":42800,"note":"커피캡슐","category":"쇼핑","card":"삼성카드","rowType":"cancel"},{"id":3126,"date":"2026-03-03","store":"쿠팡","amount":19040,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3127,"date":"2026-03-03","store":"네이버페이 네이버","amount":0,"note":"","category":"미분류","card":"삼성카드","rowType":"cancel"},{"id":3128,"date":"2026-03-03","store":"쿠팡이츠","amount":11900,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3129,"date":"2026-03-02","store":"에스케이렌터카주식회사","amount":57030,"note":"주유비","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3130,"date":"2026-03-02","store":"쿠팡","amount":26300,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3131,"date":"2026-03-02","store":"쿠팡이츠","amount":23900,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3132,"date":"2026-03-02","store":"쿠팡","amount":12650,"note":"","category":"생필품","card":"삼성카드","rowType":"cancel"},{"id":3133,"date":"2026-03-02","store":"카페오가다제주점","amount":12000,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3134,"date":"2026-03-02","store":"(주)우아한형제들","amount":10700,"note":"","category":"외식","card":"삼성카드","rowType":"cancel"},{"id":3135,"date":"2026-03-01","store":"파리바게뜨 동화마을점","amount":51100,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3136,"date":"2026-03-01","store":"주식회사미스터밀크송당","amount":6500,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3137,"date":"2026-03-01","store":"주식회사미스터밀크송당","amount":17000,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3138,"date":"2026-03-01","store":"모뉴에트","amount":8000,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3139,"date":"2026-03-01","store":"모뉴에트","amount":5500,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3140,"date":"2026-03-01","store":"고슬고슬제주","amount":6500,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3141,"date":"2026-03-01","store":"고슬고슬제주","amount":13000,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3142,"date":"2026-03-01","store":"고슬고슬제주","amount":10000,"note":"","category":"여행","card":"삼성카드","rowType":"cancel"},{"id":3143,"date":"2026-03-29","store":"현대아울렛 김포점-오프라벨","amount":40000,"note":"","category":"쇼핑","card":"국민카드","rowType":"approval"},{"id":3144,"date":"2026-03-29","store":"현대아울렛 김포점-나이키키즈 한세","amount":29400,"note":"","category":"쇼핑","card":"국민카드","rowType":"approval"},{"id":3145,"date":"2026-03-29","store":"현대아울렛 김포점-카페모라","amount":12800,"note":"","category":"쇼핑","card":"국민카드","rowType":"approval"},{"id":3146,"date":"2026-03-29","store":"현대아울렛 김포점-몬칩팩토리","amount":4000,"note":"","category":"쇼핑","card":"국민카드","rowType":"approval"},{"id":3147,"date":"2026-03-29","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":14900,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3148,"date":"2026-03-27","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":10800,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3149,"date":"2026-03-27","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":28590,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3150,"date":"2026-03-27","store":"씨유(CU)신촌힐스테이트점","amount":13500,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3151,"date":"2026-03-26","store":"한화커넥트(주)","amount":3790,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3152,"date":"2026-03-26","store":"쿠팡이츠-쿠팡이츠","amount":22900,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3153,"date":"2026-03-23","store":"SK브로드밴드(주)","amount":11001,"note":"","category":"통신/렌탈","card":"국민카드","rowType":"approval"},{"id":3154,"date":"2026-03-20","store":"오아시스 아현점","amount":11480,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3155,"date":"2026-03-20","store":"서울도시가스(주)","amount":75400,"note":"","category":"가스비","card":"국민카드","rowType":"approval"},{"id":3156,"date":"2026-03-20","store":"코웨이(주)","amount":5900,"note":"","category":"통신/렌탈","card":"국민카드","rowType":"approval"},{"id":3157,"date":"2026-03-20","store":"코웨이(주)","amount":25550,"note":"","category":"통신/렌탈","card":"국민카드","rowType":"approval"},{"id":3158,"date":"2026-03-19","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":16600,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3159,"date":"2026-03-18","store":"(주)시사에프앤비(SISA FandB Corp.)","amount":8500,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3160,"date":"2026-03-18","store":"오아시스 아현점","amount":17222,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3161,"date":"2026-03-16","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":3730,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3162,"date":"2026-03-13","store":"쿠팡이츠-쿠팡이츠","amount":16000,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3163,"date":"2026-03-13","store":"씨유(CU)신촌힐스테이트점","amount":13490,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3164,"date":"2026-03-12","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":17400,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3165,"date":"2026-03-10","store":"쿠팡이츠-쿠팡이츠","amount":33900,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3166,"date":"2026-03-07","store":"에이치디씨아이파크몰 주식회사","amount":4800,"note":"","category":"외식","card":"국민카드","rowType":"approval"},{"id":3167,"date":"2026-03-07","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":10500,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3168,"date":"2026-03-05","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":20270,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3169,"date":"2026-03-04","store":"쿠팡(와우멤버십)-쿠팡(와우멤버십)","amount":7890,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3170,"date":"2026-03-04","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":37300,"note":"","category":"생필품","card":"국민카드","rowType":"approval"},{"id":3171,"date":"2026-03-02","store":"롯데리아 제주공항국내선탑승점","amount":3100,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3172,"date":"2026-03-01","store":"소심한책방","amount":18000,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3173,"date":"2026-03-01","store":"(주)제스코마트 동쪽송당 동화마을","amount":5000,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3174,"date":"2026-03-01","store":"송당산들네","amount":41000,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3175,"date":"2026-03-01","store":"김녕장터국수","amount":21000,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3176,"date":"2026-03-01","store":"지에스25 김녕세기알점","amount":18700,"note":"","category":"여행","card":"국민카드","rowType":"approval"},{"id":3177,"date":"2026-03-25","store":"아파트관리비","amount":397050,"note":"","category":"관리비","card":"SC현대카드","rowType":"approval"},{"id":3178,"date":"2026-03-01","store":"스타벅스코리아_상품권","amount":10000,"note":"","category":"여행","card":"SC현대카드","rowType":"approval"},{"id":2607,"date":"2026-01-27","store":"아파트관리비","amount":338680,"note":"관리비","category":"관리비","settlement":0},{"id":2608,"date":"2026-01-26","store":"문화센터수강료","amount":150000,"note":"봄학기 문센 등록","category":"교육/놀이","settlement":0},{"id":2609,"date":"2026-01-20","store":"서울도시가스(주)","amount":123140,"note":"가스비","category":"가스비","settlement":0},{"id":2610,"date":"2026-01-04","store":"팡파르","amount":98400,"note":"와인","category":"쇼핑","settlement":0},{"id":2611,"date":"2026-01-26","store":"문화센터수강료","amount":86660,"note":"발레 문센","category":"교육/놀이","settlement":0},{"id":2612,"date":"2026-01-01","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":76970,"note":"","category":"생필품","settlement":0},{"id":2613,"date":"2026-01-25","store":"동래정 아현점","amount":70000,"note":"외식","category":"외식","settlement":0},{"id":2614,"date":"2026-01-18","store":"쿠팡","amount":65890,"note":"","category":"생필품","settlement":0},{"id":2615,"date":"2026-01-05","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":64080,"note":"","category":"생필품","settlement":0},{"id":2616,"date":"2026-01-11","store":"쁘띠몽드 경희궁자이점","amount":52200,"note":"놀이방","category":"교육/놀이","settlement":0},{"id":2617,"date":"2026-01-03","store":"사보텐","amount":43800,"note":"외식","category":"외식","settlement":0},{"id":2618,"date":"2026-01-23","store":"쿠팡이츠-쿠팡이츠","amount":37000,"note":"외식","category":"외식","settlement":0},{"id":2619,"date":"2026-01-17","store":"송","amount":36000,"note":"외식","category":"외식","settlement":0},{"id":2620,"date":"2026-01-09","store":"쿠팡이츠-쿠팡이츠","amount":35400,"note":"외식","category":"외식","settlement":0},{"id":2621,"date":"2026-01-01","store":"(주)우아한형제들","amount":33600,"note":"외식","category":"외식","settlement":0},{"id":2622,"date":"2026-01-18","store":"쿠팡","amount":32010,"note":"","category":"생필품","settlement":0},{"id":2623,"date":"2026-01-21","store":"주식회사 카카오","amount":29900,"note":"기혁 정산 完","category":"관계비용","settlement":29900},{"id":2624,"date":"2026-01-31","store":"주식회사 카카오","amount":29800,"note":"기혁 정산 完","category":"관계비용","settlement":29800},{"id":2625,"date":"2026-01-17","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":26990,"note":"","category":"생필품","settlement":0},{"id":2626,"date":"2026-01-27","store":"쿠팡이츠-쿠팡이츠","amount":25900,"note":"외식","category":"외식","settlement":0},{"id":2627,"date":"2026-01-02","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":24700,"note":"","category":"생필품","settlement":0},{"id":2628,"date":"2026-01-16","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":23530,"note":"","category":"생필품","settlement":0},{"id":2629,"date":"2026-01-30","store":"쿠팡","amount":22090,"note":"","category":"생필품","settlement":0},{"id":2630,"date":"2026-01-21","store":"씨유(CU)신촌힐스테이트점","amount":21600,"note":"","category":"생필품","settlement":0},{"id":2631,"date":"2026-01-07","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":21520,"note":"","category":"생필품","settlement":0},{"id":2632,"date":"2026-01-19","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":20080,"note":"","category":"생필품","settlement":0},{"id":2633,"date":"2026-01-13","store":"쿠팡이츠-쿠팡이츠","amount":20000,"note":"외식","category":"외식","settlement":0},{"id":2634,"date":"2026-01-14","store":"씨유(CU)신촌힐스테이트점","amount":19690,"note":"","category":"생필품","settlement":0},{"id":2635,"date":"2026-01-24","store":"주식회사 얌샘김밥킨텍스점","amount":18600,"note":"외식","category":"외식","settlement":0},{"id":2636,"date":"2026-01-10","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":17630,"note":"","category":"생필품","settlement":0},{"id":2637,"date":"2026-01-18","store":"스타벅스_주문","amount":15886,"note":"외식","category":"외식","settlement":0},{"id":2638,"date":"2026-01-18","store":"주식회사 스타필드고양","amount":15800,"note":"외식","category":"외식","settlement":0},{"id":2639,"date":"2026-01-10","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":15380,"note":"외식","category":"외식","settlement":0},{"id":2641,"date":"2026-01-18","store":"주식회사 스타필드고양","amount":14900,"note":"외식","category":"외식","settlement":0},{"id":2642,"date":"2026-01-27","store":"오아시스 아현점","amount":13467,"note":"","category":"생필품","settlement":0},{"id":2643,"date":"2026-01-20","store":"코웨이(주)","amount":12770,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2644,"date":"2026-01-04","store":"쿠팡이츠","amount":12500,"note":"외식","category":"외식","settlement":0},{"id":2645,"date":"2026-01-31","store":"씨유(CU)신촌힐스테이트점","amount":12490,"note":"","category":"생필품","settlement":0},{"id":2646,"date":"2026-01-01","store":"에이치투오코리아 주식회사","amount":12000,"note":"","category":"외식","settlement":0},{"id":2647,"date":"2026-01-19","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":11900,"note":"","category":"생필품","settlement":0},{"id":2648,"date":"2026-01-21","store":"SK브로드밴드(주)","amount":11001,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2649,"date":"2026-01-01","store":"주식회사 에이치투오호스피탈리티","amount":11000,"note":"한강눈썰매","category":"교육/놀이","settlement":0},{"id":2650,"date":"2026-01-26","store":"문화센터수강료","amount":11000,"note":"원데이클래스 문센","category":"교육/놀이","settlement":0},{"id":2651,"date":"2026-01-03","store":"커피디앤에이","amount":10500,"note":"외식","category":"외식","settlement":0},{"id":2652,"date":"2026-01-25","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":9210,"note":"","category":"생필품","settlement":0},{"id":2653,"date":"2026-01-03","store":"지에스25 성북보문점","amount":9000,"note":"","category":"생필품","settlement":0},{"id":2654,"date":"2026-01-01","store":"초록웰빙스토어","amount":8570,"note":"","category":"생필품","settlement":0},{"id":2655,"date":"2026-01-05","store":"(주)나인원투","amount":8100,"note":"","category":"미분류","settlement":0},{"id":2656,"date":"2026-01-31","store":"시온약국","amount":8000,"note":"","category":"생활비","settlement":0},{"id":2657,"date":"2026-01-11","store":"경희궁자이 상가 관리위원회","amount":8000,"note":"주차비","category":"생활비","settlement":0},{"id":2658,"date":"2026-01-04","store":"쿠팡(와우 멤버십)-쿠팡(와우멤버십)","amount":7890,"note":"","category":"생필품","settlement":0},{"id":2659,"date":"2026-01-12","store":"오아시스 아현점","amount":7240,"note":"","category":"생필품","settlement":0},{"id":2660,"date":"2026-01-17","store":"바나나","amount":5750,"note":"","category":"쇼핑","settlement":0},{"id":2661,"date":"2026-01-11","store":"씨유(CU)신촌힐스테이트점","amount":5700,"note":"","category":"생필품","settlement":0},{"id":2662,"date":"2026-01-18","store":"주식회사 아성다이소","amount":5000,"note":"","category":"생활비","settlement":0},{"id":2663,"date":"2026-01-24","store":"주식회사뽀로로파크 일산점","amount":4800,"note":"놀이방","category":"교육/놀이","settlement":0},{"id":2664,"date":"2026-01-19","store":"아성다이소","amount":4000,"note":"","category":"생활비","settlement":0},{"id":2665,"date":"2026-01-12","store":"우정사업본부(우체국)","amount":4000,"note":"","category":"생활비","settlement":0},{"id":2666,"date":"2026-01-24","store":"아이파킹 주식회사","amount":3100,"note":"","category":"생활비","settlement":0},{"id":2667,"date":"2026-01-03","store":"서울형키즈카페 보문동점","amount":3000,"note":"","category":"교육/놀이","settlement":0},{"id":2668,"date":"2026-01-16","store":"배민클럽_우아한형제들","amount":1990,"note":"","category":"외식","settlement":0},{"id":2669,"date":"2026-01-20","store":"코웨이(주)","amount":900,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2670,"date":"2026-01-09","store":"중구청(중림종합복지센터주차장","amount":400,"note":"","category":"생활비","settlement":0},{"id":2671,"date":"2026-02-24","store":"아파트관리비","amount":364260,"note":"관리비(게하2건 정산)","category":"관리비","settlement":140000},{"id":2672,"date":"2026-02-21","store":"라코스떼","amount":150570,"note":"예진의 선물","category":"관계비용","settlement":150570},{"id":2673,"date":"2026-02-20","store":"서울도시가스(주)","amount":146090,"note":"가스비","category":"가스비","settlement":0},{"id":2674,"date":"2026-02-26","store":"주식회사돈이랑","amount":102000,"note":"제주도여행","category":"여행","settlement":0},{"id":2675,"date":"2026-02-08","store":"네이버페이 네이버","amount":88000,"note":"에어프라이어 구매","category":"쇼핑","settlement":0},{"id":2676,"date":"2026-02-27","store":"김녕오라이","amount":78000,"note":"제주도여행","category":"여행","settlement":0},{"id":2677,"date":"2026-02-25","store":"(주)조선호텔앤리조트 그랜드조선 제주","amount":77400,"note":"제주도여행","category":"여행","settlement":0},{"id":2678,"date":"2026-02-01","store":"쿠팡이츠","amount":65000,"note":"외식","category":"외식","settlement":0},{"id":2679,"date":"2026-02-22","store":"주식회사 카카오","amount":59900,"note":"기혁 정산 完(세빈씨)","category":"관계비용","settlement":59900},{"id":2680,"date":"2026-02-21","store":"카페24주식회사","amount":56800,"note":"지유 장난감(블록)","category":"교육/놀이","settlement":0},{"id":2681,"date":"2026-02-19","store":"컬리페이_컬리","amount":50808,"note":"","category":"생필품","settlement":0},{"id":2682,"date":"2026-02-07","store":"롯데물산(주)롯데 진가와(자)","amount":49900,"note":"외식","category":"외식","settlement":0},{"id":2683,"date":"2026-02-27","store":"에스엘","amount":49400,"note":"제주도여행","category":"여행","settlement":0},{"id":2684,"date":"2026-02-28","store":"비자림미담","amount":49000,"note":"제주도여행","category":"여행","settlement":0},{"id":2685,"date":"2026-02-03","store":"컬리페이_컬리","amount":46480,"note":"","category":"생필품","settlement":0},{"id":2686,"date":"2026-02-18","store":"쁘띠몽드 경희궁자이점","amount":45600,"note":"놀이방","category":"교육/놀이","settlement":0},{"id":2687,"date":"2026-02-04","store":"쁘띠몽드 마포중앙도서관점","amount":44300,"note":"놀이방","category":"교육/놀이","settlement":0},{"id":2688,"date":"2026-02-25","store":"제주따이","amount":40000,"note":"제주도여행","category":"여행","settlement":0},{"id":2689,"date":"2026-02-08","store":"신선설농탕","amount":40000,"note":"외식","category":"외식","settlement":0},{"id":2690,"date":"2026-02-22","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":38900,"note":"","category":"생필품","settlement":0},{"id":2691,"date":"2026-02-08","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":38900,"note":"","category":"생필품","settlement":0},{"id":2692,"date":"2026-02-28","store":"(주)와이에스제이랩스","amount":38000,"note":"제주도여행","category":"여행","settlement":0},{"id":2693,"date":"2026-02-18","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":37920,"note":"","category":"생필품","settlement":0},{"id":2694,"date":"2026-02-26","store":"중문바다향","amount":37000,"note":"제주도여행","category":"여행","settlement":0},{"id":2695,"date":"2026-02-01","store":"돌솥밥 & 생선구이","amount":36000,"note":"외식","category":"외식","settlement":0},{"id":2696,"date":"2026-02-27","store":"더블에프서프랩","amount":33000,"note":"제주도여행","category":"여행","settlement":0},{"id":2697,"date":"2026-02-19","store":"주식회사 카카오","amount":31900,"note":"기혁 정산 完","category":"관계비용","settlement":31900},{"id":2698,"date":"2026-02-23","store":"쿠팡","amount":31620,"note":"","category":"생필품","settlement":0},{"id":2699,"date":"2026-02-28","store":"밭디이색자전거","amount":31000,"note":"제주도여행","category":"여행","settlement":0},{"id":2700,"date":"2026-02-27","store":"에잇디바인","amount":30100,"note":"제주도여행","category":"여행","settlement":0},{"id":2701,"date":"2026-02-27","store":"제주오성","amount":30000,"note":"제주도여행","category":"여행","settlement":0},{"id":2702,"date":"2026-02-02","store":"쿠팡이츠-쿠팡이츠","amount":28900,"note":"외식","category":"외식","settlement":0},{"id":2703,"date":"2026-02-17","store":"쿠팡이츠-쿠팡이츠","amount":27700,"note":"외식","category":"외식","settlement":0},{"id":2704,"date":"2026-02-01","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":27240,"note":"","category":"생필품","settlement":0},{"id":2705,"date":"2026-02-08","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":27200,"note":"","category":"생필품","settlement":0},{"id":2706,"date":"2026-02-22","store":"쿠팡","amount":27060,"note":"","category":"생필품","settlement":0},{"id":2707,"date":"2026-02-01","store":"쿠팡이츠","amount":27000,"note":"외식","category":"외식","settlement":0},{"id":2708,"date":"2026-02-28","store":"(주)와이에스제이랩스","amount":26500,"note":"제주도여행","category":"여행","settlement":0},{"id":2709,"date":"2026-02-28","store":"섭섭이네","amount":25800,"note":"제주도여행","category":"여행","settlement":0},{"id":2710,"date":"2026-02-18","store":"주식회사 카카오","amount":25650,"note":"기혁 정산 完","category":"관계비용","settlement":25650},{"id":2711,"date":"2026-02-20","store":"쿠팡이츠","amount":25000,"note":"외식","category":"외식","settlement":0},{"id":2712,"date":"2026-02-13","store":"싸일러(SAILER)","amount":24600,"note":"외식","category":"외식","settlement":0},{"id":2713,"date":"2026-02-28","store":"르 바게트","amount":22000,"note":"제주도여행","category":"여행","settlement":0},{"id":2714,"date":"2026-02-15","store":"(주)인앤아웃","amount":22000,"note":"외식","category":"외식","settlement":0},{"id":2715,"date":"2026-02-17","store":"쿠팡","amount":21850,"note":"","category":"생필품","settlement":0},{"id":2716,"date":"2026-02-14","store":"쿠팡","amount":21190,"note":"","category":"생필품","settlement":0},{"id":2717,"date":"2026-02-27","store":"선물하기_카카오페","amount":19500,"note":"기혁 정산 完","category":"관계비용","settlement":19500},{"id":2718,"date":"2026-02-23","store":"씨유(CU)북아현푸르지오점","amount":18990,"note":"","category":"생필품","settlement":0},{"id":2719,"date":"2026-02-14","store":"쿠팡이츠","amount":18800,"note":"외식","category":"외식","settlement":0},{"id":2720,"date":"2026-02-07","store":"쿠팡이츠","amount":18400,"note":"외식","category":"외식","settlement":0},{"id":2721,"date":"2026-02-18","store":"고우즈온(Goes On)","amount":18300,"note":"외식","category":"외식","settlement":0},{"id":2722,"date":"2026-02-27","store":"달이뜨는식탁","amount":17000,"note":"제주도여행","category":"여행","settlement":0},{"id":2723,"date":"2026-02-10","store":"쿠팡이츠-쿠팡이츠","amount":16600,"note":"외식","category":"외식","settlement":0},{"id":2724,"date":"2026-02-26","store":"씨유(CU)제주그랜드조선호텔점","amount":16400,"note":"제주도여행","category":"여행","settlement":0},{"id":2725,"date":"2026-02-20","store":"코웨이(주)","amount":15930,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2726,"date":"2026-02-25","store":"씨유(CU)제주그랜드조선호텔점","amount":15900,"note":"제주도여행","category":"여행","settlement":0},{"id":2727,"date":"2026-02-17","store":"쿠팡이츠","amount":15700,"note":"외식","category":"외식","settlement":0},{"id":2728,"date":"2026-02-16","store":"오버패스","amount":14500,"note":"외식","category":"외식","settlement":0},{"id":2729,"date":"2026-02-07","store":"주식회사 나스컴퍼니","amount":13600,"note":"","category":"미분류","settlement":0},{"id":2730,"date":"2026-02-20","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":13590,"note":"","category":"생필품","settlement":0},{"id":2731,"date":"2026-01-30","store":"씨유CU신촌힐스테이트점","amount":13392,"note":"","category":"생필품","settlement":0},{"id":2732,"date":"2026-02-28","store":"후불하이패스2건","amount":13300,"note":"","category":"생활비","settlement":0},{"id":2733,"date":"2026-02-07","store":"아크앤북 롯데월드몰(도서)","amount":13000,"note":"지유 장난감(스티커북)","category":"교육/놀이","settlement":0},{"id":2734,"date":"2026-02-12","store":"씨유CU신촌힐스테이트점","amount":12995,"note":"","category":"생필품","settlement":0},{"id":2735,"date":"2026-02-07","store":"롯데물산(주)롯데 분홍공주","amount":12800,"note":"","category":"쇼핑","settlement":0},{"id":2736,"date":"2026-02-11","store":"쿠팡","amount":12520,"note":"","category":"생필품","settlement":0},{"id":2737,"date":"2026-02-27","store":"지에스(GS)25 월정포구점","amount":12450,"note":"제주도여행","category":"여행","settlement":0},{"id":2738,"date":"2026-02-23","store":"SK브로드밴드(주)","amount":11001,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2739,"date":"2026-02-25","store":"커피니 김포공항국내선점","amount":11000,"note":"제주도여행","category":"여행","settlement":0},{"id":2740,"date":"2026-02-21","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":9900,"note":"","category":"생필품","settlement":0},{"id":2741,"date":"2026-02-15","store":"(주)인앤아웃","amount":9900,"note":"외식","category":"외식","settlement":0},{"id":2742,"date":"2026-02-27","store":"에스엘","amount":9300,"note":"제주도여행","category":"여행","settlement":0},{"id":2743,"date":"2026-02-04","store":"봄봄소아청소년과의원","amount":9000,"note":"","category":"생활비","settlement":0},{"id":2744,"date":"2026-02-18","store":"경희궁자이 상가 관리위원회","amount":8000,"note":"주차비","category":"생활비","settlement":0},{"id":2745,"date":"2026-02-04","store":"산들약국","amount":7900,"note":"","category":"생활비","settlement":0},{"id":2746,"date":"2026-02-04","store":"쿠팡(와우 멤버십)-쿠팡(와우 멤버십)","amount":7890,"note":"","category":"생필품","settlement":0},{"id":2747,"date":"2026-02-25","store":"백미당 김포공항점","amount":6900,"note":"제주도여행","category":"여행","settlement":0},{"id":2748,"date":"2026-02-06","store":"쿠팡","amount":6890,"note":"","category":"생필품","settlement":0},{"id":2749,"date":"2026-02-01","store":"(주)우아한형제들","amount":6600,"note":"","category":"외식","settlement":0},{"id":2750,"date":"2026-02-25","store":"모모유브 김포공항점","amount":6400,"note":"제주도여행","category":"여행","settlement":0},{"id":2751,"date":"2026-02-23","store":"쿠팡","amount":6200,"note":"","category":"생필품","settlement":0},{"id":2752,"date":"2026-02-20","store":"코웨이(주)","amount":5900,"note":"통신/렌탈","category":"통신/렌탈","settlement":0},{"id":2753,"date":"2026-02-07","store":"CU(씨유)워커힐호텔점","amount":5800,"note":"","category":"여행","settlement":0},{"id":2754,"date":"2026-02-25","store":"씨유(CU)제주그랜드조선호텔점","amount":5800,"note":"","category":"여행","settlement":0},{"id":2755,"date":"2026-02-01","store":"자라미소아청소년과의원","amount":5800,"note":"","category":"생활비","settlement":0},{"id":2756,"date":"2026-02-27","store":"지에스(GS)25 월정포구점","amount":5600,"note":"제주도여행","category":"여행","settlement":0},{"id":2757,"date":"2026-02-28","store":"섭섭이네","amount":5000,"note":"제주도여행","category":"여행","settlement":0},{"id":2758,"date":"2026-02-27","store":"주식회사 엘케이벤쳐스","amount":5000,"note":"제주도여행","category":"여행","settlement":0},{"id":2759,"date":"2026-02-07","store":"롯데월드몰점-파오슈와츠(월드몰)","amount":5000,"note":"","category":"생활비","settlement":0},{"id":2760,"date":"2026-02-24","store":"산들약국","amount":4700,"note":"","category":"생활비","settlement":0},{"id":2761,"date":"2026-02-10","store":"산들약국","amount":4100,"note":"","category":"생활비","settlement":0},{"id":2762,"date":"2026-02-03","store":"쿠팡(쿠페이)-쿠팡(쿠페이)","amount":3370,"note":"","category":"생필품","settlement":0},{"id":2763,"date":"2026-02-18","store":"코리아세븐경희궁자이점","amount":3000,"note":"","category":"생필품","settlement":0},{"id":2764,"date":"2026-02-04","store":"마포구시설관리공단","amount":3000,"note":"","category":"생활비","settlement":0},{"id":2765,"date":"2026-02-24","store":"봄봄소아청소년과의원","amount":2900,"note":"","category":"생활비","settlement":0},{"id":2766,"date":"2026-02-10","store":"봄봄소아청소년과의원","amount":2900,"note":"","category":"생활비","settlement":0},{"id":2767,"date":"2026-02-01","store":"두더지약국","amount":2900,"note":"","category":"생활비","settlement":0},{"id":2768,"date":"2026-02-14","store":"중구청(중림종합복지센터주차장","amount":2700,"note":"주차비","category":"생활비","settlement":0},{"id":2769,"date":"2026-02-22","store":"쿠팡","amount":2580,"note":"","category":"생필품","settlement":0},{"id":2770,"date":"2026-02-14","store":"쿠팡","amount":2580,"note":"","category":"생필품","settlement":0},{"id":2771,"date":"2026-02-27","store":"에잇디바인","amount":2500,"note":"제주도여행","category":"여행","settlement":0},{"id":2772,"date":"2026-02-26","store":"씨유(CU)제주그랜드조선호텔점","amount":2500,"note":"제주도여행","category":"여행","settlement":0},{"id":2773,"date":"2026-02-14","store":"서울중구육아종합지원센터","amount":2000,"note":"","category":"생활비","settlement":0},{"id":2774,"date":"2026-02-16","store":"배민클럽_우아한형제들","amount":1990,"note":"","category":"외식","settlement":0},{"id":2775,"date":"2026-02-07","store":"씨제이올리브영(주)롯데월드몰플러스점","amount":1900,"note":"","category":"생필품","settlement":0},{"id":2776,"date":"2026-02-21","store":"KIOSK_나이스-워커스하이","amount":1500,"note":"","category":"생활비","settlement":0},{"id":2777,"date":"2026-02-27","store":"제주오성","amount":1000,"note":"제주도여행","category":"여행","settlement":0},{"id":2778,"date":"2026-02-13","store":"중구청(중림종합복지센터주차장","amount":400,"note":"","category":"생활비","settlement":0},{"id":2779,"date":"2026-02-24","store":"아파트관리비","amount":-140000,"note":"관리비 게하2건 정산","category":"관리비","settlement":0},{"id":2780,"date":"2026-02-21","store":"라코스떼","amount":-150570,"note":"예진의 선물","category":"관계비용","settlement":0}];
+window._INIT_TX = [];
 </script>
 <script>
 // Parse embedded data
@@ -3197,12 +3231,13 @@ let uploadedFileName = '';
 let uploadedSourceText = '';
 let uploadedCardLabel = '';
 
-const INIT_INCOME = {"2026-01":{"yejin":3000000,"gihyuk":3000000,"etc":200000,"interestExpense":3823086},"2026-02":{"yejin":3000000,"gihyuk":3000000,"etc":0,"interestExpense":3502453},"2026-03":{"yejin":3000000,"gihyuk":3000000,"etc":0,"interestIncome":0,"interestExpense":3823154}};
-const INIT_RULES = [{"keyword":"송","category":"외식","type":"store"},{"keyword":"한와담소반","category":"외식","type":"store"},{"keyword":"주식회사 버드뷰","category":"쇼핑","type":"store"},{"keyword":"매트블랙커피","category":"외식","type":"store"},{"keyword":"카카오T일반택시_0","category":"생활비","type":"store"},{"keyword":"스타벅스코리아_상품권","category":"생활비","type":"store"},{"keyword":"파리바게뜨 동화마을점","category":"여행","type":"store"},{"keyword":"주식회사미스터밀크송당","category":"여행","type":"store"},{"keyword":"모뉴에트","category":"여행","type":"store"},{"keyword":"고슬고슬제주","category":"여행","type":"store"},{"keyword":"쿠팡이츠","category":"외식"},{"keyword":"키즈카페","category":"교육/놀이"},{"keyword":"경희궁자이 상가 관리위원회","category":"생활비","type":"store"},{"keyword":"씨유(CU)신촌힐스테이트점","category":"생활비","type":"store"},{"keyword":"오아시스 아현점","category":"생활비","type":"store"},{"keyword":"우정사업본부(우체국)","category":"기타","type":"store"},{"keyword":"크린토피아 이대점","category":"생활비","type":"store"},{"keyword":"마이리틀타이거&PLAY","category":"교육/놀이","type":"store"},{"keyword":"(주) 모드니","category":"쇼핑","type":"store"},{"keyword":"하이패스","category":"생활비"},{"keyword":"씨유","category":"생활비"},{"keyword":"중구청(중림종합복지센터주차장","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터중림점","category":"미분류","type":"store"},{"keyword":"GS25웨스턴돔점","category":"생활비","type":"store"},{"keyword":"서울형키즈카페 보문동점","category":"교육/놀이","type":"store"},{"keyword":"코리아세븐경희궁자이점","category":"생활비","type":"store"},{"keyword":"마포구시설관리공단","category":"생활비","type":"store"},{"keyword":"아성다이소","category":"생활비","type":"store"},{"keyword":"프렌디노","category":"교육/놀이","type":"store"},{"keyword":"주식회사 아성다이소","category":"생활비","type":"store"},{"keyword":"롯데월드몰점-파오슈와츠(월드몰)","category":"생활비","type":"store"},{"keyword":"바나나","category":"생활비","type":"store"},{"keyword":"의원","category":"생활비"},{"keyword":"약국","category":"생활비"},{"keyword":"파킹","category":"생활비"},{"keyword":"카페오가다제주점","category":"여행","type":"store"},{"keyword":"푸디스트(주) 고메이플레이스 국립중앙박물관점","category":"외식","type":"store"},{"keyword":"(주)  모드니","category":"쇼핑","type":"store"},{"keyword":"마리안","category":"외식","type":"store"},{"keyword":"SK브로드밴드(주)","category":"통신/렌탈","type":"store"},{"keyword":"CU","category":"생활비"},{"keyword":"봄봄소아청소년과의원","category":"생활비","type":"store"},{"keyword":"산들약국","category":"생활비","type":"store"},{"keyword":"두더지약국","category":"생활비","type":"store"},{"keyword":"서울중구육아종합지원센터","category":"생활비","type":"store"},{"keyword":"KIOSK_나이스-워커스하이","category":"생활비","type":"store"},{"keyword":"자라미소아청소년과의원","category":"생활비","type":"store"},{"keyword":"롯데물산(주)롯데 분홍공주","category":"쇼핑","type":"store"},{"keyword":"팡파르","category":"쇼핑","type":"store"},{"keyword":"지에스25 성북보문점","category":"생활비","type":"store"},{"keyword":"시온약국","category":"생활비","type":"store"},{"keyword":"아이파킹 주식회사","category":"생활비","type":"store"},{"keyword":"초록웰빙스토어","category":"생활비","type":"store"}];
+const INIT_INCOME = {};
+const INIT_RULES = [];
 
 
 // Load from localStorage
 function mergeAuthoritativeJanFeb(storedTx) {
+  if (!(window._INIT_TX || []).length) return storedTx || [];
   const authoritative = (window._INIT_TX || []).filter(t => t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02') || t.date.startsWith('2026-03')));
   const preserved = (storedTx || []).filter(t => !(t.date && (t.date.startsWith('2026-01') || t.date.startsWith('2026-02') || t.date.startsWith('2026-03'))));
   const preserveMap = new Map(
@@ -3252,6 +3287,7 @@ function _showSyncStatus(msg, color) {
 }
 
 async function loadData() {
+  if (!window._fbAllowed || !window._fbAllowed()) throw new Error('로그인 권한을 확인해주세요.');
   // Firebase에서 로드 시도
   if (window._fbReady) {
     const fbData = await window._fbLoadData();
@@ -3259,38 +3295,26 @@ async function loadData() {
       transactions = fbData.transactions || [];
       rules = fbData.rules || [];
       cashData = fbData.cashData || {};
-      incomeData = fbData.incomeData || JSON.parse(JSON.stringify(INIT_INCOME));
+      incomeData = fbData.incomeData || {};
       _applyCatMigration();
       _startRealtimeSync();
       return;
     }
   }
-  // Firebase 미준비 or 데이터 없음 → localStorage 폴백
-  const stored = localStorage.getItem('gaegebu_tx');
-  const migrationKey = 'gaegebu_migration_2026_1_3_v2';
-  if (stored) {
-    transactions = JSON.parse(stored);
-    if (localStorage.getItem(migrationKey) !== 'done') {
-      transactions = mergeAuthoritativeJanFeb(transactions);
-      localStorage.setItem('gaegebu_tx', JSON.stringify(transactions));
-      localStorage.setItem(migrationKey, 'done');
-    }
-  } else {
-    transactions = window._INIT_TX || [];
-  }
-  rules = JSON.parse(localStorage.getItem('gaegebu_rules') || 'null') || JSON.parse(JSON.stringify(INIT_RULES));
-  cashData = JSON.parse(localStorage.getItem('gaegebu_cash') || '{}');
-  incomeData = JSON.parse(localStorage.getItem('gaegebu_income') || 'null') || JSON.parse(JSON.stringify(INIT_INCOME));
-  _applyCatMigration();
+  // Do not restore a shared browser cache into an empty or inaccessible server.
+  throw new Error('서버 가계부를 확인할 수 없습니다. 복원 상태를 확인해주세요.');
 }
 
 function saveData() {
+  if (!window._fbAllowed || !window._fbAllowed()) return;
   // Firebase 저장
   if (window._fbReady) {
     _lastSaveTime = Date.now();
     _showSyncStatus('☁️ 저장 중...', '#C4793A');
     window._fbSaveData(transactions, rules, cashData, incomeData).then(() => {
       _showSyncStatus('✅ 저장됨', '#3AA87D');
+    }).catch(() => {
+      _showSyncStatus('클라우드 저장 실패 · 기기 백업만 유지됨', '#C43A3A');
     });
   }
   // localStorage 백업도 유지
@@ -6391,8 +6415,11 @@ function _adviceDocKey() {
 
 // 데이터 변경 감지용 서명
 function _adviceSig() {
-  const total = transactions.reduce(function(s, t) { return s + (t.amount - (t.settlement || 0)); }, 0);
-  return transactions.length + ':' + total;
+  // Detect income, merchant and category edits even when total/count is unchanged.
+  const text = JSON.stringify(buildAdvicePayload());
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+  return 'summary-v1:' + (hash >>> 0).toString(16);
 }
 
 function _netAmt(t) { return (t.amount || 0) - (t.settlement || 0); }
@@ -6407,22 +6434,16 @@ function _median(arr) {
 function buildAdvicePayload() {
   const months = getMonthRange();
   const monthCount = months.length || 1;
+  if (!months.length) throw new Error('분석할 데이터가 없습니다.');
 
-  // 1) 월별 손익 요약
+  // Shared arithmetic, with merchant detail added only for the in-app advisor.
   const 월별요약 = months.map(function(m) {
     const key = m.year + '-' + String(m.month).padStart(2, '0');
-    const inc = getIncomeForMonth(key);
-    const txs = getMonthlyTx(m.year, m.month);
-    const cats = {};
-    getCatBreakdown(txs).forEach(function(r) { if (r.total > 0) cats[r.cat] = r.total; });
-    const card = txs.reduce(function(s, t) { return s + _netAmt(t); }, 0);
-    const interest = inc.interestExpense || 0;
-    const income = (inc.yejin || 0) + (inc.gihyuk || 0) + (inc.etc || 0);
-    return {
-      월: key, 수익: income, 카드지출: card, 대출이자: interest,
-      총지출: card + interest, 손익: income - card - interest,
-      거래건수: txs.length, 카테고리별: cats
-    };
+    const s = HouseholdSummary.build({ month: key, transactions: getMonthlyTx(m.year, m.month),
+      income: incomeData[key] || null });
+    return { 월: key, 수익: s.income, 카드지출: s.netCardExpense,
+      대출이자: s.interestExpense, 총지출: s.totalExpense, 손익: s.balance,
+      거래건수: s.transactionCount, 카테고리별: s.categories, 데이터상태: s.quality };
   });
 
   // 2) 카테고리별 거래 크기 분포 — 소액 반복인지 고액 단발인지 구분용
@@ -6674,6 +6695,56 @@ async function renderAdviceCard() {
     + '전체 기간 데이터를 바탕으로 소비 흐름을 분석해드려요. 위 버튼을 눌러주세요.</div>';
 }
   
+// ===== PRIVATE HOUSEHOLD SUMMARY =====
+let _summaryPreview = null;
+function previewHouseholdSummary() {
+  const month = document.getElementById('householdSummaryMonth').value;
+  const status = document.getElementById('householdSummaryStatus');
+  try {
+    if (!window._fbAllowed || !window._fbAllowed()) throw new Error('로그인이 필요합니다.');
+    _summaryPreview = HouseholdSummary.build({ month: month, transactions: transactions,
+      income: incomeData[month] || null });
+    const s = _summaryPreview;
+    const money = function(n) { return n === null ? '입력 확인 필요' : n.toLocaleString('ko-KR') + '원'; };
+    document.getElementById('householdSummaryPreview').textContent = [
+      s.month + ' 월별 요약 (잠정)',
+      '수입: ' + money(s.income),
+      '카드 순지출: ' + money(s.netCardExpense),
+      '대출이자: ' + money(s.interestExpense),
+      '총지출: ' + money(s.totalExpense),
+      '잔액: ' + money(s.balance),
+      '거래: ' + s.transactionCount + '건 · 미분류: ' + s.quality.unclassifiedCount + '건',
+      '',
+      ...Object.entries(s.categories).map(function(row) { return row[0] + ': ' + money(row[1]); }),
+      '',
+      '카드 거래와 대출이자 기준입니다. 전체 자금 흐름의 확정 결산은 아닙니다.'
+    ].join('\n');
+    document.getElementById('householdSummarySave').disabled = false;
+    status.textContent = '가맹점·거래 메모·계정 정보는 포함하지 않습니다. 소득 누락 여부도 확인해주세요.';
+  } catch (e) {
+    _summaryPreview = null;
+    document.getElementById('householdSummarySave').disabled = true;
+    status.textContent = e.message;
+  }
+}
+async function saveHouseholdSummary() {
+  const status = document.getElementById('householdSummaryStatus');
+  const btn = document.getElementById('householdSummarySave');
+  btn.disabled = true;
+  try {
+    if (!_summaryPreview) throw new Error('먼저 미리보기를 확인해주세요.');
+    const month = document.getElementById('householdSummaryMonth').value;
+    const current = HouseholdSummary.build({ month: month, transactions: transactions,
+      income: incomeData[month] || null, generatedAt: _summaryPreview.generatedAt });
+    if (JSON.stringify(current) !== JSON.stringify(_summaryPreview)) {
+      throw new Error('데이터가 변경되었습니다. 미리보기를 다시 확인해주세요.');
+    }
+    await window._fbSaveHouseholdSummary(current);
+    status.textContent = '월별 요약을 저장했습니다. ' + current.generatedAt;
+    _summaryPreview = null;
+  } catch (e) { status.textContent = '저장하지 못했습니다: ' + e.message; }
+}
+
 // ===== AUTH =====
 let _appBooted = false;
 
@@ -6798,21 +6869,34 @@ async function _init() {
   await _waitForFirebase();
 
   if (!window._fbOnAuth) {
-    // Firebase 로드 실패 → localStorage 오프라인 모드
-    await _bootApp();
+    showAuthGate();
+    _authErr('로그인 서버에 연결할 수 없습니다. 연결 후 다시 열어주세요.');
     return;
   }
 
   window._fbOnAuth(async function(user) {
     if (!user) {
       _appBooted = false;
+      if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
+      transactions = []; rules = []; cashData = {}; incomeData = {};
+      _geminiKey = null; _geminiKeyLoaded = false; _adviceLoaded = false;
+      _summaryPreview = null;
+      document.querySelectorAll('.page').forEach(function(el) { el.classList.remove('active'); });
       showAuthGate();
       return;
     }
-    hideAuthGate();
+    if (!window._fbAllowed()) { showAuthGate(); _authErr('허용된 가계부 계정으로 로그인해주세요.'); return; }
     if (_appBooted) return;
     _appBooted = true;
-    await _bootApp();
+    try {
+      await _bootApp();
+      if (!window._fbUser() || window._fbUser().uid !== user.uid) return;
+      hideAuthGate();
+    } catch (e) {
+      _appBooted = false;
+      showAuthGate();
+      _authErr('가계부를 불러오지 못했습니다. 연결 및 계정 권한을 확인해주세요.');
+    }
   });
 }
 
