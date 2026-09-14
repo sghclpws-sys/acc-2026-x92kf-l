@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0101)file:///C:/Users/skb.2854/Downloads/%EA%B0%80%EA%B3%84%EB%B6%80_0403_interest_mobilefix_v2%20(1).html -->
+<!-- Personal data is loaded only after authentication. -->
 <html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -31,7 +31,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  
+
   const firebaseConfig = {
     apiKey: "AIzaSyCfLJ8p3IThaRsX3RaLle3gGSalE-ALgmg",
     authDomain: "yeyjsgh-792cc.firebaseapp.com",
@@ -66,6 +66,13 @@
     requireHouseholdUser();
     if (!payload || payload.schemaVersion !== 1 || !/^\d{4}-\d{2}$/.test(payload.month)) throw new Error('요약 형식 오류');
     await setDoc(doc(db, 'gaegebu', 'main', 'summaries', payload.month), payload);
+  };
+
+  window._fbLoadHouseholdSummary = async function(month) {
+    requireHouseholdUser();
+    const snapshot = await getDoc(doc(db, 'gaegebu', 'main', 'summaries', month));
+    requireHouseholdUser();
+    return snapshot.exists() ? snapshot.data() : null;
   };
 
   // Firestore 저장
@@ -126,7 +133,7 @@
       }
     });
   };
-  
+
   // 조언 캐시 (advice 컬렉션)
   window._fbSaveAdvice = async function(key, payload) {
     requireHouseholdUser();
@@ -142,14 +149,14 @@
       return snap.exists() ? snap.data() : null;
     } catch(e) { console.error('조언 로드 오류:', e); return null; }
   };
-  
+
   window._fbReady = true;
   // Firebase 준비 완료 이벤트
   document.dispatchEvent(new Event('firebase-ready'));
 </script>
 <style>
   @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
-  
+
   :root {
     --bg: #F2F4F6;
     --surface: #FFFFFF;
@@ -179,7 +186,7 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
+
   body {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', Roboto, 'Pretendard', 'Malgun Gothic', sans-serif;
     background: var(--bg);
@@ -190,7 +197,7 @@
 
   /* Layout */
   .app { display: flex; min-height: 100vh; }
-  
+
   .sidebar {
     width: 220px;
     background: #1E2128;
@@ -201,25 +208,25 @@
     display: flex; flex-direction: column;
     z-index: 100;
   }
-  
+
   .sidebar-logo {
     padding: 0 24px 28px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 20px;
   }
-  
+
   .sidebar-logo h1 {
     font-size: 18px; font-weight: 700;
     color: var(--accent);
     letter-spacing: -0.5px;
   }
-  
+
   .sidebar-logo small {
     font-size: 11px;
     color: rgba(255,255,255,0.4);
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   }
-  
+
   .nav-item {
     padding: 12px 24px;
     cursor: pointer;
@@ -229,13 +236,13 @@
     transition: all 0.2s;
     border-left: 3px solid transparent;
   }
-  
+
   .nav-item:hover { color: white; background: rgba(255,255,255,0.06); }
   .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(255,255,255,0.08); }
   .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
-  
+
   .main { margin-left: 220px; padding: 32px 36px; flex: 1; }
-  
+
   /* Header */
   .page-header { margin-bottom: 28px; }
   .page-header h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
@@ -249,7 +256,7 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     border: 1px solid #E8EAED;
   }
-  
+
   .card-title {
     font-size: 13px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 1px;
@@ -272,7 +279,7 @@
 
   /* Stats row */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-  
+
   .stat-card {
     background: var(--surface);
     border-radius: var(--radius);
@@ -281,17 +288,17 @@
     border: 1px solid var(--border);
     position: relative; overflow: hidden;
   }
-  
+
   .stat-card::before {
     content: '';
     position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: #D0D5DD;
   }
-  
+
   .stat-card.blue::before { background: var(--accent2); }
   .stat-card.green::before { background: var(--success); }
   .stat-card.red::before { background: var(--danger); }
-  
+
   .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
   .stat-value { font-size: 24px; font-weight: 700; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: -1px; }
   .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
@@ -301,7 +308,7 @@
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 20px; flex-wrap: wrap;
   }
-  
+
   .filter-bar select, .filter-bar input {
     padding: 9px 14px; border-radius: 8px;
     border: 1.5px solid var(--border);
@@ -311,9 +318,9 @@
     transition: border-color 0.2s;
     height: 38px;
   }
-  
+
   .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
-  
+
   .btn {
     padding: 9px 18px; border-radius: 8px;
     font-size: 13px; font-weight: 600;
@@ -322,7 +329,7 @@
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
     display: inline-flex; align-items: center; gap: 6px;
   }
-  
+
   .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: #B06830; }
   .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
@@ -333,9 +340,9 @@
 
   /* Table */
   .table-wrap { overflow-x: auto; }
-  
+
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  
+
   th {
     text-align: left; padding: 10px 14px;
     font-size: 11px; font-weight: 700;
@@ -345,20 +352,20 @@
     background: var(--surface2);
     white-space: nowrap;
   }
-  
+
   td {
     padding: 10px 14px; border-bottom: 1px solid var(--border);
     vertical-align: middle;
   }
-  
+
   tr:hover td { background: var(--surface2); }
-  
+
   .amount-cell {
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 13px; font-weight: 500;
     text-align: right; white-space: nowrap;
   }
-  
+
   /* Category badge */
   .cat-badge {
     display: inline-flex; align-items: center; gap: 4px;
@@ -366,7 +373,7 @@
     font-size: 11px; font-weight: 600; white-space: nowrap;
     cursor: pointer;
   }
-  
+
   .cat-외식 { background: #FDE8E0; color: #C4462A; }
   .cat-생필품 { background: #DDE8F5; color: #2A5CA4; }
   .cat-생활비 { background: #D6F2F0; color: #1A8A82; }
@@ -390,21 +397,21 @@
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; cursor: pointer;
     outline: none; color: var(--text); font-weight: 600;
   }
-  
+
   .cat-select:focus { border-color: var(--accent); }
 
   /* Chart area */
   .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
   .chart-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-  
+
   /* Bar chart */
   .bar-chart { display: flex; flex-direction: column; gap: 8px; }
-  
+
   .bar-row {
     display: grid; grid-template-columns: 90px 1fr 80px;
     align-items: center; gap: 10px;
   }
-  
+
   .bar-label { font-size: 12px; font-weight: 500; color: var(--text); }
   .bar-track { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
@@ -416,10 +423,10 @@
 
   /* Summary input table */
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  
+
   .input-group { display: flex; flex-direction: column; gap: 6px; }
   .input-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-  
+
   .cash-input {
     padding: 10px 14px; border-radius: 8px;
     border: 1.5px solid var(--border);
@@ -427,7 +434,7 @@
     color: var(--text); outline: none; width: 100%;
     transition: border-color 0.2s;
   }
-  
+
   .cash-input:focus { border-color: var(--accent); }
 
   /* Upload area */
@@ -442,7 +449,7 @@
     .upload-zone { padding: 24px 16px; }
     .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
   }
-  
+
   .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
   .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
   .upload-zone .upload-icon { font-size: 40px; margin-bottom: 12px; }
@@ -454,17 +461,17 @@
     position: fixed; inset: 0; background: rgba(0,0,0,0.4);
     z-index: 1000; display: none; align-items: center; justify-content: center;
   }
-  
+
   .modal-overlay.show { display: flex; }
-  
+
   .modal {
     background: var(--surface); border-radius: var(--radius);
     padding: 28px; width: 420px; max-height: 80vh; overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
   }
-  
+
   .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-  
+
   .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 
   /* Pagination */
@@ -472,7 +479,7 @@
     display: flex; align-items: center; gap: 4px;
     justify-content: center; padding-top: 20px;
   }
-  
+
   .page-btn {
     width: 32px; height: 32px; border-radius: 6px;
     border: 1.5px solid var(--border); background: var(--surface);
@@ -480,7 +487,7 @@
     display: flex; align-items: center; justify-content: center;
     transition: all 0.15s; color: var(--text);
   }
-  
+
   .page-btn:hover { border-color: var(--accent); color: var(--accent); }
   .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
@@ -493,7 +500,7 @@
     transform: translateY(80px); opacity: 0;
     transition: all 0.3s; z-index: 9999;
   }
-  
+
   .toast.show { transform: translateY(0); opacity: 1; }
 
   /* Insight cards */
@@ -510,18 +517,18 @@
   #insightCards .insight-value { font-size: 16px !important; font-weight: 700 !important; margin-bottom: 2px !important; }
   #insightCards .insight-sub { font-size: 10px !important; line-height: 1.4 !important; }
   body.mobile-app #insightCards { grid-template-columns: repeat(3,1fr) !important; }
-  
+
   .insight-card.blue {
     background: linear-gradient(135deg, var(--accent2) 0%, #5A9DE0 100%);
     color: #fff;
   }
   .insight-card.blue .insight-label { color: rgba(255,255,255,0.85); }
   .insight-card.blue .insight-sub { color: rgba(255,255,255,0.8); }
-  
+
   .insight-card.green {
     background: linear-gradient(135deg, var(--success) 0%, #5ACA9D 100%);
   }
-  
+
   .insight-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
   .insight-value { font-size: 22px; font-weight: 700; margin-bottom: 4px; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
   .insight-sub { font-size: 12px; opacity: 0.75; }
@@ -560,11 +567,11 @@
 
   .page { display: none; }
   .page.active { display: block; }
-  
+
   #uploadPreview { margin-top: 16px; }
-  
+
   .note-edit { max-width: 200px; font-size: 12px; color: var(--text-muted); }
-  
+
   .search-box { position: relative; }
   .search-box input { padding-left: 32px; }
   .search-box::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
@@ -962,10 +969,22 @@ window.showPage = function(page) {
   window._pageQueue = page;
 };
 </script>
+<style>
+.summary-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0; }
+.summary-actions[hidden] { display:none; }
+#page-detail:not(.selection-mode) #detailTable tr > :first-child { display:none; }
+.detail-search-toolbar .search-box { flex:1 1 180px!important; }
+#householdSummarySavedState { font-size:13px; line-height:1.7; padding:10px; background:var(--surface2); border-radius:8px; }
+@media(max-width:600px) {
+  #page-summary .page-header { flex-wrap:wrap!important; }
+  .summary-actions button, .detail-search-toolbar button { min-height:44px; }
+  #detailBulkActions { padding:8px; background:var(--surface2); border-radius:8px; }
+}
+</style>
 </head>
 <body>
 <!-- ===== 로그인 게이트 ===== -->
-<div id="authGate" style="position:fixed;inset:0;background:#1E2128;z-index:5000;display:none;align-items:center;justify-content:center;padding:24px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif">
+<div id="authGate" style="position:fixed;inset:0;background:#1E2128;z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif">
   <div style="width:100%;max-width:320px">
     <div style="text-align:center;margin-bottom:30px">
       <div style="font-size:36px;margin-bottom:12px">🏠</div>
@@ -1011,7 +1030,7 @@ window.showPage = function(page) {
   <nav class="sidebar">
     <div class="sidebar-logo">
       <h1><img src="data:image/png;base64,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" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;border-radius:8px"> 우리 가계부</h1>
-      
+
     </div>
     <div class="nav-item" onclick="showPage('summary')" id="nav-summary">
       <span class="icon">📊</span> 월별 요약
@@ -1032,7 +1051,7 @@ window.showPage = function(page) {
 
   <!-- Main -->
   <main class="main">
-    
+
     <!-- ===== 월별 요약 ===== -->
     <div class="page" id="page-summary">
       <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:12px">
@@ -1049,29 +1068,21 @@ window.showPage = function(page) {
         </div>
       </div>
 
+      <section class="card" id="householdSummaryCard" aria-labelledby="householdSummaryTitle" style="margin-bottom:20px">
+        <div class="card-title" id="householdSummaryTitle">분석용 요약 보관</div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7">위에서 선택한 월의 수입·지출·카테고리 합계를 우리 가구 전용으로 보관합니다. 통합 Advisor의 자동 연결은 아직 제공되지 않습니다. 기존 AI의 가맹점 분석은 그대로 유지됩니다.</p>
+        <input type="hidden" id="householdSummaryMonth">
+        <div id="householdSummarySavedState" role="status" aria-live="polite">저장 상태 확인 중…</div>
+        <div class="summary-actions">
+          <button class="btn btn-ghost" onclick="previewHouseholdSummary()">내용 확인</button>
+          <button class="btn btn-action" id="householdSummarySave" onclick="saveHouseholdSummary()" disabled>요약 저장</button>
+          <button class="btn btn-ghost" onclick="showPage('trends')">AI 소비 조언 보기</button>
+        </div>
+        <pre id="householdSummaryPreview" style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto"></pre>
+        <div id="householdSummaryStatus" role="status" style="font-size:12px"></div>
+      </section>
       <!-- KPI Stats -->
-      <div class="stats-row" id="summaryStats">
-    <div class="stat-card red">
-      <div class="stat-label">월 손익</div>
-      <div class="stat-value">-503,417원</div>
-      
-    </div>
-    <div class="stat-card blue">
-      <div class="stat-label">총 수익</div>
-      <div class="stat-value">6,000,000원</div>
-      
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">총 지출</div>
-      <div class="stat-value">6,503,417원</div>
-      <div class="stat-sub" style="line-height:1.7">카드 2,680,263원<br>이자 3,823,154원</div>
-    </div>
-    <div class="stat-card red">
-      <div class="stat-label">전월 대비</div>
-      <div class="stat-value">+4,304,393원</div>
-      <div class="stat-sub">전월 2,199,024원</div>
-    </div>
-  </div>
+      <div class="stats-row" id="summaryStats"></div>
 
       <div id="mobileSummaryContent" class="mobile-summary-stack"></div>
 
@@ -1083,427 +1094,30 @@ window.showPage = function(page) {
           <div class="card-title">카테고리별 지출 구성</div>
           <!-- 도넛 + 우측 범례 (상위 5개) -->
           <div class="summary-donut-wrap" style="display:flex;align-items:center;gap:28px;margin-bottom:16px">
-            <svg id="donutSvg" width="200" height="200" viewBox="0 0 200 200" style="flex-shrink:0"><path d="M100,50 L100,20 A80,80 0 0,1 178.45305550766247,84.34375263635532 L149.03315969228905,90.21484539772207 A50,50 0 0,0 100,50 Z" fill="#E8A84A" opacity="0.9"></path><path d="M149.03315969228905,90.21484539772207 L178.45305550766247,84.34375263635532 A80,80 0 0,1 141.01804306156305,168.68420592392226 L125.6362769134769,142.92762870245141 A50,50 0 0,0 149.03315969228905,90.21484539772207 Z" fill="#5B8DD9" opacity="0.9"></path><path d="M125.6362769134769,142.92762870245141 L141.01804306156305,168.68420592392226 A80,80 0 0,1 59.79322291371474,169.16223735777902 L74.87076432107172,143.2263983486119 A50,50 0 0,0 125.6362769134769,142.92762870245141 Z" fill="#E8734A" opacity="0.9"></path><path d="M74.87076432107172,143.2263983486119 L59.79322291371474,169.16223735777902 A80,80 0 0,1 20.514094720731862,109.05488055885962 L50.321309200457414,105.65930034928726 A50,50 0 0,0 74.87076432107172,143.2263983486119 Z" fill="#8DD95B" opacity="0.9"></path><path d="M50.321309200457414,105.65930034928726 L20.514094720731862,109.05488055885962 A80,80 0 0,1 33.87772910817378,54.968396740645 L58.67358069260862,71.85524796290312 A50,50 0 0,0 50.321309200457414,105.65930034928726 Z" fill="#7B62B8" opacity="0.9"></path><path d="M58.67358069260862,71.85524796290312 L33.87772910817378,54.968396740645 A80,80 0 0,1 55.76724749185437,33.34069003092564 L72.35452968240898,58.33793126932852 A50,50 0 0,0 58.67358069260862,71.85524796290312 Z" fill="#4AB87B" opacity="0.9"></path><path d="M72.35452968240898,58.33793126932852 L55.76724749185437,33.34069003092564 A80,80 0 0,1 78.17838219196098,23.033663227097307 L86.3614888699756,51.896039516935815 A50,50 0 0,0 72.35452968240898,58.33793126932852 Z" fill="#3ABFB3" opacity="0.9"></path><path d="M86.3614888699756,51.896039516935815 L78.17838219196098,23.033663227097307 A80,80 0 0,1 92.0519002947305,20.39580594544597 L95.03243768420657,50.247378715903736 A50,50 0 0,0 86.3614888699756,51.896039516935815 Z" fill="#D95B5B" opacity="0.9"></path><text x="100" y="110" text-anchor="middle" font-size="17" font-weight="700" font-family="Pretendard" fill="#1A1714">2,680,263원</text></svg>
-            <div id="donutLegend" style="flex:1;display:flex;flex-direction:column;gap:10px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:#E8A84A;flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">쇼핑</div>
-        <div style="font-size:11px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">21.9%</div>
-        <div class="legend-diff" style="font-size:10px;font-weight:600;min-width:68px;text-align:right;flex-shrink:0">▲485,241원</div>
-      </div>
-    
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:#5B8DD9;flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">생필품</div>
-        <div style="font-size:11px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">19.6%</div>
-        <div class="legend-diff" style="font-size:10px;font-weight:600;min-width:68px;text-align:right;flex-shrink:0">▲52,867원</div>
-      </div>
-    
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:#E8734A;flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">외식</div>
-        <div style="font-size:11px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">16.9%</div>
-        <div class="legend-diff" style="font-size:10px;font-weight:600;min-width:68px;text-align:right;flex-shrink:0">▼12,610원</div>
-      </div>
-    
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:#8DD95B;flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">관리비</div>
-        <div style="font-size:11px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">14.8%</div>
-        <div class="legend-diff" style="font-size:10px;font-weight:600;min-width:68px;text-align:right;flex-shrink:0">▲312,790원</div>
-      </div>
-    
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:10px;height:10px;border-radius:50%;background:#7B62B8;flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">여행</div>
-        <div style="font-size:11px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;flex-shrink:0">11.3%</div>
-        <div class="legend-diff" style="font-size:10px;font-weight:600;min-width:68px;text-align:right;flex-shrink:0">▼494,320원</div>
-      </div>
-    </div>
+            <svg id="donutSvg" width="200" height="200" viewBox="0 0 200 200" style="flex-shrink:0"></svg>
+            <div id="donutLegend" style="flex:1;display:flex;flex-direction:column;gap:10px"></div>
           </div>
           <!-- 지출 TOP 10 (빈 공간 채우기) -->
           <div style="border-top:1px solid var(--border);padding-top:12px;flex:1">
             <div class="card-title" style="margin-bottom:12px">지출 TOP 10</div>
-            <div class="bar-chart" id="topItems">
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="아파트관리비">아파트관리비</div>
-      <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#8DD95B"></div></div>
-      <div class="bar-amount">397,050원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="유니폼브릿지">유니폼브릿지</div>
-      <div class="bar-track"><div class="bar-fill" style="width:93.1%;background:#CCCCCC"></div></div>
-      <div class="bar-amount">369,730원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="문화센터수강료">문화센터수강료</div>
-      <div class="bar-track"><div class="bar-fill" style="width:32.9%;background:#4AB87B"></div></div>
-      <div class="bar-amount">130,711원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="크린토피아 이대점">크린토피아 이대점</div>
-      <div class="bar-track"><div class="bar-fill" style="width:27.6%;background:#3ABFB3"></div></div>
-      <div class="bar-amount">109,760원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="(주)  모드니">(주)  모드니</div>
-      <div class="bar-track"><div class="bar-fill" style="width:27.6%;background:#E8A84A"></div></div>
-      <div class="bar-amount">109,700원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="현대아울렛 김포점">현대아울렛 김포점</div>
-      <div class="bar-track"><div class="bar-fill" style="width:26.2%;background:#E8A84A"></div></div>
-      <div class="bar-amount">104,040원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="서울도시가스(주)">서울도시가스(주)</div>
-      <div class="bar-track"><div class="bar-fill" style="width:19.0%;background:#D95B5B"></div></div>
-      <div class="bar-amount">75,400원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="에스케이렌터카주식회사">에스케이렌터카주식회사</div>
-      <div class="bar-track"><div class="bar-fill" style="width:14.4%;background:#7B62B8"></div></div>
-      <div class="bar-amount">57,030원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="파리바게뜨 동화마을점">파리바게뜨 동화마을점</div>
-      <div class="bar-track"><div class="bar-fill" style="width:12.9%;background:#7B62B8"></div></div>
-      <div class="bar-amount">51,100원</div>
-    </div>
-  
-    <div class="bar-row">
-      <div class="bar-label" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px" title="현대아울렛 김포점">현대아울렛 김포점</div>
-      <div class="bar-track"><div class="bar-fill" style="width:11.1%;background:#E8A84A"></div></div>
-      <div class="bar-amount">43,900원</div>
-    </div>
-  </div>
+            <div class="bar-chart" id="topItems"></div>
           </div>
         </div>
         <!-- 전월 비교 -->
         <div class="card">
           <div class="card-title">전월 대비 상세 비교</div>
-          <div id="monthCompareChart">
-    <div style="display:flex;justify-content:flex-end;gap:16px;font-size:11px;color:var(--text-muted);margin-bottom:12px">
-      <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:3px;background:var(--border);border-radius:2px"></span>2026년 2월</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:3px;background:var(--accent);border-radius:2px"></span>2026년 3월</span>
-    </div>
-    
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🛍 쇼핑</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲485,241원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:12.6%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">100,800원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:73.5%;background:#E8A84A;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">586,041원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🛒 생필품</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲52,867원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:59.1%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">471,573원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:65.7%;background:#5B8DD9;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">524,440원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">❓ 미분류</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲453,530원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:1.7%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">13,600원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:58.6%;background:#CCCCCC;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">467,130원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🍽 외식</span>
-            <span style="font-size:11px;font-weight:700;color:var(--success)">▼12,610원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:58.5%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">466,890원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:56.9%;background:#E8734A;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">454,280원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🏠 관리비</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲172,790원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:28.1%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">224,260원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:49.8%;background:#8DD95B;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">397,050원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">✈️ 여행</span>
-            <span style="font-size:11px;font-weight:700;color:var(--success)">▼494,320원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:100.0%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">797,750원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:38.0%;background:#7B62B8;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">303,430원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">📚 교육/놀이</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲5,411원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:20.0%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">159,700원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:20.7%;background:#4AB87B;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">165,111원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🚌 생활비</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲55,960원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:9.5%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">76,100원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:16.6%;background:#3ABFB3;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">132,060원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🔥 가스비</span>
-            <span style="font-size:11px;font-weight:700;color:var(--success)">▼70,690원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:18.3%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">146,090원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:9.5%;background:#D95B5B;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">75,400원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">📡 통신/렌탈</span>
-            <span style="font-size:11px;font-weight:700;color:var(--danger)">▲9,620원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:4.1%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">32,831원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:5.3%;background:#B87B4A;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">42,451원</div>
-            </div>
-          </div>
-        </div>
-      
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">🎁 관계비용</span>
-            <span style="font-size:11px;font-weight:700;color:var(--success)">▼136,950원</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">2월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:17.2%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">136,950원</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">3월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:0.0%;background:#4ABCE8;border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">-</div>
-            </div>
-          </div>
-        </div>
-      
-  </div>
+          <div id="monthCompareChart"></div>
         </div>
       </div>
 
       <!-- Row 2: 소비 관리 인사이트 (전체 너비) -->
       <div class="card" id="smartInsightCard" style="margin-bottom:20px">
         <div class="card-title">💡 소비 관리 인사이트</div>
-        <div id="smartInsights"><div style="display:flex;flex-direction:column;gap:12px">
-      <div style="display:flex;gap:14px;padding:14px 16px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--danger)">
-        <div style="font-size:22px;flex-shrink:0;line-height:1.3">📈</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--danger)">전월 대비 지출 증가</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">이번 달 지출이 전월 대비 <strong>195.7%</strong> 늘었어요 (+4,304,393원). 주요 증가 항목을 체크해보세요.</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;padding:6px 10px;background:var(--surface);border-radius:6px">→ 가장 많이 늘어난 항목: 🛍 쇼핑 (+485,241원)</div>
-        </div>
-      </div>
-    
-      <div style="display:flex;gap:14px;padding:14px 16px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--danger)">
-        <div style="font-size:22px;flex-shrink:0;line-height:1.3">⚠️</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--danger)">지출이 수익의 80%를 초과했어요</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">수익 대비 지출이 <strong>108.4%</strong>에 달해요. 저축 여력이 줄어들 수 있어요. 고정 지출(관리비·통신/렌탈·가스비) 합계 514,901원을 먼저 점검해보세요.</div>
-          
-        </div>
-      </div>
-    
-      <div style="display:flex;gap:14px;padding:14px 16px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--danger)">
-        <div style="font-size:22px;flex-shrink:0;line-height:1.3">🔺</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--danger)">쇼핑 지출 급증 감지</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">쇼핑 항목이 전월 대비 <strong>481% 증가</strong>했어요 (100,800원 → 586,041원). 일회성인지 아니면 지속될 지출인지 확인이 필요해요.</div>
-          
-        </div>
-      </div>
-    </div></div>
+        <div id="smartInsights"></div>
       </div>
 
       <!-- Row 3: 인사이트 카드 -->
-      <div id="insightCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-    <div class="insight-card">
-      <div class="insight-label">🏠 고정 지출</div>
-      <div class="insight-value">514,901원</div>
-      <div class="insight-sub">관리비·가스비·통신/렌탈 · 전체의 7.9%</div>
-    </div>
-    <div class="insight-card blue">
-      <div class="insight-label">🧾 건당 평균 지출</div>
-      <div class="insight-value">56,551원</div>
-      <div class="insight-sub">전월 대비 +36,376원 · 115건</div>
-    </div>
-    <div class="insight-card ">
-      <div class="insight-label">💰 저축률</div>
-      <div class="insight-value">-8.4%</div>
-      <div class="insight-sub">저축 가능액 -503,417원</div>
-    </div>
-  </div>
+      <div id="insightCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
       </div>
     </div>
 
@@ -1516,7 +1130,7 @@ window.showPage = function(page) {
         </div>
         <button class="btn btn-ghost" onclick="openAddModal()" style="margin-top:4px;border-color:var(--border)">＋ 거래 추가</button>
       </div>
-      
+
       <!-- 필터: 기간 (연도+월 한 줄) -->
       <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">📅 기간</span>
@@ -1534,19 +1148,23 @@ window.showPage = function(page) {
         <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생활비">🛒 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금">📄 세금</option><option value="기타">🗂 기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option><option value="BC카드">BC카드</option></select>
       </div>
-      <!-- 검색 + 선택/삭제 + 건수 한 줄 -->
-      <div class="filter-bar" style="margin-bottom:6px;gap:6px;align-items:center;flex-wrap:nowrap">
+      <!-- 검색과 일괄 작업을 분리해 좁은 화면에서도 사용할 수 있습니다. -->
+      <div class="filter-bar detail-search-toolbar" style="margin-bottom:6px;gap:6px;align-items:center;flex-wrap:wrap">
         <div class="search-box" style="flex:1;min-width:0">
           <input type="text" id="detailSearch" placeholder="가맹점명, 메모 검색..." oninput="applyDetailFilter()" style="width:100%">
         </div>
+        <button class="btn btn-ghost btn-sm" id="selectionModeButton" onclick="toggleSelectionMode()" aria-pressed="false">선택</button>
+        <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;flex-shrink:0" id="detailCount">0건</div>
+      </div>
+      <div id="detailBulkActions" class="summary-actions" hidden>
         <button class="btn btn-ghost btn-sm" onclick="toggleSelectAllCurrentPage(true)" style="white-space:nowrap;flex-shrink:0">전체선택</button>
         <button class="btn btn-ghost btn-sm" onclick="clearSelectedTx()" style="white-space:nowrap;flex-shrink:0">선택해제</button>
         <button class="btn btn-ghost btn-sm" onclick="bulkDeleteSelected()" style="color:var(--danger);border-color:var(--danger);white-space:nowrap;flex-shrink:0">삭제</button>
         <div id="detailSelectedInfo" style="font-size:12px;color:var(--danger);white-space:nowrap;flex-shrink:0"></div>
-        <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;flex-shrink:0" id="detailCount">0건</div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleSelectionMode(false)">완료</button>
       </div>
       <div id="detailTotal" style="font-size:12px;font-weight:700;color:var(--accent);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;margin-bottom:10px">-</div>
-            
+
       <div class="card" style="padding:0">
         <div class="table-wrap">
           <table id="detailTable">
@@ -1570,1160 +1188,10 @@ window.showPage = function(page) {
                 <th>작업</th>
               </tr>
             </thead>
-            <tbody id="detailBody">
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3164)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3164, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-12</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
-      <td class="amount-cell">
-        17,400원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3164, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3164)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3164)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3160)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3160, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-18</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="오아시스 아현점">오아시스 아현점</td>
-      <td class="amount-cell">
-        17,222원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3160, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3160)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3160)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3137)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3137, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사미스터밀크송당">주식회사미스터밀크송당</td>
-      <td class="amount-cell">
-        17,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3137, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3137)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3137)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3158)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3158, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-19</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
-      <td class="amount-cell">
-        16,600원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3158, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3158)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3158)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3104)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3104, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="에이치디씨아이파크몰 주식회사">에이치디씨아이파크몰 주식회사</td>
-      <td class="amount-cell">
-        16,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3104, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3104)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3104)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3162)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3162, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠-쿠팡이츠">쿠팡이츠-쿠팡이츠</td>
-      <td class="amount-cell">
-        16,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3162, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3162)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3162)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3088)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3088, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사 버드뷰">주식회사 버드뷰</td>
-      <td class="amount-cell">
-        15,200원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3088, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-쇼핑" onclick="openCatModal(3088)" title="클릭하여 변경">
-          🛍 쇼핑
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3088)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3147)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3147, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
-      <td class="amount-cell">
-        14,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3147, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3147)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3147)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3083)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3083, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-28</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
-      <td class="amount-cell">
-        13,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3083, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3083)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3083)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3150)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3150, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-27</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="씨유(CU)신촌힐스테이트점">씨유(CU)신촌힐스테이트점</td>
-      <td class="amount-cell">
-        13,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3150, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3150)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3150)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3163)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3163, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="씨유(CU)신촌힐스테이트점">씨유(CU)신촌힐스테이트점</td>
-      <td class="amount-cell">
-        13,490원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3163, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3163)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3163)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3106)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3106, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠">쿠팡이츠</td>
-      <td class="amount-cell">
-        13,300원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3106, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3106)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3106)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3141)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3141, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
-      <td class="amount-cell">
-        13,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3141, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3141)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3141)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3145)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3145, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점-카페모라">현대아울렛 김포점-카페모라</td>
-      <td class="amount-cell">
-        12,800원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3145, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-쇼핑" onclick="openCatModal(3145)" title="클릭하여 변경">
-          🛍 쇼핑
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3145)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3087)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3087, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
-      <td class="amount-cell">
-        12,650원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3087, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3087)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3087)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3132)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3132, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
-      <td class="amount-cell">
-        12,650원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3132, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3132)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3132)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3110)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3110, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-14</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="한화커넥트(주)">한화커넥트(주)</td>
-      <td class="amount-cell">
-        12,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3110, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3110)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3110)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3133)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3133, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카페오가다제주점">카페오가다제주점</td>
-      <td class="amount-cell">
-        12,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3133, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3133)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3133)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3128)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3128, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-03</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡이츠">쿠팡이츠</td>
-      <td class="amount-cell">
-        11,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3128, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3128)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3128)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(2926)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(2926, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-08</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="매트블랙커피">매트블랙커피</td>
-      <td class="amount-cell">
-        11,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2926, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(2926)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">현대백화점카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(2926)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(2930)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(2930, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="매트블랙커피">매트블랙커피</td>
-      <td class="amount-cell">
-        11,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2930, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(2930)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">현대백화점카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(2930)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3154)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3154, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-20</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="오아시스 아현점">오아시스 아현점</td>
-      <td class="amount-cell">
-        11,480원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3154, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3154)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3154)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3153)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3153, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-23</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="SK브로드밴드(주)">SK브로드밴드(주)</td>
-      <td class="amount-cell">
-        11,001원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3153, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-통신렌탈" onclick="openCatModal(3153)" title="클릭하여 변경">
-          📡 통신/렌탈
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3153)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3148)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3148, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-27</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
-      <td class="amount-cell">
-        10,800원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3148, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3148)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3148)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3105)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3105, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-15</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카카오T일반택시_0">카카오T일반택시_0</td>
-      <td class="amount-cell">
-        10,700원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3105, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3105)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3105)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3134)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3134, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-02</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)우아한형제들">(주)우아한형제들</td>
-      <td class="amount-cell">
-        10,700원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3134, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3134)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3134)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3167)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3167, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(쿠페이)-쿠팡(쿠페이)">쿠팡(쿠페이)-쿠팡(쿠페이)</td>
-      <td class="amount-cell">
-        10,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3167, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3167)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3167)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(2929)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(2929, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="다르다김밥">다르다김밥</td>
-      <td class="amount-cell">
-        10,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2929, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(2929)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">현대백화점카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(2929)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3142)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3142, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
-      <td class="amount-cell">
-        10,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3142, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3142)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3142)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3178)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3178, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="스타벅스코리아_상품권">스타벅스코리아_상품권</td>
-      <td class="amount-cell">
-        10,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3178, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3178)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">SC현대카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3178)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3089)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3089, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-26</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
-      <td class="amount-cell">
-        9,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3089, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3089)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3089)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(2927)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(2927, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-13</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="딸기">딸기</td>
-      <td class="amount-cell">
-        8,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(2927, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(2927)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">현대백화점카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(2927)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3074)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3074, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점">현대아울렛 김포점</td>
-      <td class="amount-cell">
-        8,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3074, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-쇼핑" onclick="openCatModal(3074)" title="클릭하여 변경">
-          🛍 쇼핑
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3074)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3097)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3097, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-21</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡">쿠팡</td>
-      <td class="amount-cell">
-        8,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3097, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3097)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3097)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3093)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3093, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="연못카페">연못카페</td>
-      <td class="amount-cell">
-        8,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3093, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3093)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3093)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3159)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3159, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-18</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)시사에프앤비(SISA FandB Corp.)">(주)시사에프앤비(SISA FandB Corp.)</td>
-      <td class="amount-cell">
-        8,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3159, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3159)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3159)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3138)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3138, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="모뉴에트">모뉴에트</td>
-      <td class="amount-cell">
-        8,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3138, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3138)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3138)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3169)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3169, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-04</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="쿠팡(와우멤버십)-쿠팡(와우멤버십)">쿠팡(와우멤버십)-쿠팡(와우멤버십)</td>
-      <td class="amount-cell">
-        7,890원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3169, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3169)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3169)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3075)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3075, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-29</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="현대아울렛 김포점">현대아울렛 김포점</td>
-      <td class="amount-cell">
-        7,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3075, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-쇼핑" onclick="openCatModal(3075)" title="클릭하여 변경">
-          🛍 쇼핑
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3075)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3112)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3112, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-14</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="카카오T일반택시_0">카카오T일반택시_0</td>
-      <td class="amount-cell">
-        6,700원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3112, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3112)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3112)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3136)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3136, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="주식회사미스터밀크송당">주식회사미스터밀크송당</td>
-      <td class="amount-cell">
-        6,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3136, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3136)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3136)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3140)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3140, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="고슬고슬제주">고슬고슬제주</td>
-      <td class="amount-cell">
-        6,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3140, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3140)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3140)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3156)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3156, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-20</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="코웨이(주)">코웨이(주)</td>
-      <td class="amount-cell">
-        5,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3156, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-통신렌탈" onclick="openCatModal(3156)" title="클릭하여 변경">
-          📡 통신/렌탈
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3156)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3120)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3120, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)이마트 용산점">(주)이마트 용산점</td>
-      <td class="amount-cell">
-        5,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3120, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생필품" onclick="openCatModal(3120)" title="클릭하여 변경">
-          🛒 생필품
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3120)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3139)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3139, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="모뉴에트">모뉴에트</td>
-      <td class="amount-cell">
-        5,500원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3139, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3139)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3139)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3173)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3173, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-01</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)제스코마트 동쪽송당 동화마을">(주)제스코마트 동쪽송당 동화마을</td>
-      <td class="amount-cell">
-        5,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3173, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-여행" onclick="openCatModal(3173)" title="클릭하여 변경">
-          ✈️ 여행
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3173)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3095)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3095, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-22</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="(주)고암">(주)고암</td>
-      <td class="amount-cell">
-        4,900원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3095, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생활비" onclick="openCatModal(3095)" title="클릭하여 변경">
-          🚌 생활비
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3095)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3166)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3166, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-07</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="에이치디씨아이파크몰 주식회사">에이치디씨아이파크몰 주식회사</td>
-      <td class="amount-cell">
-        4,800원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3166, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-외식" onclick="openCatModal(3166)" title="클릭하여 변경">
-          🍽 외식
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">국민카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3166)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3091)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3091, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-23</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="산들약국">산들약국</td>
-      <td class="amount-cell">
-        4,300원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3091, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-생활비" onclick="openCatModal(3091)" title="클릭하여 변경">
-          🚌 생활비
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3091)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  
-    <tr style="cursor:pointer" onclick="openTxDetailModal(3119)">
-      <td style="text-align:center;width:42px" onclick="event.stopPropagation()">
-        <input type="checkbox" onchange="toggleTxSelection(3119, this.checked)">
-      </td>
-      <td style="font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;white-space:nowrap">2026-03-08</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px" title="프렌디노">프렌디노</td>
-      <td class="amount-cell">
-        4,000원
-      </td>
-      <td>
-        <input type="text" value="" style="font-size:12px;border:none;background:transparent;width:130px;color:var(--text-muted);font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;outline:none;cursor:text" onchange="updateNote(3119, this.value)" onclick="event.stopPropagation()" onfocus="this.style.background=&#39;var(--surface2)&#39;;this.style.borderRadius=&#39;4px&#39;;this.style.padding=&#39;2px 6px&#39;" onblur="this.style.background=&#39;transparent&#39;;this.style.padding=&#39;0&#39;" placeholder="메모 입력...">
-      </td>
-      <td onclick="event.stopPropagation()">
-        <span class="cat-badge cat-교육놀이" onclick="openCatModal(3119)" title="클릭하여 변경">
-          📚 교육/놀이
-        </span>
-      </td>
-      <td style="font-size:12px;color:var(--text-muted);white-space:nowrap">삼성카드</td>
-      <td style="white-space:nowrap" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="openDeleteModal(3119)" style="color:var(--danger);border-color:var(--danger)" title="삭제">🗑</button>
-      </td>
-    </tr>
-  </tbody>
+            <tbody id="detailBody"></tbody>
           </table>
         </div>
-        <div class="pagination" id="detailPagination"><div class="page-btn" onclick="goPage(1)">‹</div><div class="page-btn " onclick="goPage(1)">1</div><div class="page-btn active" onclick="goPage(2)">2</div><div class="page-btn " onclick="goPage(3)">3</div><div class="page-btn" onclick="goPage(3)">›</div></div>
+        <div class="pagination" id="detailPagination"></div>
       </div>
     </div>
 
@@ -2733,7 +1201,7 @@ window.showPage = function(page) {
         <h2>소비 분석</h2>
         <p>월별 손익 · 패턴 · 이상 탐지</p>
       </div>
-      
+
       <!-- AI 조언 -->
       <div class="card" id="adviceCard" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
@@ -2743,7 +1211,7 @@ window.showPage = function(page) {
         <div id="adviceMeta" style="font-size:11px;color:var(--text-muted);margin-bottom:10px"></div>
         <div id="adviceBody"></div>
       </div>
-      
+
       <!-- 월별 손익 차트 -->
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">월별 손익</div>
@@ -2794,7 +1262,7 @@ window.showPage = function(page) {
         <h2>카드 내역 업로드</h2>
         <p>카드사에서 다운로드한 엑셀 파일을 업로드하면 자동으로 카테고리가 적용됩니다</p>
       </div>
-      
+
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">파일 업로드</div>
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
@@ -2803,7 +1271,7 @@ window.showPage = function(page) {
           <p>지원 형식: .xlsx, .xls · 날짜, 가맹점명, 금액 열이 포함된 파일</p>
         </div>
         <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" onchange="handleFileUpload(this)">
-        
+
         <div id="uploadPreview" style="display:none">
           <div class="filter-bar" style="margin-top:16px">
             <label style="font-size:13px;font-weight:600">날짜 열:</label>
@@ -2817,14 +1285,14 @@ window.showPage = function(page) {
             <label style="font-size:13px;font-weight:600">카드:</label>
             <select id="uploadCard" onchange="refreshUploadMeta()" style="height:36px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border)"></select>
           </div>
-          
+
           <div class="table-wrap" style="margin-top:12px;max-height:300px;overflow-y:auto">
             <table id="previewTable">
               <thead><tr id="previewHead"></tr></thead>
               <tbody id="previewBody"></tbody>
             </table>
           </div>
-          
+
           <div id="uploadMeta" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></div>
           <div style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-action" onclick="importData()">가져오기</button>
@@ -2839,12 +1307,7 @@ window.showPage = function(page) {
           <select id="uploadTotalsYear" onchange="renderUploadCardTotals()"><option value="2026">2026년</option></select>
           <select id="uploadTotalsMonth" onchange="renderUploadCardTotals()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
-        <div id="uploadCardTotals">
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">미지정</div>
-      <div style="font-size:22px;font-weight:700;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">1,979,396</div>
-    </div>
-  </div>
+        <div id="uploadCardTotals"></div>
       </div>
 
       <div class="card" style="margin-top:20px;margin-bottom:20px">
@@ -2854,37 +1317,7 @@ window.showPage = function(page) {
           <select id="uploadMonth" onchange="renderUploadFinance()"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
         </div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">26년_종합 시트 구조처럼 월 손익은 총수익 - 총지출로 계산됩니다</p>
-        <div class="summary-grid" id="incomeGrid" style="grid-template-columns:1fr 1fr!important">
-    <div class="input-group">
-      <div class="input-label">예진</div>
-      <input class="cash-input" type="number" id="income_yejin" placeholder="0" value="3000000" oninput="autoSaveIncome(&#39;2026-02&#39;)">
-    </div>
-    <div class="input-group">
-      <div class="input-label">기혁</div>
-      <input class="cash-input" type="number" id="income_gihyuk" placeholder="0" value="3000000" oninput="autoSaveIncome(&#39;2026-02&#39;)">
-    </div>
-    <div class="input-group">
-      <div class="input-label">기타</div>
-      <input class="cash-input" type="number" id="income_etc" placeholder="0" value="" oninput="autoSaveIncome(&#39;2026-02&#39;)">
-    </div>
-    <div class="input-group">
-      <div class="input-label">총수익</div>
-      <input class="cash-input" type="text" id="income_total" value="6,000,000원" readonly="" style="background:var(--surface2);color:var(--text-muted)">
-    </div>
-    <div style="grid-column:1/-1;border-top:1.5px solid var(--border);margin:4px 0 8px;padding-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;margin-bottom:12px">💸 이자비용</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="input-group">
-          <div class="input-label">대출 이자 등</div>
-          <input class="cash-input" type="text" id="income_interestExpense" placeholder="0" value="3,502,453원" onfocus="this.value=this.value.replace(/[^0-9]/g,'')" onblur="const n=parseInt(this.value.replace(/[^0-9]/g,'')||'0');this.value=n?n.toLocaleString('ko-KR')+'원':'';autoSaveIncome('2026-02')" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        </div>
-        <div class="input-group">
-          <div class="input-label">반영 방식</div>
-          <input class="cash-input" type="text" value="총 지출에 포함" readonly="" style="background:var(--surface2);color:var(--text-muted)">
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="summary-grid" id="incomeGrid" style="grid-template-columns:1fr 1fr!important"></div>
         <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:nowrap;align-items:center">
           <button class="btn btn-action" onclick="saveIncomeFromUpload()" style="white-space:nowrap">저장</button>
           <button class="btn btn-ghost" onclick="clearIncomeFromUpload()">초기화</button>
@@ -2953,7 +1386,7 @@ window.showPage = function(page) {
         <h2>카테고리 설정</h2>
         <p>가맹점별 자동 카테고리 규칙을 관리하세요</p>
       </div>
-      
+
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">새 규칙 추가</div>
         <div class="filter-bar">
@@ -2974,7 +1407,7 @@ window.showPage = function(page) {
           <button class="btn btn-ghost" onclick="addRule()" style="border-color:var(--border)">+ 규칙 추가</button>
         </div>
       </div>
-      
+
       <div class="card">
         <div class="card-title">현재 규칙 목록</div>
         <div class="table-wrap">
@@ -3001,15 +1434,6 @@ window.showPage = function(page) {
       </div>
 
       <div class="card" style="margin-top:20px">
-        <div class="card-title">통합 Advisor 월별 요약</div>
-        <p style="font-size:12px;color:var(--text-muted)">월별 수입·지출과 카테고리 합계를 저장합니다. 가맹점 분석은 기존 가계부 AI에서 계속 사용할 수 있습니다.</p>
-        <input type="month" id="householdSummaryMonth" aria-label="요약할 월">
-        <button class="btn btn-ghost" onclick="previewHouseholdSummary()">미리보기</button>
-        <button class="btn btn-action" id="householdSummarySave" onclick="saveHouseholdSummary()" disabled>요약 저장</button>
-        <pre id="householdSummaryPreview" style="white-space:pre-wrap;font-size:12px"></pre>
-        <div id="householdSummaryStatus" role="status" style="font-size:12px"></div>
-      </div>
-      <div class="card" style="margin-top:20px">
         <div class="card-title">계정</div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
           <div style="font-size:13px;color:var(--text-muted)" id="authWhoami">로그인 상태</div>
@@ -3017,7 +1441,7 @@ window.showPage = function(page) {
         </div>
       </div>
     </div>
-    
+
   </main>
 </div>
 
@@ -3025,7 +1449,7 @@ window.showPage = function(page) {
 <div class="modal-overlay" id="catModal">
   <div class="modal">
     <h3>카테고리 변경</h3>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore">유니폼브릿지 · 369,730</p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore"></p>
     <select id="catModalSelect" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">
       <option value="외식">🍽 외식</option>
       <option value="생활비">🛒 생활비</option>
@@ -3127,7 +1551,7 @@ window.showPage = function(page) {
 <div class="modal-overlay" id="txDetailModal" onclick="closeTxDetailModal(event)">
   <div class="modal" style="width:480px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h3 style="margin:0" id="txDetailTitle">(주)나인원투</h3>
+      <h3 style="margin:0" id="txDetailTitle"></h3>
       <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:4px">✕</button>
     </div>
 
@@ -3136,7 +1560,7 @@ window.showPage = function(page) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">날짜</div>
-          <div style="font-size:14px;font-weight:600;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif" id="txDetailDate">2026-01-05</div>
+          <div style="font-size:14px;font-weight:600;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif" id="txDetailDate"></div>
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">카테고리</div>
@@ -3159,7 +1583,7 @@ window.showPage = function(page) {
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">결제 금액</div>
-          <div style="font-size: 20px; font-weight: 700; font-family: &quot;Pretendard&quot;, -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text);" id="txDetailAmount">8,100</div>
+          <div style="font-size: 20px; font-weight: 700; font-family: &quot;Pretendard&quot;, -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text);" id="txDetailAmount"></div>
         </div>
         <div>
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">결제방식</div>
@@ -3211,7 +1635,7 @@ window.showPage = function(page) {
   </div>
 </div>
 
-<div class="toast" id="toast">카테고리 변경됨</div>
+<div class="toast" id="toast"></div>
 
 <script>
 // ===== DATA =====
@@ -3307,6 +1731,7 @@ async function loadData() {
 
 function saveData() {
   if (!window._fbAllowed || !window._fbAllowed()) return;
+  refreshHouseholdSummaryState();
   // Firebase 저장
   if (window._fbReady) {
     _lastSaveTime = Date.now();
@@ -3505,16 +1930,16 @@ function initSummaryFilters() {
   const years = getYears();
   const yearSel = document.getElementById('summaryYear');
   yearSel.innerHTML = years.map(y => `<option value="${y}">${y}년</option>`).join('');
-  
+
   const monthSel = document.getElementById('summaryMonth');
   monthSel.innerHTML = Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}월</option>`).join('');
-  
+
   // Default: latest year + latest month with data
   const now = new Date();
   const latestY = years[years.length-1] || String(now.getFullYear());
   yearSel.value = latestY;
   monthSel.value = String(getLatestMonth(latestY));
-  
+
   renderSummary();
 }
 
@@ -3573,6 +1998,7 @@ function syncMobileSummaryView() {
 }
 
 function renderSummary() {
+  refreshHouseholdSummaryState();
   const year = document.getElementById('summaryYear').value;
   const month = parseInt(document.getElementById('summaryMonth').value);
   const txs = getMonthlyTx(year, month);
@@ -3595,12 +2021,12 @@ function renderSummary() {
     <div class="stat-card ${monthlyProfit < 0 ? 'red' : 'green'}">
       <div class="stat-label">월 손익</div>
       <div class="stat-value">${fmtSignedWon(monthlyProfit)}</div>
-      
+
     </div>
     <div class="stat-card blue">
       <div class="stat-label">총 수익</div>
       <div class="stat-value">${fmt(totalIncome)}원</div>
-      
+
     </div>
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
@@ -4548,6 +2974,14 @@ let deletingId = null;
 let sortField = 'amount';
 let sortDir = 'desc'; // 'asc' or 'desc'
 let selectedTxIds = new Set();
+let selectionMode = false;
+function toggleSelectionMode(force) {
+  selectionMode = typeof force === 'boolean' ? force : !selectionMode;
+  document.getElementById('page-detail').classList.toggle('selection-mode', selectionMode);
+  document.getElementById('detailBulkActions').hidden = !selectionMode;
+  document.getElementById('selectionModeButton').setAttribute('aria-pressed', String(selectionMode));
+  if (!selectionMode) clearSelectedTx();
+}
 
 const SORT_LABELS = { date: '날짜', amount: '금액' };
 const CARD_OPTIONS = ['삼성카드','우리카드','현대백화점카드','SC현대카드','국민카드','BC카드'];
@@ -4559,13 +2993,13 @@ function initDetailFilters() {
   const existing = yearSel.value;
   yearSel.innerHTML = '<option value="">전체 연도</option>' + years.map(y => `<option value="${y}">${y}년</option>`).join('');
   if (existing) yearSel.value = existing;
-  
+
   const monthSel = document.getElementById('detailMonth');
   monthSel.innerHTML = '<option value="">전체 월</option>' + Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}월</option>`).join('');
-  
+
   const daySel = document.getElementById('detailDay');
   daySel.innerHTML = '<option value="">전체 일</option>' + Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}일</option>`).join('');
-  
+
   const catSel = document.getElementById('detailCat');
   catSel.innerHTML = '<option value="">전체 카테고리</option>' + CATEGORIES.map(c => `<option value="${c}">${CAT_ICON[c]} ${c}</option>`).join('');
 
@@ -4647,22 +3081,22 @@ function applyDetailFilter() {
   const amountMaxRaw = document.getElementById('amountMax').value;
   const amountMin = String(amountMinRaw).trim() === '' ? -Infinity : parseInt(amountMinRaw, 10);
   const amountMax = String(amountMaxRaw).trim() === '' ? Infinity : parseInt(amountMaxRaw, 10);
-  
+
   filteredTx = transactions.filter(t => {
     const d = t.date;
     if (!d || d.length < 10) return false;
-    
+
     // Date range filters (date picker overrides year/month/day dropdowns)
     if (dateFrom && d < dateFrom) return false;
     if (dateTo && d > dateTo) return false;
-    
+
     // Dropdown filters (only if no date range set)
     if (!dateFrom && !dateTo) {
       if (year && !d.startsWith(year)) return false;
       if (month && d.slice(5,7) !== String(month).padStart(2,'0')) return false;
       if (day && d.slice(8,10) !== String(day).padStart(2,'0')) return false;
     }
-    
+
     if (cat && t.category !== cat) return false;
     const txCard = (t.card || '').trim();
     if (card === NO_CARD_VALUE && txCard) return false;
@@ -4672,7 +3106,7 @@ function applyDetailFilter() {
     if (t.amount > amountMax) return false;
     return true;
   });
-  
+
   // Sort
   filteredTx.sort((a, b) => {
     let va = sortField === 'date' ? a.date : sortField === 'store' ? (a.store||'') : a.amount;
@@ -4681,7 +3115,7 @@ function applyDetailFilter() {
     if (va > vb) return sortDir === 'asc' ? 1 : -1;
     return 0;
   });
-  
+
   currentPage = 1;
   const grossTotal = filteredTx.reduce((s,t) => s + (t.amount || 0), 0);
   const settlementSum = filteredTx.reduce((s,t) => s + (t.settlement||0), 0);
@@ -4695,7 +3129,7 @@ function applyDetailFilter() {
 function renderDetailPage() {
   const start = (currentPage-1)*PAGE_SIZE;
   const page = filteredTx.slice(start, start+PAGE_SIZE);
-  
+
   document.getElementById('detailBody').innerHTML = page.map(t => {
     const settlement = t.settlement || 0;
     const netCost = t.amount - settlement;
@@ -4735,7 +3169,7 @@ function renderDetailPage() {
     </tr>
   `}).join('');
   updateSelectedSummary();
-  
+
   // Pagination
   const totalPages = Math.ceil(filteredTx.length / PAGE_SIZE);
   let pagHtml = '';
@@ -4966,11 +3400,11 @@ function confirmAdd() {
   const amount = parseInt(document.getElementById('addAmount').value) || 0;
   const note = document.getElementById('addNote').value.trim();
   const cat = document.getElementById('addCat').value;
-  
+
   if (!date) { showToast('날짜를 입력하세요'); return; }
   if (!store) { showToast('가맹점명을 입력하세요'); return; }
   if (!amount || amount <= 0) { showToast('금액을 올바르게 입력하세요'); return; }
-  
+
   const maxId = Math.max(...transactions.map(t => t.id), 0);
   transactions.push({ id: maxId+1, date, store, amount, note, category: cat });
   saveData();
@@ -4991,7 +3425,7 @@ function saveCatModal() {
   const newCat = document.getElementById('catModalSelect').value;
   const tx = transactions.find(t => t.id === editingId);
   const applyAll = document.getElementById('applyAllSame').checked;
-  
+
   if (applyAll) {
     const store = tx.store;
     transactions.filter(t => t.store === store).forEach(t => t.category = newCat);
@@ -5004,7 +3438,7 @@ function saveCatModal() {
     tx.category = newCat;
     showToast('카테고리 변경됨');
   }
-  
+
   saveData();
   closeModal();
   applyDetailFilter();
@@ -5562,7 +3996,7 @@ function renderTrendSection() {
     + cell('제외한 금액', _trendExcluded.size ? fmt(exclAvg) + '원' : '-',
         _trendExcluded.size ? [..._trendExcluded].join(', ') + ' · 월평균' : '제외 항목 없음');
 }
-  
+
 function getMonthRange() {
   const dates = transactions.map(t => t.date.slice(0,7)).filter(Boolean);
   if (!dates.length) return [];
@@ -6116,12 +4550,12 @@ function importData() {
   const storeIdx = parseInt(document.getElementById('colStore').value);
   const amountIdx = parseInt(document.getElementById('colAmount').value);
   const noteIdx = document.getElementById('colNote').value;
-  
+
   if (isNaN(dateIdx) || isNaN(storeIdx) || isNaN(amountIdx)) {
     showToast('날짜, 가맹점, 금액 열을 선택하세요');
     return;
   }
-  
+
   // 현대백화점카드: '상품명'(브랜드) + '이용점'(백화점지점) 두 열 결합
   const sangpumIdx = guessCol(uploadedHeaders, ['상품명']);
   const iyongjeomIdx = guessCol(uploadedHeaders, ['이용점']);
@@ -6140,7 +4574,7 @@ function importData() {
   }
   // 이번 임포트에서 추가된 건 카운팅 (파일 내 중복도 개수만큼 허용)
   const importKeyCounts = new Map();
-  
+
   for (const row of uploadedRows) {
     const dateRaw = String(row[dateIdx]||'').trim();
     const store = combineStore
@@ -6148,18 +4582,18 @@ function importData() {
       : String(row[storeIdx]||'').trim();
     const amountRaw = row[amountIdx];
     const note = noteIdx !== '' ? String(row[parseInt(noteIdx)]||'').trim() : '';
-    
+
     if (!store || amountRaw === null || amountRaw === undefined || String(amountRaw).trim() === '') continue;
     if (String(store).includes('총 합계') || String(store).includes('합계')) continue;
     if (/소계/.test(String(store))) continue;
     if (/합계$/.test(String(store).trim())) continue;
-    
+
     const amount = resolveImportedAmount(row, uploadedHeaders, amountIdx);
     const rowType = getImportRowType(row, uploadedHeaders, amount);
 
     // 취소/환불 음수금액도 그대로 가져와야 함
     if (amount === 0 && rowType !== 'cancel') continue;
-    
+
     const date = parseImportedDate(dateRaw);
     const dedupKey = buildImportDedupKey(date, store, amount, selectedCard, rowType);
 
@@ -6170,16 +4604,16 @@ function importData() {
     // DB에 이미 있는 개수보다 많이 나온 경우만 추가 (중복 파일 재업로드 방지)
     const dbCount = existingKeyCounts.get(dedupKey) || 0;
     if (importCount <= dbCount) continue;
-    
+
     let cat = applyRules(store, note) || autoCategory(store, note);
-    
+
     maxId++;
     transactions.push({id: maxId, date, store, amount, note, category: cat, card: selectedCard, rowType});
     // DB 카운트도 업데이트 (같은 임포트 내에서 반영)
     existingKeyCounts.set(dedupKey, dbCount + 1);
     added++;
   }
-  
+
   saveData();
   cancelUpload();
   showToast(`${added}건 추가됨`);
@@ -6196,7 +4630,7 @@ function autoCategory(store, note) {
     '선물':'관계비용','정산':'관계비용',
     '재산세':'세금','자동차보험':'세금','자동차세':'세금',
   };
-  
+
   const storeRules = {
     '가스':'관리비','도시가스':'관리비','예스코':'관리비','관리비':'관리비',
     '코웨이':'통신/렌탈','SK매직':'통신/렌탈',
@@ -6210,7 +4644,7 @@ function autoCategory(store, note) {
     'T머니':'생활비','교통카드':'생활비','버스':'생활비','지하철':'생활비',
     '세탁':'생활비','미용':'생활비','헤어':'생활비','약국':'생활비',
   };
-  
+
   for (const [k, v] of Object.entries(noteRules)) {
     if (note && note.includes(k)) return v;
   }
@@ -6264,7 +4698,7 @@ function renderRules() {
       </tr>
     `;
   }).join('');
-  
+
   if (!rules.length) {
     body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">등록된 규칙이 없습니다. 새 규칙을 추가하거나, 거래 내역에서 카테고리를 변경하면 자동으로 추가됩니다.</td></tr>';
   }
@@ -6694,10 +5128,51 @@ async function renderAdviceCard() {
   body.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:6px 0">'
     + '전체 기간 데이터를 바탕으로 소비 흐름을 분석해드려요. 위 버튼을 눌러주세요.</div>';
 }
-  
+
 // ===== PRIVATE HOUSEHOLD SUMMARY =====
 let _summaryPreview = null;
+let _summaryStateRequest = 0;
+let _summarySaving = false;
+async function refreshHouseholdSummaryState() {
+  const request = ++_summaryStateRequest;
+  const month = document.getElementById('summaryYear').value + '-' +
+    document.getElementById('summaryMonth').value.padStart(2, '0');
+  document.getElementById('householdSummaryMonth').value = month;
+  document.getElementById('householdSummaryTitle').textContent = month + ' 분석용 요약 보관';
+  _summaryPreview = null;
+  document.getElementById('householdSummaryPreview').textContent = '';
+  document.getElementById('householdSummaryStatus').textContent = '';
+  const button = document.getElementById('householdSummarySave');
+  button.disabled = true;
+  const state = document.getElementById('householdSummarySavedState');
+  state.textContent = '저장 상태 확인 중…';
+  try {
+    const saved = await window._fbLoadHouseholdSummary(month);
+    if (request !== _summaryStateRequest || !window._fbAllowed()) return;
+    if (!saved) {
+      state.textContent = '미저장 · 내용을 확인한 뒤 요약을 저장하세요.';
+      button.textContent = '요약 저장';
+      return;
+    }
+    const current = HouseholdSummary.build({ month, transactions, income: incomeData[month] || null,
+      generatedAt: saved.generatedAt });
+    const equal = (a, b) => {
+      if (a === b) return true;
+      if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+      const keys = Object.keys(a);
+      return keys.length === Object.keys(b).length && keys.every(k => equal(a[k], b[k]));
+    };
+    const date = new Date(saved.generatedAt);
+    const lastSaved = Number.isNaN(date.getTime()) ? '시간 확인 불가' : date.toLocaleString('ko-KR');
+    state.textContent = (equal(saved, current) ? '저장 완료 · 현재 집계와 일치' : '변경사항 있음 · 요약 갱신이 필요합니다') +
+      ' / 마지막 저장: ' + lastSaved;
+    button.textContent = '요약 갱신';
+  } catch (error) {
+    if (request === _summaryStateRequest) state.textContent = '저장 상태 확인 실패 · ' + error.message;
+  }
+}
 function previewHouseholdSummary() {
+  if (_summarySaving) return;
   const month = document.getElementById('householdSummaryMonth').value;
   const status = document.getElementById('householdSummaryStatus');
   try {
@@ -6709,7 +5184,7 @@ function previewHouseholdSummary() {
     document.getElementById('householdSummaryPreview').textContent = [
       s.month + ' 월별 요약 (잠정)',
       '수입: ' + money(s.income),
-      '카드 순지출: ' + money(s.netCardExpense),
+      '등록 거래 순지출: ' + money(s.netCardExpense),
       '대출이자: ' + money(s.interestExpense),
       '총지출: ' + money(s.totalExpense),
       '잔액: ' + money(s.balance),
@@ -6717,7 +5192,7 @@ function previewHouseholdSummary() {
       '',
       ...Object.entries(s.categories).map(function(row) { return row[0] + ': ' + money(row[1]); }),
       '',
-      '카드 거래와 대출이자 기준입니다. 전체 자금 흐름의 확정 결산은 아닙니다.'
+      '등록 거래(현금 포함)와 대출이자 기준의 잠정 집계입니다. 전체 자금 흐름의 확정 결산은 아닙니다.'
     ].join('\n');
     document.getElementById('householdSummarySave').disabled = false;
     status.textContent = '가맹점·거래 메모·계정 정보는 포함하지 않습니다. 소득 누락 여부도 확인해주세요.';
@@ -6728,27 +5203,40 @@ function previewHouseholdSummary() {
   }
 }
 async function saveHouseholdSummary() {
+  if (_summarySaving) return;
   const status = document.getElementById('householdSummaryStatus');
   const btn = document.getElementById('householdSummarySave');
+  const label = btn.textContent;
+  _summarySaving = true;
   btn.disabled = true;
+  btn.textContent = '저장 중…';
   try {
-    if (!_summaryPreview) throw new Error('먼저 미리보기를 확인해주세요.');
+    if (!_summaryPreview) throw new Error('먼저 내용을 확인해주세요.');
     const month = document.getElementById('householdSummaryMonth').value;
-    const current = HouseholdSummary.build({ month: month, transactions: transactions,
+    const current = HouseholdSummary.build({ month, transactions,
       income: incomeData[month] || null, generatedAt: _summaryPreview.generatedAt });
     if (JSON.stringify(current) !== JSON.stringify(_summaryPreview)) {
-      throw new Error('데이터가 변경되었습니다. 미리보기를 다시 확인해주세요.');
+      _summaryPreview = null;
+      throw new Error('데이터가 변경되었습니다. 내용을 다시 확인해주세요.');
     }
     await window._fbSaveHouseholdSummary(current);
-    status.textContent = '월별 요약을 저장했습니다. ' + current.generatedAt;
-    _summaryPreview = null;
-  } catch (e) { status.textContent = '저장하지 못했습니다: ' + e.message; }
+    await refreshHouseholdSummaryState();
+    if (window._fbAllowed()) status.textContent = month + ' 요약을 저장했습니다.';
+  } catch (e) {
+    status.textContent = '저장하지 못했습니다: ' + e.message + ' 다시 시도할 수 있습니다.';
+  } finally {
+    _summarySaving = false;
+    if (btn.textContent === '저장 중…') btn.textContent = label;
+    btn.disabled = !_summaryPreview || !window._fbAllowed();
+  }
 }
 
 // ===== AUTH =====
 let _appBooted = false;
 
 function showAuthGate() {
+  ++_summaryStateRequest;
+  _summaryPreview = null;
   const g = document.getElementById('authGate');
   if (g) g.style.display = 'flex';
 }
@@ -6817,7 +5305,7 @@ document.addEventListener('keydown', function(e) {
   if (!gate || gate.style.display !== 'flex') return;
   if (e.key === 'Enter') doLogin();
 });
-  
+
 // ===== INIT =====
 async function _init() {
   // 실제 showPage로 교체 (프록시 해제)
