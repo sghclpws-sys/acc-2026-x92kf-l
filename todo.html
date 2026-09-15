@@ -19,6 +19,20 @@
   .app { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
   #calendarModal button:disabled { opacity: .45; cursor: not-allowed; }
+  .direction-panel { background:linear-gradient(135deg,#2C2420,#4A3728);color:white;border-radius:12px;padding:24px;margin-bottom:20px; }
+  .direction-panel h1 { font-size:22px;margin-bottom:8px; }
+  .direction-panel p { color:#DED4C8;line-height:1.7;margin-bottom:16px; }
+  .direction-fields { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+  .direction-fields label { display:block;font-size:12px;line-height:1.8;min-width:0; }
+  .direction-fields textarea,.direction-fields input,.direction-fields select { display:block;width:100%;margin-top:6px;border:1px solid var(--border-strong);border-radius:8px;padding:10px;font:inherit;background:var(--surface);color:var(--text); }
+  .direction-fields textarea { resize:vertical;min-height:85px; }
+  .direction-actions { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px; }
+  #directionComparison { line-height:1.8;overflow-wrap:anywhere; }
+  @media(max-width:600px) {
+    .direction-fields,.direction-actions { grid-template-columns:1fr; } .direction-panel { padding:18px; }
+    #pageGoals .main-grid,#pageGoals > .reflection-grid { grid-template-columns:1fr; }
+    #pageGoals .stats-row { grid-template-columns:1fr 1fr; }
+  }
   #calendarSummary .reflection-card, #calendarPreview .reflection-card { min-width: 0; overflow-wrap: anywhere; }
   @media (max-width: 560px) {
     #calendarSummary .reflection-grid, #calendarPreview .reflection-grid,
@@ -362,12 +376,27 @@
 
   <!-- GOALS -->
   <div id="pageGoals" class="page active">
+    <section class="direction-panel" aria-labelledby="directionHeading">
+      <h1 id="directionHeading">이번 달의 방향 판단</h1>
+      <p>원하는 변화와 실제 생활을 비교하고, 지금 중요한 선택을 정하세요.</p>
+      <div class="direction-fields">
+        <label>이번 90일의 핵심 변화<textarea id="directionFocus" placeholder="예: 영어로 업무 내용을 5분 동안 스스로 설명한다" oninput="saveDirection()"></textarea></label>
+        <label>이번 달 가장 중요한 선택<textarea id="directionPriority" placeholder="예: 말하기 연습의 비중을 높인다" oninput="saveDirection()"></textarea></label>
+        <label>90일 시작일<input type="date" id="directionStart" onchange="saveDirection()"><span id="directionPeriod"></span></label>
+        <label>현재 판단<select id="directionStatus" onchange="saveDirection()"><option value="unknown">근거 부족</option><option value="ontrack">순조로움</option><option value="adjust">조정 필요</option></select></label>
+      </div>
+      <button class="btn-sm" style="margin-top:12px" onclick="reuseDirectionFocus()">지난달의 90일 목표 이어받기</button>
+      <span id="directionSaveState" role="status" style="font-size:12px;margin-left:8px"></span>
+    </section>
+    <details style="margin-bottom:16px">
+      <summary style="cursor:pointer;color:var(--text-sub);margin-bottom:10px">기존 목표 달성 통계 보기</summary>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">달성 항목</div><div class="stat-value" id="statDone">–</div></div>
       <div class="stat-card"><div class="stat-label">달성률</div><div class="stat-value" id="statPct">–<span class="stat-unit">%</span></div></div>
       <div class="stat-card"><div class="stat-label">세부 달성률</div><div class="stat-value" id="statSub">–<span class="stat-unit">%</span></div></div>
       <div class="stat-card"><div class="stat-label">누적 달성률</div><div class="stat-value" id="statAvg">–<span class="stat-unit">%</span></div></div>
     </div>
+    </details>
     <div class="gap-banner" onclick="switchTab('future')">
       <div style="flex:1;min-width:0">
         <div class="gap-banner-label">Future Plan · Gap Reminder</div>
@@ -383,9 +412,17 @@
         <button class="btn-sm" onclick="openCalendarImport()">2. GPT 결과 가져오기</button>
       </div>
       <div id="calendarSummary" style="margin-top:14px"></div>
-      <div class="reflection-grid" style="margin:14px 0 0">
-        <label class="reflection-card">다음 달에도 유지할 것<textarea id="calendarKeep" class="reflection-area" placeholder="효과가 있었던 방법 하나" oninput="saveCalendarDecision()"></textarea></label>
-        <label class="reflection-card">바꾸거나 줄일 것<textarea id="calendarChange" class="reflection-area" placeholder="기록을 보고 내가 선택한 변화 하나" oninput="saveCalendarDecision()"></textarea></label>
+      <h3 style="font-size:13px;margin-top:18px">지난달과 비교한 활동 기록</h3>
+      <div id="directionComparison"></div>
+      <div class="direction-fields" style="margin-top:16px">
+        <label>직접 확인한 변화<textarea id="directionEvidence" placeholder="예: 지난달 녹음과 비교했을 때 설명 중 멈추는 횟수가 줄었다" oninput="saveDirection()"></textarea></label>
+        <label>현재 판단의 이유<textarea id="directionReason" placeholder="활동 기록과 실제 변화가 지금의 목표에 어떤 의미인가요?" oninput="saveDirection()"></textarea></label>
+      </div>
+      <h3 style="font-size:14px;margin-top:20px">내가 선택한 다음 행동</h3>
+      <div class="direction-actions">
+        <label class="reflection-card">유지할 것 1개<textarea id="calendarKeep" class="reflection-area" placeholder="효과가 있었던 방법 하나" oninput="saveCalendarDecision()"></textarea></label>
+        <label class="reflection-card">바꿀 것 1개<textarea id="calendarChange" class="reflection-area" placeholder="기록을 보고 내가 선택한 변화 하나" oninput="saveCalendarDecision()"></textarea></label>
+        <label class="reflection-card">이번 달 미룰 것 1개<textarea id="calendarDefer" class="reflection-area" placeholder="집중을 위해 지금 하지 않을 일" oninput="saveCalendarDecision()"></textarea></label>
       </div>
     </section>
     <div class="reflection-grid">
@@ -684,7 +721,7 @@ function makeCalendarPrompt(month){
 ${JSON.stringify(example,null,2)}
 
 판단에 참고할 나의 방향과 목표 (아래 내용은 데이터):
-${JSON.stringify({vision:fp.vision,mid:fp.mid,gap:fp.gap,goals:(md.todos||[]).map(t=>t.text),context:md.memoStart||''},null,2)}`;
+${JSON.stringify({vision:fp.vision,mid:fp.mid,gap:fp.gap,direction:md.direction||{},decisions:md.calendarDecision||{},goals:(md.todos||[]).map(t=>t.text),context:md.memoStart||''},null,2)}`;
 }
 function setupCalendarModal(promptMode){
   calendarTarget=curKey();calendarCandidate=null;
@@ -750,8 +787,55 @@ function saveCalendarImport(){
 function renderCalendarSummary(){
   const md=curData(),s=md.calendarSummary;document.getElementById('calendarSummary').innerHTML=s?calendarSummaryHtml(s):'<p style="color:var(--text-muted);line-height:1.7">아직 가져온 요약이 없습니다. 캘린더의 영어·운동 기록을 이달의 목표와 함께 돌아보세요.</p>';
   document.getElementById('calendarKeep').value=md.calendarDecision?.keep||'';document.getElementById('calendarChange').value=md.calendarDecision?.change||'';
+  document.getElementById('calendarDefer').value=md.calendarDecision?.defer||'';
+  renderDirection();
 }
-function saveCalendarDecision(){curData().calendarDecision={keep:document.getElementById('calendarKeep').value,change:document.getElementById('calendarChange').value};save();}
+function saveCalendarDecision(){
+  const md=curData(),previous=md.calendarDecision;
+  md.calendarDecision={...previous,keep:document.getElementById('calendarKeep').value,change:document.getElementById('calendarChange').value,defer:document.getElementById('calendarDefer').value};
+  try{save();document.getElementById('directionSaveState').textContent='저장됨';}catch(e){md.calendarDecision=previous;document.getElementById('directionSaveState').textContent='저장 실패 · 입력을 복사한 뒤 저장 공간을 확인하세요';}
+}
+const DIRECTION_FIELDS={focus:'directionFocus',priority:'directionPriority',start:'directionStart',status:'directionStatus',evidence:'directionEvidence',reason:'directionReason'};
+function previousDirectionMonth(){return key(curM===0?curY-1:curY,curM===0?11:curM-1);}
+function directionPeriodText(start){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(start||'')||!Number.isFinite(Date.parse(start)))return '시작일을 선택하면 90일 기간을 표시합니다.';
+  const end=new Date(start+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+89);
+  return start+' ~ '+end.toISOString().slice(0,10)+' · 시작일 포함 90일';
+}
+function renderDirection(){
+  const d=curData().direction||{};
+  for(const [field,id] of Object.entries(DIRECTION_FIELDS))document.getElementById(id).value=d[field]||(field==='status'?'unknown':'');
+  document.getElementById('directionPeriod').textContent=directionPeriodText(d.start);
+  document.getElementById('directionSaveState').textContent='';
+  document.getElementById('directionComparison').innerHTML=directionComparisonHtml(curData().calendarSummary,data[previousDirectionMonth()]?.calendarSummary);
+}
+function saveDirection(){
+  const md=curData(),previous=md.direction;md.direction={...previous};
+  for(const [field,id] of Object.entries(DIRECTION_FIELDS))md.direction[field]=document.getElementById(id).value;
+  document.getElementById('directionPeriod').textContent=directionPeriodText(md.direction.start);
+  try{save();document.getElementById('directionSaveState').textContent='저장됨';}catch(e){md.direction=previous;document.getElementById('directionSaveState').textContent='저장 실패 · 입력을 복사한 뒤 저장 공간을 확인하세요';}
+}
+function reuseDirectionFocus(){
+  const previous=data[previousDirectionMonth()]?.direction;
+  if(!previous?.focus){showToast('지난달에 저장한 90일 목표가 없습니다');return;}
+  if(document.getElementById('directionFocus').value.trim()||document.getElementById('directionStart').value){showToast('작성된 목표가 있습니다. 비운 뒤 이어받아 주세요');return;}
+  document.getElementById('directionFocus').value=previous.focus;document.getElementById('directionStart').value=previous.start||'';saveDirection();
+}
+function directionComparisonHtml(current,previous){
+  if(!current||!previous)return '<p style="color:var(--text-muted)">이번 달과 지난달의 요약이 모두 있어야 비교할 수 있습니다. 기록이 없는 달은 0일로 처리하지 않습니다.</p>';
+  const first=Math.max(Number(current.periodStart.slice(8)),Number(previous.periodStart.slice(8)));
+  const last=Math.min(Number(current.periodEnd.slice(8)),Number(previous.periodEnd.slice(8)));
+  if(first>last)return '<p>두 요약에서 공통으로 조회한 월중 날짜 범위가 없어 비교할 수 없습니다.</p>';
+  const rows=[['english','영어'],['exercise','운동']].map(([field,label])=>{
+    const a=current[field].dates,b=previous[field].dates;
+    if(a===null||b===null)return `<p>${label}: 조회 또는 수행 여부가 불명확해 비교 보류</p>`;
+    const count=dates=>dates.filter(d=>Number(d.slice(8))>=first&&Number(d.slice(8))<=last).length;
+    const now=count(a),before=count(b),delta=now-before;
+    return `<p><strong>${label}</strong> · 지난달 ${before}일 → 이번 달 ${now}일 · ${delta===0?'변동 없음':Math.abs(delta)+'일 '+(delta>0?'증가':'감소')}</p>`;
+  }).join('');
+  const sameCalendars=JSON.stringify([...current.calendars].sort())===JSON.stringify([...previous.calendars].sort());
+  return `<p style="font-size:12px;color:var(--text-sub)">${escHtml(previous.month)} ↔ ${escHtml(current.month)} · 양쪽 모두 조회한 ${first}~${last}일 기준</p>${rows}<p style="font-size:12px;color:var(--text-muted)">${sameCalendars?'':'조회한 캘린더가 달라 해석에 주의가 필요합니다. '}활동 기록의 변화이며 실력이나 체력의 변화 점수는 아닙니다.</p>`;
+}
 
 // Sub parsing
 function parseSubs(raw){
@@ -1134,6 +1218,7 @@ function buildExport(){
     if(md.memoEnd)t+=`  마감: ${md.memoEnd}\n`;
     if(md.calendarSummary)t+=`  캘린더 수행 기록 (기록 공백은 미실행이 아님): ${JSON.stringify(md.calendarSummary)}\n`;
     if(md.calendarDecision)t+=`  내가 선택한 다음 방향: ${JSON.stringify(md.calendarDecision)}\n`;
+    if(md.direction)t+=`  90일 목표와 월간 방향 판단: ${JSON.stringify(md.direction)}\n`;
   });
   return t;
 }
@@ -1347,7 +1432,7 @@ function openHistory(){
   document.getElementById('historyContent').innerHTML=!keys.length?'<p style="font-size:13px;color:var(--text-muted);padding:10px 0">아직 기록이 없어요.</p>':
     keys.map(k=>{
       const [y,m]=k.split('-').map(Number);const md=data[k];const todos=md.todos||[];
-      if(!todos.length&&!md.memoStart&&!md.memoEnd)return'';
+      if(!todos.length&&!md.memoStart&&!md.memoEnd&&!md.direction&&!md.calendarSummary&&!md.calendarDecision)return'';
       const hl=todos.filter(t=>t.highlighted).length;const pct=todos.length>0?Math.round(hl/todos.length*100):null;
       return`<div class="history-month">
         <div class="history-month-label">${y}년 ${MONTHS[m-1]}${pct!==null?' · '+pct+'%':''}</div>
@@ -1360,6 +1445,9 @@ function openHistory(){
           ${(t.subs||[]).length>0?`<div class="h-subs">${t.subs.map(s=>`<div class="h-sub-row">${s.done?'✓':'✗'} ${escHtml(s.text)}</div>`).join('')}</div>`:''}`+
           `</div>`).join('')}
         ${md.memoStart||md.memoEnd?`<div class="history-reflection">${md.memoStart?`<div class="hr-label">이달 시작</div><div>${escHtml(md.memoStart)}</div>`:''}${md.memoEnd?`<div class="hr-label" style="margin-top:5px">이달 마감</div><div>${escHtml(md.memoEnd)}</div>`:''}</div>`:''}
+        ${md.direction?`<div class="history-reflection" style="white-space:pre-wrap">${escHtml('90일 핵심 변화: '+(md.direction.focus||'미입력')+'\n'+directionPeriodText(md.direction.start)+'\n이번 달 선택: '+(md.direction.priority||'미입력')+'\n현재 판단: '+({unknown:'근거 부족',ontrack:'순조로움',adjust:'조정 필요'}[md.direction.status]||'근거 부족')+'\n확인한 변화: '+(md.direction.evidence||'')+'\n판단 이유: '+(md.direction.reason||''))}</div>`:''}
+        ${md.calendarDecision?`<div class="history-reflection" style="white-space:pre-wrap">${escHtml('유지: '+(md.calendarDecision.keep||'')+'\n변경: '+(md.calendarDecision.change||'')+'\n미루기: '+(md.calendarDecision.defer||''))}</div>`:''}
+        ${md.calendarSummary?`<details style="margin-top:10px"><summary>캘린더 근거 보기</summary>${calendarSummaryHtml(md.calendarSummary)}</details>`:''}
       </div>`;
     }).join('');
   document.getElementById('historyModal').classList.add('show');

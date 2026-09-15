@@ -52,3 +52,16 @@ test('import escapes markup, prompt includes goals and clipboard has manual fall
   c.curData().todos=[{text:'업무 영어 발표'}];assert.match(c.makeCalendarPrompt('2026-08'),/업무 영어 발표/);
   c.setupCalendarModal(true);get('calendarInput').value='prompt';await c.copyCalendarPrompt();assert.match(get('calendarError').textContent,/Ctrl\+C/);
 });
+test('direction and next actions persist per month without rewriting previous goals', () => {
+  const {c,get}=setup();
+  get('directionFocus').value='영어 발표';get('directionStart').value='2026-08-01';get('directionPriority').value='말하기 집중';get('directionStatus').value='adjust';get('directionEvidence').value='녹음 비교';get('directionReason').value='연습 방식 변경';c.saveDirection();
+  get('calendarKeep').value='매일 연습';get('calendarChange').value='말하기';get('calendarDefer').value='새 교재';c.saveCalendarDecision();c.load();c.renderDirection();
+  assert.equal(get('directionFocus').value,'영어 발표');assert.match(c.directionPeriodText('2026-08-01'),/2026-10-29/);assert.match(c.buildExport(),/녹음 비교/);assert.match(c.makeCalendarPrompt('2026-08'),/말하기 집중/);
+  vm.runInContext('curM=8',c);c.renderDirection();assert.equal(get('directionFocus').value,'');c.reuseDirectionFocus();assert.equal(c.curData().direction.focus,'영어 발표');
+  get('directionFocus').value='다음 목표';c.saveDirection();vm.runInContext('curM=7',c);c.renderCalendarSummary();assert.equal(get('directionFocus').value,'영어 발표');assert.equal(get('calendarDefer').value,'새 교재');
+});
+test('month comparison uses shared day range and handles missing evidence', () => {
+  const {c}=setup();const a=sample(),b=sample();a.periodEnd='2026-08-15';a.english.dates=['2026-08-01'];b.month='2026-07';b.periodStart='2026-07-01';b.periodEnd='2026-07-31';b.english.dates=['2026-07-01','2026-07-20'];
+  const text=c.directionComparisonHtml(a,b);assert.match(text,/1~15일/);assert.match(text,/변동 없음/);assert.match(text,/비교 보류/);assert.match(c.directionComparisonHtml(a,null),/0일로 처리하지/);
+  b.periodStart='2026-07-20';assert.match(c.directionComparisonHtml(a,b),/비교할 수 없습니다/);
+});
