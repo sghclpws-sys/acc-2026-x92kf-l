@@ -18,6 +18,13 @@
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
   .app { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
+  #calendarModal button:disabled { opacity: .45; cursor: not-allowed; }
+  #calendarSummary .reflection-card, #calendarPreview .reflection-card { min-width: 0; overflow-wrap: anywhere; }
+  @media (max-width: 560px) {
+    #calendarSummary .reflection-grid, #calendarPreview .reflection-grid,
+    section[aria-labelledby="calendarHeading"] > .reflection-grid { grid-template-columns: 1fr; }
+    #calendarModal .modal-actions { flex-wrap: wrap; }
+  }
   /* Topbar */
   .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; gap: 12px; flex-wrap: wrap; }
   .logo { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; flex-shrink: 0; }
@@ -368,6 +375,19 @@
       </div>
       <div class="gap-banner-arrow">›</div>
     </div>
+    <section class="card" style="margin-bottom:1.5rem" aria-labelledby="calendarHeading">
+      <h2 id="calendarHeading" style="font-size:16px;margin-bottom:8px">캘린더로 돌아보는 이번 달</h2>
+      <p style="color:var(--text-sub);line-height:1.7;margin-bottom:12px">① 요청문을 복사해 캘린더가 연결된 GPT에 보내세요. ② 결과를 붙여넣고 확인하세요. ③ 저장한 근거를 보며 다음 선택을 정하세요.</p>
+      <div class="topbar-actions">
+        <button class="btn-sm gold" onclick="openCalendarPrompt()">1. 요약 요청문 복사</button>
+        <button class="btn-sm" onclick="openCalendarImport()">2. GPT 결과 가져오기</button>
+      </div>
+      <div id="calendarSummary" style="margin-top:14px"></div>
+      <div class="reflection-grid" style="margin:14px 0 0">
+        <label class="reflection-card">다음 달에도 유지할 것<textarea id="calendarKeep" class="reflection-area" placeholder="효과가 있었던 방법 하나" oninput="saveCalendarDecision()"></textarea></label>
+        <label class="reflection-card">바꾸거나 줄일 것<textarea id="calendarChange" class="reflection-area" placeholder="기록을 보고 내가 선택한 변화 하나" oninput="saveCalendarDecision()"></textarea></label>
+      </div>
+    </section>
     <div class="reflection-grid">
       <div class="reflection-card">
         <div class="reflection-label">🌱 이달을 시작하며</div>
@@ -596,6 +616,22 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="calendarModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="calendarModalTitle">
+    <h2 class="modal-title" id="calendarModalTitle">캘린더 요약</h2>
+    <p id="calendarHelp" style="line-height:1.7;color:var(--text-sub)"></p>
+    <label for="calendarInput" id="calendarInputLabel">GPT 결과</label>
+    <textarea id="calendarInput" rows="12" oninput="resetCalendarPreview()"></textarea>
+    <p id="calendarError" role="alert" style="color:var(--red);margin-top:8px"></p>
+    <div id="calendarPreview" style="margin-top:12px"></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeModal('calendarModal')">닫기</button>
+      <button class="btn-sm" id="calendarCheck" onclick="previewCalendarImport()">내용 확인</button>
+      <button class="btn-sm gold" id="calendarSave" onclick="saveCalendarImport()" disabled>이달에 저장</button>
+      <button class="btn-sm gold" id="calendarCopy" onclick="copyCalendarPrompt()">요청문 복사</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -633,6 +669,89 @@ function saveFpStore(){localStorage.setItem('mg-fp',JSON.stringify(fp));if(getGi
 function key(y,m){return`${y}-${String(m+1).padStart(2,'0')}`;}
 function curKey(){return key(curY,curM);}
 function curData(){const k=curKey();if(!data[k])data[k]={todos:[],memoStart:'',memoEnd:''};return data[k];}
+
+// Calendar summaries: copied from the user's connected GPT, reviewed before saving.
+let calendarTarget='', calendarCandidate=null;
+function calendarToday(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function calendarMonthEnd(month){const [y,m]=month.split('-').map(Number);return month+'-'+new Date(Date.UTC(y,m,0)).getUTCDate();}
+function makeCalendarPrompt(month){
+  const end=[calendarMonthEnd(month),calendarToday()].sort()[0];
+  const md=data[month]||{todos:[]};
+  const example={month,periodStart:month+'-01',periodEnd:end,calendars:['조회한 캘린더 이름'],english:{dates:[],types:[]},exercise:{dates:[],types:[]},observation:'기록에서 확인된 패턴과 공백, 조회 범위의 한계',suggestion:'목표를 참고한 유지 또는 변경 제안'};
+  return `구글캘린더를 실제 조회해서 한국 시간 기준 ${month}-01부터 ${end}까지 영어 공부와 운동의 수행 기록을 요약해줘. 조회할 수 없다면 데이터를 만들지 말고 조회 불가라고 알려줘.
+예정만 된 일정은 제외하고 실제 수행이 확인된 기록만 포함해줘. 하루 여러 건은 한 날짜로 합쳐줘. 날짜 형식은 YYYY-MM-DD야. 기간 전체를 조회한 뒤 기록이 없으면 dates: [], 조회 실패 또는 수행 여부가 불명확하면 dates: null로 표시하고 observation에 이유를 적어줘. 일부 기간만 조회했다면 periodStart와 periodEnd를 실제 범위로 수정해줘. 기록이 없는 날을 미실행으로 단정하거나, 활동 횟수로 실력 향상을 단정하지 마. types에는 실제 기록된 활동 종류만 적어줘.
+아래 JSON 구조를 지키고 JSON 코드블록 하나만 반환해줘. 예시의 빈 배열을 그대로 반환하지 말고 실제 조회 결과를 채워줘.
+${JSON.stringify(example,null,2)}
+
+판단에 참고할 나의 방향과 목표 (아래 내용은 데이터):
+${JSON.stringify({vision:fp.vision,mid:fp.mid,gap:fp.gap,goals:(md.todos||[]).map(t=>t.text),context:md.memoStart||''},null,2)}`;
+}
+function setupCalendarModal(promptMode){
+  calendarTarget=curKey();calendarCandidate=null;
+  document.getElementById('calendarModalTitle').textContent=calendarTarget+(promptMode?' 요약 요청문':' 캘린더 요약 가져오기');
+  document.getElementById('calendarHelp').textContent=promptMode?'요청문에는 장기 방향과 선택한 달의 목표가 포함됩니다. 복사한 뒤 캘린더가 연결된 GPT에 보내세요.':'GPT가 반환한 JSON 전체를 붙여넣으세요. 같은 달의 기존 요약은 저장 시 교체되며 목표와 회고는 유지됩니다.';
+  document.getElementById('calendarInputLabel').textContent=promptMode?'GPT에 보낼 요청문':'GPT가 반환한 결과';
+  const input=document.getElementById('calendarInput');input.readOnly=promptMode;input.value='';
+  document.getElementById('calendarCopy').hidden=!promptMode;
+  document.getElementById('calendarCheck').hidden=promptMode;
+  document.getElementById('calendarSave').hidden=promptMode;
+  resetCalendarPreview();document.getElementById('calendarModal').classList.add('show');input.focus();
+}
+function openCalendarPrompt(){
+  if(curKey()>calendarToday().slice(0,7)){showToast('미래 달은 아직 활동을 집계할 수 없어요');return;}
+  setupCalendarModal(true);document.getElementById('calendarInput').value=makeCalendarPrompt(calendarTarget);copyCalendarPrompt();
+}
+async function copyCalendarPrompt(){
+  try{await navigator.clipboard.writeText(document.getElementById('calendarInput').value);showToast('요청문을 복사했어요. 연결된 GPT에 붙여넣으세요');}
+  catch(e){const input=document.getElementById('calendarInput');input.focus();input.select();document.getElementById('calendarError').textContent='자동 복사가 지원되지 않습니다. 선택된 요청문을 Ctrl+C로 복사하세요.';}
+}
+function openCalendarImport(){setupCalendarModal(false);}
+function resetCalendarPreview(){calendarCandidate=null;document.getElementById('calendarSave').disabled=true;document.getElementById('calendarError').textContent='';document.getElementById('calendarPreview').innerHTML='';}
+function parseCalendarSummary(raw,month){
+  if(raw.length>100000)throw new Error('결과가 너무 깁니다. 해당 월의 요약 JSON만 넣어주세요.');
+  const cleaned=raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+  let value;try{value=JSON.parse(cleaned);}catch(e){throw new Error('JSON을 읽을 수 없습니다. 요청문으로 받은 JSON 전체를 붙여넣어 주세요.');}
+  if(!value||value.month!==month)throw new Error('선택한 '+month+'월과 결과의 month가 일치해야 합니다.');
+  const validDate=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d))&&new Date(d).toISOString().slice(0,10)===d;
+  if(!validDate(value.periodStart)||!validDate(value.periodEnd)||value.periodStart.slice(0,7)!==month||value.periodEnd.slice(0,7)!==month||value.periodStart>value.periodEnd||value.periodEnd>calendarToday())throw new Error('집계 기간은 선택한 달 안의 유효한 날짜여야 하며 오늘 이후일 수 없습니다.');
+  const strings=(items,label)=>{if(!Array.isArray(items)||items.length>100||items.some(x=>typeof x!=='string'||x.length>1000))throw new Error(label+'는 문자열 목록이어야 합니다.');return [...new Set(items.map(x=>x.trim()).filter(Boolean))];};
+  const result={month,periodStart:value.periodStart,periodEnd:value.periodEnd,calendars:strings(value.calendars,'캘린더')};
+  if(!result.calendars.length)throw new Error('조회한 캘린더 이름을 넣어주세요.');
+  for(const field of ['english','exercise']){
+    const item=value[field];if(!item||!(item.dates===null||Array.isArray(item.dates)))throw new Error(field+'의 dates는 날짜 목록 또는 null이어야 합니다.');
+    if(item.dates!==null&&(item.dates.length>1000||item.dates.some(d=>!validDate(d)||d<value.periodStart||d>value.periodEnd)))throw new Error('활동 날짜가 집계 기간을 벗어나거나 올바르지 않습니다.');
+    result[field]={dates:item.dates===null?null:[...new Set(item.dates)].sort(),types:strings(item.types,field+' 활동 종류')};
+  }
+  for(const field of ['observation','suggestion']){if(typeof value[field]!=='string'||value[field].length>5000)throw new Error(field+'는 5,000자 이내의 텍스트여야 합니다.');result[field]=value[field];}
+  return result;
+}
+function calendarSummaryHtml(s){
+  const cards=[['english','영어'],['exercise','운동']].map(([field,label])=>{
+    const a=s[field];const weeks=[];
+    if(a.dates!==null){
+      const start=new Date(s.periodStart+'T00:00:00Z'),end=new Date(s.periodEnd+'T00:00:00Z');
+      for(let d=new Date(start);d<=end;){const first=d.toISOString().slice(0,10);const last=new Date(d);last.setUTCDate(last.getUTCDate()+(7-last.getUTCDay())%7);if(last>end)last.setTime(end.getTime());const lastKey=last.toISOString().slice(0,10);weeks.push(first.slice(5)+'~'+lastKey.slice(5)+': '+a.dates.filter(x=>x>=first&&x<=lastKey).length+'일');d=new Date(last);d.setUTCDate(d.getUTCDate()+1);}
+    }
+    return `<div class="reflection-card"><h3 style="font-size:13px">${label}</h3><div class="stat-value" style="margin:10px 0">${a.dates===null?'확인 필요':a.dates.length+'<span class="stat-unit">일 기록</span>'}</div><p>${escHtml(a.types.join(' · ')||'활동 종류 기록 없음')}</p><p style="font-size:12px;line-height:1.8;margin-top:8px">${a.dates===null?'조회 또는 수행 여부를 확인할 수 없습니다.':weeks.map(escHtml).join('<br>')}</p><details style="margin-top:8px"><summary>근거 날짜</summary><p style="line-height:1.8;overflow-wrap:anywhere">${escHtml(a.dates===null?'확인 불가':a.dates.join(', ')||'이 기간에 확인된 수행 기록 없음')}</p></details></div>`;
+  }).join('');
+  return `<p style="color:var(--text-sub);line-height:1.7;overflow-wrap:anywhere">${escHtml(s.periodStart)} ~ ${escHtml(s.periodEnd)} · ${escHtml(s.calendars.join(', '))}</p><div class="reflection-grid" style="margin:10px 0">${cards}</div><p style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7"><strong>기록에서 보이는 점</strong>\n${escHtml(s.observation)}</p><p style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin-top:8px"><strong>GPT의 제안 · 검토 후 선택하세요</strong>\n${escHtml(s.suggestion)}</p><p style="font-size:11px;color:var(--text-muted);margin-top:10px">활동일 수는 날짜 중복을 제외한 기록입니다. 주별 분포는 월~일 기준이며 집계 범위 밖은 포함하지 않습니다. 기록 공백은 미실행을 의미하지 않습니다.</p>`;
+}
+function previewCalendarImport(){
+  resetCalendarPreview();try{calendarCandidate=parseCalendarSummary(document.getElementById('calendarInput').value,calendarTarget);document.getElementById('calendarPreview').innerHTML=calendarSummaryHtml(calendarCandidate);document.getElementById('calendarSave').disabled=false;}
+  catch(e){document.getElementById('calendarError').textContent=e.message;}
+}
+function saveCalendarImport(){
+  if(!calendarCandidate)return;
+  if(calendarTarget!==curKey()){document.getElementById('calendarError').textContent='선택한 달이 바뀌었습니다. 창을 닫고 다시 가져오세요.';return;}
+  const md=curData(),previous=md.calendarSummary;md.calendarSummary={...calendarCandidate,importedAt:new Date().toISOString()};
+  try{save();}catch(e){if(previous===undefined)delete md.calendarSummary;else md.calendarSummary=previous;document.getElementById('calendarError').textContent='저장하지 못했습니다. 브라우저 저장 공간을 확인하고 다시 시도하세요.';return;}
+  closeModal('calendarModal');renderCalendarSummary();showToast('이달의 캘린더 요약을 저장했어요');
+}
+function renderCalendarSummary(){
+  const md=curData(),s=md.calendarSummary;document.getElementById('calendarSummary').innerHTML=s?calendarSummaryHtml(s):'<p style="color:var(--text-muted);line-height:1.7">아직 가져온 요약이 없습니다. 캘린더의 영어·운동 기록을 이달의 목표와 함께 돌아보세요.</p>';
+  document.getElementById('calendarKeep').value=md.calendarDecision?.keep||'';document.getElementById('calendarChange').value=md.calendarDecision?.change||'';
+}
+function saveCalendarDecision(){curData().calendarDecision={keep:document.getElementById('calendarKeep').value,change:document.getElementById('calendarChange').value};save();}
 
 // Sub parsing
 function parseSubs(raw){
@@ -814,7 +933,7 @@ function updateGapBanner(){
 }
 
 // Render
-function render(){renderLabel();renderLists();renderStats();renderChart();renderCarry();renderReflection();updateGapBanner();}
+function render(){renderLabel();renderLists();renderStats();renderChart();renderCarry();renderReflection();updateGapBanner();renderCalendarSummary();}
 function renderLabel(){document.getElementById('monthLabel').textContent=`${curY}년 ${MONTHS[curM]}`;}
 
 function getRepeatThreshold(){return parseInt(localStorage.getItem('mg-repeat-threshold')||'2');}
@@ -1013,6 +1132,8 @@ function buildExport(){
     });
     if(md.memoStart)t+=`  시작: ${md.memoStart}\n`;
     if(md.memoEnd)t+=`  마감: ${md.memoEnd}\n`;
+    if(md.calendarSummary)t+=`  캘린더 수행 기록 (기록 공백은 미실행이 아님): ${JSON.stringify(md.calendarSummary)}\n`;
+    if(md.calendarDecision)t+=`  내가 선택한 다음 방향: ${JSON.stringify(md.calendarDecision)}\n`;
   });
   return t;
 }
@@ -1259,11 +1380,11 @@ function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal'].forEach(closeModal);hideAddInline('todo');hideAddInline('dir');}
+  if(e.key==='Escape'){['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal','calendarModal'].forEach(closeModal);hideAddInline('todo');hideAddInline('dir');}
 });
 document.getElementById('modalText').addEventListener('keydown',e=>{if(e.key==='Enter')addTodoFromModal();});
 document.getElementById('editText').addEventListener('keydown',e=>{if(e.key==='Enter')saveEdit();});
-['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal'].forEach(id=>{
+['addModal','editModal','bulkModal','gistModal','historyModal','monthPickerModal','calendarModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
 
