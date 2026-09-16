@@ -808,7 +808,7 @@ body {
       <div class="card-hd"><div><div class="card-title">추가자금 리밸런싱 계산기</div><div class="card-sub">매도 없이 추가 매수만으로 목표 비중 최적화</div></div><button class="btn btn-primary btn-sm" onclick="calcRebal()">계산</button></div>
       <div class="card-body">
         <div class="calc-wrap">
-          <div class="calc-field"><div class="calc-lbl">추가 투자금액 (KRW)</div><input class="calc-input" id="calcAmt" type="number" placeholder="예: 3,400,000" oninput="calcRebal()"></div>
+          <div class="calc-field"><div class="calc-lbl">외부 신규 투자금액 (KRW)</div><input class="calc-input" id="calcAmt" type="number" min="1" step="1" placeholder="예: 3,400,000" oninput="calcRebal()"></div>
         </div>
         <div class="calc-result" id="calcResult"><div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">투자금액 입력 시 자동 계산됩니다</div></div>
       </div>
@@ -1013,8 +1013,9 @@ body {
           </div>
           <div>
             <div class="calc-lbl">무위험수익률 r_f (%/yr)</div>
-            <input class="calc-input" id="an-rf" type="number" min="0" max="10" step="0.1" value="4.3" oninput="runAnalytics()">
-            <div style="font-size:10px;color:var(--text3);margin-top:3px">macro_assumptions 또는 FRED 자동반영</div>
+            <input class="calc-input" id="an-rf" type="number" min="0" max="10" step="0.01" value="4.3" oninput="document.getElementById('an-rf-auto').checked=false;runAnalytics()">
+            <label style="font-size:10px;color:var(--text3)"><input id="an-rf-auto" type="checkbox" checked onchange="runAnalytics()"> 금리 자동 반영 (FRED → JSON → 기본값)</label>
+            <div id="an-rf-source" style="font-size:10px;color:var(--text3)"></div>
           </div>
           <div>
             <div class="calc-lbl">주식 변동성 σ (%/yr)</div>
@@ -1111,7 +1112,7 @@ body {
       <div class="card-hd">
         <div>
           <div class="card-title">Risk-Adjusted Decision Matrix</div>
-          <div class="card-sub">Utility Cost = 비최적 포지션 유지의 연간 기회비용 · 리밸런싱 여부를 숫자로 판단하는 기준</div>
+          <div class="card-sub">현재 포트폴리오와 머튼 참고 배분의 효용 비교 · 동일한 자산군 가정 기준</div>
         </div>
       </div>
       <div class="card-body" id="an-decision-body">
@@ -1392,7 +1393,7 @@ function renderAnalyticsMacroContext() {
     '<div><div style="color:var(--text3);font-weight:600;margin-bottom:2px">CAPE (Shiller PE)</div><div style="font-weight:700;font-size:14px;color:var(--red)">' + fmtVal(ma.cape, '') + '</div><div style="color:var(--text3)">' + (ma.cape_note || 'macro_assumptions 입력값') + '</div></div>' +
     '<div><div style="color:var(--text3);font-weight:600;margin-bottom:2px">VIX (내재변동성)</div><div style="font-weight:700;font-size:14px;color:var(--green)">' + fmtVal(ma.vix, '') + '</div><div style="color:var(--text3)">' + (ma.vix_note || 'macro_assumptions 입력값') + '</div></div>' +
     '<div><div style="color:var(--text3);font-weight:600;margin-bottom:2px">10Y 국채금리</div><div style="font-weight:700;font-size:14px;color:var(--accent)">' + fmtVal(ma.us10y, '%') + '</div><div style="color:var(--text3)">' + (ma.us10y_note || 'macro_assumptions 또는 FRED') + '</div></div>' +
-    '<div><div style="color:var(--text3);font-weight:600;margin-bottom:2px">Forward ERP</div><div style="font-weight:700;font-size:14px;color:var(--orange)">' + fmtVal(ma.forward_erp, '%') + '</div><div style="color:var(--text3)">' + (ma.forward_erp_note || 'macro_assumptions 입력값') + '</div></div>';
+    '<div><div style="color:var(--text3);font-weight:600;margin-bottom:2px">Forward ERP</div><div style="font-weight:700;font-size:14px;color:var(--orange)">' + fmtVal(displayErpValue(ma.forward_erp), '%') + '</div><div style="color:var(--text3)">' + (ma.forward_erp_note || 'macro_assumptions 입력값') + '</div></div>';
   var noteParts = [];
   noteParts.push('<b>' + (ma.updated_at || 'macro_assumptions 입력 필요') + '</b>');
   if (ma.note) noteParts.push(ma.note);
@@ -1573,23 +1574,32 @@ function pct(n) { if(n==null) return '—'; return (n>=0?'+':'') + n.toFixed(2) 
 // ══════════════════════════════════════════
 // COMPUTE
 // ══════════════════════════════════════════
-function acctVal(a) { return (a.assets||[]).reduce((s,h) => s+(h.amount||0), 0); }
-function totalWithCash() { return getActiveAccounts().reduce((s,a) => s+acctVal(a), 0) + (P?.cash?.available||0); }
+function acctVal(a) { return (a.assets||[]).reduce((s,h) => s+(numOrNull(h.amount) || 0), 0); }
+function totalWithCash() { return getActiveAccounts().reduce((s,a) => s+acctVal(a), 0) + (numOrNull(P?.cash?.available) || 0); }
+function holdingPnL(h) {
+  const amount = numOrNull(h.amount);
+  const basis = numOrNull(h.cost_basis);
+  const rate = numOrNull(h.pnl_pct);
+  if (amount == null || amount < 0) return null;
+  let cost = basis != null && basis >= 0 ? basis : null;
+  if (cost == null && amount > 0 && rate != null && rate > -100) cost = amount / (1 + rate / 100);
+  if (cost == null) return null;
+  return { amount, cost, pnl:amount - cost, pct:cost > 0 ? (amount - cost) / cost * 100 : null };
+}
+
+function aggregatePnL(holdings) {
+  let pnl = 0, cost = 0, amount = 0, covered = 0;
+  holdings.forEach(h => {
+    const stats = holdingPnL(h);
+    if (!stats) return;
+    pnl += stats.pnl; cost += stats.cost; amount += stats.amount; covered++;
+  });
+  const total = holdings.length;
+  return { pnl, cost, amount, covered, total, hasData:covered > 0, coverage:total ? covered / total : 0 };
+}
+
 function totalPnLStats() {
-  let pnl = 0, cost = 0, amount = 0, covered = 0, total = 0;
-  getActiveAccounts().forEach(a => (a.assets||[]).forEach(h => {
-    total += 1;
-    const amt = Number(h.amount || 0);
-    if (!amt) return;
-    if (h.cost_basis != null && !isNaN(Number(h.cost_basis)) && Number(h.cost_basis) > 0) {
-      const cb = Number(h.cost_basis);
-      amount += amt; cost += cb; pnl += amt - cb; covered += 1;
-    } else if (h.pnl_pct != null && !isNaN(Number(h.pnl_pct))) {
-      const cb = amt / (1 + Number(h.pnl_pct) / 100);
-      amount += amt; cost += cb; pnl += amt - cb; covered += 1;
-    }
-  }));
-  return { pnl:pnl, cost:cost, amount:amount, covered:covered, total:total, hasData:covered > 0, coverage: total ? covered / total : 0 };
+  return aggregatePnL(getActiveAccounts().flatMap(a => a.assets || []));
 }
 function totalPnL() {
   return totalPnLStats().pnl;
@@ -1603,9 +1613,10 @@ function usdExposure() {
   return (usd/tot)*100;
 }
 function classBreakdown() {
-  const m = {};
+  // cash.available is separate cash; cash assets inside accounts are added below.
+  const m = { cash:numOrNull(P?.cash?.available) || 0 };
   getExpandedHoldings().forEach(function(h) {
-    const c = h.asset_class||'기타'; m[c] = (m[c]||0)+(h.amount||0);
+    const c = h.asset_class||'기타'; m[c] = (m[c]||0)+(numOrNull(h.amount)||0);
   });
   return m;
 }
@@ -1665,7 +1676,7 @@ function runRuleEngine() {
   const cryptoAcct = getActiveAccounts().find(a => a.type === 'crypto_exchange');
   const cryptoVal = cryptoAcct ? acctVal(cryptoAcct) : 0;
   const cryptoWeight = tot ? (cryptoVal/tot)*100 : 0;
-  const cryptoTarget = cryptoAcct?.target_weight || 5;
+  const cryptoTarget = getAssetTarget('current').crypto;
 
 // RULE 2: 극도의 공포 → 코인 포지션 홀드 확인
 if(sigIds.includes('EXTREME_FEAR')) {
@@ -1815,7 +1826,6 @@ function getPortfolioStatus() {
 
   const tot = totalWithCash();
   const bd = Object.assign({}, classBreakdown());
-  bd.cash = P?.cash?.available || 0;
   const target = getAssetTarget('current');
 
   // severe(10%p↑)와 drift(5%p↑) 구분 없이 REBALANCE_BAND 초과를 모두 이탈로 통일
@@ -2009,7 +2019,6 @@ function renderPortfolioSummary() {
 function renderDonut() {
   if(!P) return;
   const bd = classBreakdown();
-  bd.cash = (P.cash?.available || 0);
   const tot = totalWithCash();
   if(!tot) return;
 
@@ -2107,7 +2116,7 @@ function renderDeviationList() {
   }
   // 자산군 기준 트리거 (계좌 기준 아닌 자산군 기준으로 강화)
   const tot = totalWithCash();
-  const bd = { ...classBreakdown(), cash: P?.cash?.available||0 };
+  const bd = classBreakdown();
   const target = getAssetTarget('current');
   const BAND = REBALANCE_BAND;
   const ORDER = ASSET_ORDER;
@@ -2158,17 +2167,11 @@ function recalcActions() { renderActionList(); renderStatusBanner(); showToast('
 
 function getExpandedPortfolioMetrics() {
   const tot = totalWithCash();
-  const bd = { cash: P?.cash?.available || 0 };
-  getActiveAccounts().forEach(a => {
-    expandTdfLookthrough(a.assets).forEach(h => {
-      const cls = h.asset_class || '기타';
-      bd[cls] = (bd[cls] || 0) + (h.amount || 0);
-    });
-  });
+  const bd = classBreakdown();
   let usd = 0;
   getActiveAccounts().forEach(a => {
     expandTdfLookthrough(a.assets).forEach(h => {
-      if (h.currency_exposure === 'USD' || h.asset_class === 'equity_global' || h.asset_class === 'bond_us' || h.asset_class === 'reit') usd += (h.amount || 0);
+      if (isUsdExposureHolding(h)) usd += (h.amount || 0);
     });
   });
   return { tot, bd, usdPct: tot ? (usd / tot) * 100 : 0 };
@@ -2277,14 +2280,15 @@ function renderHoldingsAnalysis() {
   const holdings = [];
   getActiveAccounts().forEach(a => {
     (a.assets || []).forEach(h => {
-      if (!h.amount || h.amount <= 0) return;
+      const stats = holdingPnL(h);
+      if (!(Number(h.amount) > 0) && !stats) return;
       holdings.push({
         name: h.name,
         ticker: h.ticker || '',
         asset_class: h.asset_class || '기타',
-        amount: h.amount,
-        pnl_pct: h.pnl_pct != null ? h.pnl_pct : null,
-        pnl_abs: h.pnl_pct != null ? h.amount - h.amount / (1 + h.pnl_pct / 100) : null,
+        amount: Number(h.amount) || 0,
+        pnl_pct: stats?.pct ?? null,
+        pnl_abs: stats?.pnl ?? null,
         currency: h.currency_exposure || '',
         account: a.name,
         account_type: a.type,
@@ -2301,7 +2305,8 @@ function renderHoldingsAnalysis() {
 
   // 요약 통계
   const totalHoldingAmt = holdings.reduce((s, h) => s + h.amount, 0);
-  const totalPnlAbs = holdings.reduce((s, h) => s + (h.pnl_abs || 0), 0);
+  const pnlSummary = totalPnLStats();
+  const totalPnlAbs = pnlSummary.pnl;
   const overLimit = holdings.filter(h => tot && (h.amount / tot) * 100 > SINGLE_LIMIT);
 
   const summaryHtml = `
@@ -2312,7 +2317,8 @@ function renderHoldingsAnalysis() {
       </div>
       <div style="text-align:center">
         <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:3px">미실현 손익 합계</div>
-        <div style="font-size:18px;font-weight:800;color:${totalPnlAbs >= 0 ? 'var(--green)' : 'var(--red)'}">${totalPnlAbs >= 0 ? '+' : ''}${fmt(totalPnlAbs)}</div>
+        <div style="font-size:18px;font-weight:800;color:${totalPnlAbs >= 0 ? 'var(--green)' : 'var(--red)'}">${pnlSummary.hasData ? (totalPnlAbs >= 0 ? '+' : '') + fmt(totalPnlAbs) : '—'}</div>
+        <div style="font-size:10px;color:var(--text3)">손익 확인 ${pnlSummary.covered}/${pnlSummary.total}종목</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:3px">집중도 경고</div>
@@ -2321,7 +2327,7 @@ function renderHoldingsAnalysis() {
       </div>
       <div style="text-align:center">
         <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:3px">Top3 집중도</div>
-        <div style="font-size:18px;font-weight:800;color:var(--accent)">${tot ? (holdings.slice(0, 3).reduce((s, h) => s + h.amount, 0) / tot * 100).toFixed(1) : '—'}%</div>
+        <div style="font-size:18px;font-weight:800;color:var(--accent)">${tot ? (holdings.slice().sort((a,b)=>b.amount-a.amount).slice(0, 3).reduce((s, h) => s + h.amount, 0) / tot * 100).toFixed(1) : '—'}%</div>
         <div style="font-size:10px;color:var(--text3)">상위 3종목</div>
       </div>
     </div>`;
@@ -2367,8 +2373,9 @@ function renderAccounts() {
   const tot = totalWithCash();
   document.getElementById('accountsGrid').innerHTML = getActiveAccounts().map((a,ai) => {
     const v = acctVal(a);
-    const pnl = (a.assets||[]).reduce((s,h)=>{ if(h.pnl_pct!=null&&h.amount)s+=h.amount-h.amount/(1+h.pnl_pct/100); return s; }, 0);
-    const pp = v?(pnl/(v-pnl))*100:0, c = COLORS[ai%COLORS.length];
+    const pnlStats = aggregatePnL(a.assets || []);
+    const pnl = pnlStats.pnl;
+    const pp = pnlStats.cost > 0 ? pnl / pnlStats.cost * 100 : null, c = COLORS[ai%COLORS.length];
 
     // ── 계좌 내 자산군 구성 미니바 ──
     const clsMap = {};
@@ -2388,14 +2395,15 @@ function renderAccounts() {
     // ── 종목 행: 비중% 추가 ──
     const rows = (a.assets||[]).map(h => {
       const wPct = tot ? ((h.amount||0)/tot)*100 : 0;
-      const pnlCls = h.pnl_pct > 0 ? 'pos' : h.pnl_pct < 0 ? 'neg' : '';
+      const hp = holdingPnL(h);
+      const pnlCls = hp?.pnl > 0 ? 'pos' : hp?.pnl < 0 ? 'neg' : '';
       return `<div class="h-row">
         <span class="h-flag">${h.currency_exposure==='USD'?'🇺🇸':h.currency_exposure==='KRW'?'🇰🇷':'₿'}</span>
         <span class="h-name">${h.name}${h.ticker?` <span style="font-size:9px;color:var(--text3)">${h.ticker}</span>`:''}</span>
         <span class="h-cls" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;min-width:48px">${CLS_LABEL[h.asset_class]||h.asset_class}</span>
         <span class="h-amt">${fmt(h.amount)}</span>
         <span class="h-weight">${wPct.toFixed(1)}%</span>
-        <span class="h-pnl ${pnlCls}">${h.pnl_pct!=null?pct(h.pnl_pct):'—'}</span>
+        <span class="h-pnl ${pnlCls}">${pct(hp?.pct)}</span>
       </div>`;
     }).join('');
 
@@ -2444,7 +2452,7 @@ function renderAccounts() {
         </div>
         <div class="acct-right">
           <div class="acct-val">${fmt(v)}</div>
-          <div class="acct-pnl ${pnl>=0?'pos':'neg'}">${pnl>=0?'+':''}${fmtF(Math.round(Math.abs(pnl)))} (${pct(pp)})</div>
+          <div class="acct-pnl ${pnl>=0?'pos':'neg'}">${pnlStats.hasData ? (pnl>=0?'+':'−')+fmtF(Math.abs(pnl))+' ('+pct(pp)+')' : '손익 정보 없음'}${pnlStats.hasData && pnlStats.covered < pnlStats.total ? ' · 일부 종목 기준' : ''}</div>
         </div>
       </div>
       <div class="acct-cls-bar">${clsBar||'<div style="flex:1;background:var(--border)"></div>'}</div>
@@ -2478,10 +2486,9 @@ function renderRebal() {
   renderRebalHistory();
   // 투자분석 파라미터가 이미 설정돼 있으면 머튼 배지 동기화
   (function() {
-    var lam = parseFloat(document.getElementById('an-lambda')?.value) || 3;
-    var mu  = parseFloat(document.getElementById('an-mu')?.value) / 100 || 0.08;
-    var rf  = parseFloat(document.getElementById('an-rf')?.value) / 100 || 0.045;
-    var sig = parseFloat(document.getElementById('an-sigma')?.value) / 100 || 0.21;
+    const inputs = getAnalyticsInputs();
+    if (!inputs) return;
+    const { lambda:lam, mu_eq:mu, rf, sigma:sig } = inputs;
     var w   = Math.min(mertonWeight(mu, rf, lam, sig), 1.0) * 100;
     syncMertonBadge(w, lam, mu * 100, sig * 100);
   })();
@@ -2502,7 +2509,6 @@ function renderAssetRouting() {
   const target = getAssetTarget('current');
   // classBreakdown()과 동일한 집계 사용 (getExpandedHoldings 경유)
   const cls = classBreakdown();
-  cls.cash = P.cash?.available || 0;
 
   const ORDER = ASSET_ORDER;
   const BAND = REBALANCE_BAND;
@@ -2706,14 +2712,13 @@ const ASSET_LOCATION = {
   oil:        { best: '일반계좌 또는 ISA', second: '연금저축', worst: '고비중 장기보유', reason: 'WTI 선물형은 롤오버와 변동성이 커서 목표 1% 내 전술 노출로 관리.' },
   commodity:  { best: '연금저축', second: 'ISA', worst: '일반', reason: '구버전 원자재 버킷. 신규 JSON에서는 금/유가로 분리.' },
   reit:       { best: 'ISA', second: '연금저축', worst: '일반', reason: '리츠 배당 비과세. ISA 연 200만 비과세 한도 활용.' },
-  crypto:     { best: '업비트(분리)', second: null, worst: null, reason: 'BTC는 분리 운용. 비중 5% 상한 준수.' },
+  crypto:     { best: '업비트(분리)', second: null, worst: null, reason: 'BTC는 분리 운용. JSON SAA 목표 기준으로 비중 관리.' },
   cash:       { best: 'ISA(파킹통장)', second: '일반CMA', worst: null, reason: '단기 유동성. ISA 내 파킹 시 이자 비과세.' },
 };
 
 // ── 리스크 한도 설정 (WM Risk Budget) ──
 const RISK_LIMITS = {
   single_stock_max:    12,   // 단일 종목 최대 비중 (%)
-  crypto_max:           7,   // 암호화폐 최대 비중 (%)
   usd_exposure_max:    75,   // USD 익스포저 최대 (%)
   equity_total_max:    72,   // 주식 총합 최대 (%) — SAA Growth 상한
   drawdown_warn:      -30,   // 예상 MDD 경고 임계 (%)
@@ -2783,7 +2788,7 @@ function renderAssetCls() {
   const target = getAssetTarget(_assetMode);
 
   // 자산군별 금액 집계 (TDF Look-through 분해 적용)
-  const cls = {};
+  const cls = classBreakdown();
   let tdfTotal = 0;
   const tdfDetails = [];
   getActiveAccounts().forEach(a => {
@@ -2794,10 +2799,8 @@ function renderAssetCls() {
         const existing = tdfDetails.find(d => d.name === h._tdf_source);
         if (!existing) tdfDetails.push({ name: h._tdf_source });
       }
-      cls[h.asset_class] = (cls[h.asset_class]||0) + h.amount;
     });
   });
-  cls.cash = (P.cash?.available||0);
 
   // 목표 배지
   const badgeEl = document.getElementById('assetTargetBadges');
@@ -3091,120 +3094,97 @@ function splitAmountAcrossAccounts(assetKey, amount) {
   return rows;
 }
 
+// Explicit account contribution limits only: never substitute tax-credit limits.
+function getNewMoneyCapacity(account) {
+  if (!['isa','pension','irp'].includes(account.type)) return Infinity;
+  const limit = numOrNull(account.annual_limit);
+  const used = numOrNull(account.deposited_this_year);
+  if (limit == null || used == null || limit < 0 || used < 0) return 0;
+  return Math.floor(Math.max(0, limit - used));
+}
+
 function buildBuyPlanByAsset(cashInput) {
-  const target = ASSET_TARGETS.current;
-  const tot = totalWithCash();
-
+  const rows = [];
+  if (!Number.isSafeInteger(cashInput) || cashInput <= 0) return rows;
+  const target = getAssetTarget('current');
+  const total = totalWithCash();
+  const afterTotal = total + cashInput;
   const cls = classBreakdown();
-  cls.cash = (P?.cash?.available || 0);
-
-  const PRIORITY_WEIGHT = { bond_us:1.4, gold:1.2, oil:0.8, reit:1.1, equity_global:1.0, equity_kr:1.0, crypto:0.8 };
-  const ORDER = ['bond_us','gold','oil','reit','equity_global','equity_kr','crypto'];
-
-  const calcBase = Object.values(cls).reduce(function(s,v){ return s+v; }, 0);
-
-  const deficits = ORDER.map(function(assetKey) {
-    const curPct = calcBase ? ((cls[assetKey] || 0) / calcBase) * 100 : 0;
-    const tgtPct = target[assetKey] || 0;
-    const gapPct = tgtPct - curPct;
-    const weightedGap = gapPct > 0 ? gapPct * (PRIORITY_WEIGHT[assetKey] || 1.0) : 0;
-    return { assetKey, assetLabel: ASSET_LABEL_KO[assetKey] || assetKey, curPct, tgtPct, gapPct, weightedGap };
-  }).filter(function(x) { return x.weightedGap > 0; });
-
-  const totalWeightedGap = deficits.reduce(function(s, d) { return s + d.weightedGap; }, 0);
-
-  const planRows = [];
-  let allocatedTotal = 0;
-
-  deficits.forEach(function(d, idx) {
-    // ── 자산군별 배분액 계산 (비례 배분, 1만원 절사) ──
-    let allocAmt;
-    if (idx === deficits.length - 1) {
-      allocAmt = cashInput - allocatedTotal;
-    } else {
-      allocAmt = Math.floor((cashInput * d.weightedGap / totalWeightedGap) / 10000) * 10000;
-    }
-    allocAmt = Math.max(0, Math.min(allocAmt, cashInput - allocatedTotal));
-    if (allocAmt < 10000) return;
-
-    allocatedTotal += allocAmt;
-
-    // ── 자산군당 최적 계좌 1개만 선택 ──
-    const candidates = getEligibleAccountsForAsset(d.assetKey);
-    const topAccount = candidates[0];
-    const method = assessRebalancingMethod(d.assetKey, allocAmt, cashInput);
-
-    if (!topAccount) {
-      planRows.push({
-        assetKey: d.assetKey, assetLabel: d.assetLabel,
-        curPct: d.curPct, tgtPct: d.tgtPct, gapPct: d.gapPct,
-        amount: allocAmt,
-        accountName: '실행 가능 계좌 없음', accountType: '',
-        color: CLS_COLOR[d.assetKey] || '#9ca3af',
-        hint: ASSET_BUY_HINT[d.assetKey] || '추가 매수',
-        methodLabel: '계좌 검토 필요', methodDetail: ''
+  const order = ['bond_us','gold','oil','reit','equity_global','equity_kr','crypto'];
+  const deficits = order.map(assetKey => ({
+    assetKey, need:Math.max(0, Math.floor(afterTotal * (target[assetKey] || 0) / 100 - (cls[assetKey] || 0))),
+    curPct:total ? (cls[assetKey] || 0) / total * 100 : 0,
+    tgtPct:target[assetKey] || 0
+  })).filter(d => d.need > 0);
+  const totalNeed = deficits.reduce((sum,d) => sum + d.need, 0);
+  const reserve = Math.min(cashInput, Math.max(0, Math.ceil(afterTotal * target.cash / 100 - (cls.cash || 0))));
+  const budget = Math.min(cashInput - reserve, totalNeed);
+  const usedByAccount = new Map();
+  let remainingBudget = budget;
+  let remainingNeed = totalNeed;
+  deficits.forEach(d => {
+    let amount = Math.min(d.need, Math.floor(remainingBudget * d.need / remainingNeed));
+    remainingBudget -= amount;
+    remainingNeed -= d.need;
+    for (const account of getEligibleAccountsForAsset(d.assetKey)) {
+      const alreadyUsed = usedByAccount.get(account) || 0;
+      const capacity = Math.max(0, getNewMoneyCapacity(account) - alreadyUsed);
+      const allocated = Math.min(amount, capacity);
+      if (allocated <= 0) continue;
+      usedByAccount.set(account, alreadyUsed + allocated);
+      rows.push({
+        assetKey:d.assetKey, assetLabel:ASSET_LABEL_KO[d.assetKey] || d.assetKey,
+        curPct:d.curPct, tgtPct:d.tgtPct, gapPct:d.tgtPct - d.curPct,
+        amount:allocated, accountName:account.name, accountType:account.type,
+        color:getAccountDisplayColor(account.name),
+        hint:ASSET_BUY_HINT[d.assetKey] || '추가 매수', methodLabel:'외부 신규자금'
       });
-      return;
+      amount -= allocated;
+      if (!amount) break;
     }
-
-    planRows.push({
-      assetKey: d.assetKey, assetLabel: d.assetLabel,
-      curPct: d.curPct, tgtPct: d.tgtPct, gapPct: d.gapPct,
-      amount: allocAmt,
-      accountName: topAccount.name, accountType: topAccount.type,
-      color: getAccountDisplayColor(topAccount.name),
-      hint: ASSET_BUY_HINT[d.assetKey] || '추가 매수',
-      methodLabel: method?.label || '신규자금 투입',
-      methodDetail: method?.detail || ''
-    });
   });
-
-  // ── 잔여자금 → gap 1순위 자산군 최적 계좌 1개 ──
-  const leftover = cashInput - allocatedTotal;
-  if (leftover >= 10000 && deficits.length > 0) {
-    const top = deficits[0];
-    const candidates = getEligibleAccountsForAsset(top.assetKey);
-    const topAccount = candidates[0];
-    if (topAccount) {
-      planRows.push({
-        assetKey: top.assetKey, assetLabel: top.assetLabel,
-        curPct: top.curPct, tgtPct: top.tgtPct, gapPct: top.gapPct,
-        amount: leftover,
-        accountName: topAccount.name, accountType: topAccount.type,
-        color: getAccountDisplayColor(topAccount.name),
-        hint: ASSET_BUY_HINT[top.assetKey] || '추가 매수',
-        methodLabel: '잔여자금 — gap 1순위 배치', methodDetail: ''
-      });
-    }
-  }
-
-  return planRows;
+  const allocated = rows.reduce((sum,r) => sum + r.amount, 0);
+  rows.forEach(row => {
+    const bought = rows.filter(r => r.assetKey === row.assetKey).reduce((sum,r) => sum + r.amount, 0);
+    row.afterPct = ((cls[row.assetKey] || 0) + bought) / afterTotal * 100;
+  });
+  rows.unallocated = cashInput - allocated;
+  rows.reserve = reserve;
+  rows.blocked = budget - allocated;
+  rows.afterTotal = afterTotal;
+  return rows;
 }
 
 function calcRebal() {
-  const cash = parseFloat(document.getElementById('calcAmt')?.value)||0;
+  const cash = Number(document.getElementById('calcAmt')?.value);
   const el = document.getElementById('calcResult');
   if(!P||!cash) { el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">투자금액 입력 시 자동 계산됩니다</div>'; return; }
 
-  // 자산군 gap 기준으로 배분 계산 (계좌 target_weight 사용 안 함)
+  if (!Number.isSafeInteger(cash) || cash <= 0) { el.textContent = '투자금액은 1원 이상의 정수로 입력하세요.'; return; }
+
+  // SAA 기준 외부 신규자금 배분. 계좌 내부 현금의 이동은 포함하지 않는다.
   // buildBuyPlanByAsset은 배열 반환: [{assetKey, assetLabel, gapPct, amount, accountName, accountType, color, hint, ...}]
   const planRows = buildBuyPlanByAsset(cash);
   planRows.sort(function(a,b){ return b.amount - a.amount; });
-  el.innerHTML = planRows.filter(function(r){ return r.amount >= 10000; }).map(function(r) {
+  el.innerHTML = planRows.map(function(r) {
     const col = CLS_COLOR[r.assetKey] || '#9ca3af';
     return `<div class="calc-row">
       <div>
         <div class="calc-lname">
           <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${col};margin-right:5px"></span>
           <b style="color:${col}">${r.assetLabel}</b>
-          <span style="color:var(--text3);font-size:10px;margin-left:6px">→ ${r.accountName}</span>
+          <span style="color:var(--text3);font-size:10px;margin-left:6px">→ ${escapeHtml(r.accountName)}</span>
           <span style="font-size:9px;color:var(--accent);margin-left:4px">[${r.methodLabel||'신규투입'}]</span>
         </div>
-        <div class="calc-lreason">자산군 부족 ${r.gapPct.toFixed(1)}%p · ${r.hint}</div>
+        <div class="calc-lreason">현재 ${r.curPct.toFixed(1)}% → 투자 후 ${r.afterPct.toFixed(1)}% · SAA 목표 ${r.tgtPct.toFixed(1)}%</div>
       </div>
-      <div class="calc-lamt">${fmtF(Math.round(r.amount/10000)*10000)}</div>
+      <div class="calc-lamt">${fmtF(r.amount)}</div>
     </div>`;
-  }).join('') || '<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">모든 자산군이 목표 비중에 근접합니다</div>';
+  }).join('') || '<div style="padding:8px">자동 배정 가능한 매수가 없습니다.</div>';
+  const allocated = planRows.reduce((sum,r) => sum + r.amount, 0);
+  el.innerHTML += '<div style="padding:10px;font-size:12px;border-top:1px solid var(--border)">SAA 기준 · 외부 신규자금 ' + fmtF(cash) + ' = 매수 배정 ' + fmtF(allocated) + ' + 미배정 현금 ' + fmtF(planRows.unallocated) +
+    '<br>목표 현금 확보 ' + fmtF(planRows.reserve) + ' · 계좌 한도 부족/미확인 또는 실행 계좌 없음 ' + fmtF(planRows.blocked) +
+    '<br>등록된 계좌별 납입한도와 올해 누적 납입액을 기준으로 계산합니다. 세액공제 한도와는 별개이며, 납입한도가 확인되지 않은 절세계좌는 자동 배정에서 제외합니다. 목표를 초과하는 금액은 현금으로 남깁니다.</div>';
 }
 
 
@@ -3301,7 +3281,6 @@ function getDefaultSnapshotMonth() {
 function getAllocationSummary() {
   const tot = totalWithCash();
   const bd = classBreakdown();
-  bd.cash = P?.cash?.available || 0;
   const pctMap = {};
   const amountMap = {};
   ASSET_ORDER.forEach(function(k) {
@@ -3375,8 +3354,9 @@ function buildMonthlySnapshot(snapshotId, memo) {
 }
 
 function numOrNull(v) {
+  if (v == null || (typeof v === 'string' && !v.trim())) return null;
   const n = Number(v);
-  return isNaN(n) ? null : n;
+  return Number.isFinite(n) ? n : null;
 }
 
 function displayErpValue(v) {
@@ -4099,7 +4079,7 @@ function getCurrentWeights() {
   if (!P) return null;
   const tot = totalWithCash();
   if (!tot) return null;
-  const bd = { ...classBreakdown(), cash: P?.cash?.available || 0 };
+  const bd = classBreakdown();
   const weights = {};
   let sum = 0;
   Object.keys(ASSET_PARAMS).forEach(k => {
@@ -4151,20 +4131,31 @@ function renderAnalyticsPage() {
   runAnalytics();
 }
 
-function runAnalytics() {
-  const lambda = parseFloat(document.getElementById('an-lambda')?.value) || 3;
-  const mu_eq  = parseFloat(document.getElementById('an-mu')?.value) / 100 || 0.08;
-  const rf     = parseFloat(document.getElementById('an-rf')?.value) / 100 || 0.045;
-  const sigma  = parseFloat(document.getElementById('an-sigma')?.value) / 100 || 0.21;
-
-  // FRED 금리 자동반영
-  if (M.rates?.t10y?.value) {
-    const fredRf = M.rates.t10y.value / 100;
-    const el = document.getElementById('an-rf');
-    if (el && Math.abs(parseFloat(el.value)/100 - fredRf) > 0.005) {
-      el.value = (fredRf * 100).toFixed(2);
-    }
+function getAnalyticsInputs() {
+  const rfEl = document.getElementById('an-rf');
+  const auto = document.getElementById('an-rf-auto')?.checked;
+  let source = '수동 입력';
+  if (auto && rfEl) {
+    const fred = numOrNull(M.rates?.t10y?.value);
+    const json = numOrNull(getMacroAssumptions().us10y);
+    rfEl.value = String(fred ?? json ?? 4.3);
+    source = fred != null ? 'FRED 미국채 10Y' : json != null ? 'JSON 미국채 10Y' : '기본값 4.3%';
   }
+  const sourceEl = document.getElementById('an-rf-source');
+  if (sourceEl) sourceEl.textContent = source;
+  const values = ['an-lambda','an-mu','an-rf','an-sigma'].map(id => numOrNull(document.getElementById(id)?.value));
+  const [lambda, mu, rf, sigma] = values;
+  if (values.some(v => v == null) || lambda < 1 || lambda > 10 || mu < 0 || mu > 30 || rf < 0 || rf > 10 || sigma < 5 || sigma > 50) return null;
+  return { lambda, mu_eq:mu / 100, rf:rf / 100, sigma:sigma / 100 };
+}
+
+function runAnalytics() {
+  const inputs = getAnalyticsInputs();
+  if (!inputs) {
+    document.getElementById('an-param-banner').textContent = '입력 범위를 확인하세요: λ 1~10, μ 0~30%, 금리 0~10%, 변동성 5~50%. 아래 결과는 마지막 유효 입력 기준입니다.';
+    return;
+  }
+  const { lambda, mu_eq, rf, sigma } = inputs;
 
   // ── 핵심: 계산된 w*를 ASSET_TARGETS.merton에 실시간 반영 ──
   const wStar = Math.min(mertonWeight(mu_eq, rf, lambda, sigma), 1.0); // 상한 100%
@@ -4623,34 +4614,21 @@ function renderDecisionMatrix(lambda, mu, rf, sigma) {
     return;
   }
 
-  const wStar = mertonWeight(mu, rf, lambda, sigma);
   const { mu_p: mu_cur, sigma_p: sig_cur } = calcPortfolioStats(curWeights);
   const U_cur = calcUtility(mu_cur, sig_cur, lambda);
   const SR_cur = sharpeRatio(mu_cur, sig_cur, rf);
 
-  // 최적 포트폴리오 (머튼 비중)
-  const optWeights = {
-    equity_global: wStar * 0.85,
-    equity_kr: wStar * 0.15,
-    bond_us: Math.max(0, 1 - wStar) * 0.7,
-    gold: Math.max(0, 1 - wStar) * 0.16,
-    oil: Math.max(0, 1 - wStar) * 0.04,
-    reit: Math.max(0, 1 - wStar) * 0.1,
-    crypto: 0,
-    cash: Math.max(0, 1 - wStar - 0.05),
-  };
-  // 합계 맞추기
-  const sum = Object.values(optWeights).reduce((a,b)=>a+b,0);
-  Object.keys(optWeights).forEach(k => optWeights[k] /= sum);
+  // 리밸런싱에 표시하는 머튼 참고 배분과 동일한 비중을 비교한다.
+  const optWeights = Object.fromEntries(Object.entries(getAssetTarget('merton')).map(([k,v]) => [k,v / 100]));
 
   const { mu_p: mu_opt, sigma_p: sig_opt } = calcPortfolioStats(optWeights);
   const U_opt = calcUtility(mu_opt, sig_opt, lambda);
   const SR_opt = sharpeRatio(mu_opt, sig_opt, rf);
 
-  // Utility Cost: 현재 비최적 포지션의 효용 손실
+  // 비교 배분이 다자산 효용을 최대화한다고 가정하지 않는다.
   const utilityCost = U_opt - U_cur;
-  const annualCostKRW = utilityCost * totalWithCash();
 
+  const comparison = utilityCost > 0 ? '머튼 참고 배분의 효용이 더 높음' : utilityCost < 0 ? '현재 포트폴리오의 효용이 더 높음' : '두 배분의 효용이 같음';
   // 시나리오별 의사결정
   const decisions = [
     {
@@ -4659,37 +4637,25 @@ function renderDecisionMatrix(lambda, mu, rf, sigma) {
       U: U_cur, SR: SR_cur,
       action: '아무것도 안 함',
       pros: '세금 없음, 거래비용 없음',
-      cons: `효용 손실 연 ${(utilityCost*100).toFixed(2)}%p`,
+      cons: '현재 집중도와 변동성 유지',
       color: 'var(--text2)'
     },
     {
-      label: 'Merton 최적 비중으로 전환',
+      label: 'Merton 참고 배분으로 전환',
       mu: mu_opt, sigma: sig_opt,
       U: U_opt, SR: SR_opt,
-      action: `주식 ${(wStar*100).toFixed(0)}% 목표 리밸런싱`,
-      pros: '효용 최대화, SR 최적화',
+      action: `주식 ${((optWeights.equity_global + optWeights.equity_kr)*100).toFixed(0)}% 참고 배분`,
+      pros: '투자 가정에 따른 대안 비교',
       cons: '거래비용, ISA외 계좌 세금',
       color: 'var(--accent)'
-    },
-    {
-      label: '추가자금 투입으로 조정',
-      mu: mu_cur * 0.98 + mu_opt * 0.02,
-      sigma: sig_cur * 0.98 + sig_opt * 0.02,
-      U: U_cur * 0.98 + U_opt * 0.02,
-      SR: SR_cur * 0.98 + SR_opt * 0.02,
-      action: '신규 매수로만 비중 이동',
-      pros: '세금 0, 기존 포지션 보존',
-      cons: '조정 속도 느림',
-      color: 'var(--green)'
     },
   ];
 
   el.innerHTML = `
     <div style="margin-bottom:12px;padding:10px 14px;background:var(--yellow-l);border-radius:8px;border-left:3px solid var(--yellow);font-size:12px">
-      <b>Utility Cost 분석</b> — 현재 포트폴리오의 비최적성으로 인한 연간 효용 손실:
-      <span style="color:var(--red);font-weight:700"> ${(utilityCost*100).toFixed(2)}%p</span>
-      = 총자산 기준 <span style="color:var(--red);font-weight:700">${fmt(annualCostKRW)}/년</span>
-      (U_opt ${(U_opt*100).toFixed(2)}% − U_cur ${(U_cur*100).toFixed(2)}%)
+      <b>효용 비교</b> — ${comparison}:
+      <span style="font-weight:700"> ${Math.abs(utilityCost*100).toFixed(2)}%p 차이</span>
+      (머튼 참고 ${(U_opt*100).toFixed(2)}% · 현재 ${(U_cur*100).toFixed(2)}%)
     </div>
     <div style="overflow-x:auto">
       <table class="rtable">
@@ -4714,7 +4680,8 @@ function renderDecisionMatrix(lambda, mu, rf, sigma) {
       </table>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.8">
-      <b>해석:</b> Utility Cost가 클수록 현재 포지션이 비효율적 · 추가자금 투입 전략이 세금 없이 Utility를 높이는 가장 현실적인 방법<br>      * 상관관계 행렬 기반 σ_p 계산 · 단일 위험자산 가정(Merton) 아닌 다자산 포트폴리오 분석
+      <b>해석:</b> 동일한 자산군 수익률·변동성 가정으로 비교한 효용입니다. 차이는 실제 금전 손실이나 수익을 뜻하지 않습니다.<br>
+      * 머튼 참고 배분은 단일 위험자산 수식에 별도 배분 규칙을 적용한 대안이며, 다자산 최적화를 보장하지 않습니다. 신규자금 효과는 실제 매수계획 확정 후 계산해야 합니다.
     </div>`;
 }
 
@@ -4841,7 +4808,6 @@ function renderGapAnalysis() {
 
   var tot = totalWithCash();
   var bd  = Object.assign({}, classBreakdown());
-  bd.cash = (P.cash && P.cash.available) ? P.cash.available : 0;
 
   var p = WM_PROFILES[INVESTOR_PROFILE_SCORE - 1];
   var ORDER = ASSET_ORDER;
@@ -4937,14 +4903,15 @@ function checkRiskLimits() {
     });
   });
   var btcPct = btcHolding && tot ? (btcHolding.amount / tot) * 100 : 0;
-  var cryptoOver = cryptoPct > RISK_LIMITS.crypto_max;
+  var cryptoLimit = getAssetTarget('current').crypto;
+  var cryptoOver = cryptoPct > cryptoLimit;
   var btcSingleOver = btcPct > RISK_LIMITS.single_stock_max;
   if (cryptoOver || btcSingleOver) {
     var reasonParts = [];
     var excessAmt = 0;
     if (cryptoOver) {
-      reasonParts.push('위성 한도 ' + RISK_LIMITS.crypto_max + '% 초과');
-      excessAmt = Math.max(excessAmt, Math.round(((cryptoPct - RISK_LIMITS.crypto_max) / 100) * tot));
+      reasonParts.push('SAA 암호화폐 목표 ' + cryptoLimit + '% 초과 (목표 대비 현황)');
+      excessAmt = Math.max(excessAmt, Math.round(((cryptoPct - cryptoLimit) / 100) * tot));
     }
     if (btcSingleOver) {
       reasonParts.push('단일 종목 집중 ' + btcPct.toFixed(1) + '%');
@@ -5524,7 +5491,7 @@ function buildCtx() {
 
   // SAA GAP 정보
   try {
-    var bd2=classBreakdown(); bd2.cash=(P.cash&&P.cash.available)||0;
+    var bd2=classBreakdown();
     var prof=WM_PROFILES[INVESTOR_PROFILE_SCORE-1];
     const ORDER_ALL=ASSET_ORDER;
     s+='\nSAA갭: ';
@@ -5549,7 +5516,7 @@ function buildCtx() {
           asset_class: h.asset_class || '기타',
           amount: h.amount,
           pnl_pct: h.pnl_pct != null ? h.pnl_pct : null,
-          pnl_abs: h.pnl_pct != null ? Math.round(h.amount - h.amount / (1 + h.pnl_pct / 100)) : null,
+          pnl_abs: holdingPnL(h)?.pnl ?? null,
           currency: h.currency_exposure || '',
           account: a.name,
         });
