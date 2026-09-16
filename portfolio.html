@@ -562,6 +562,46 @@ body {
 /* ── 2026-06 홈 레이아웃 정리 ── */
 #page-snapshots .snapshot-donut-center-v3 { display: none !important; }
 
+
+/* Macro page: one reading order, quieter surfaces, readable details. */
+#page-macro { max-width:1440px; margin:0 auto; }
+.macro-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:28px; }
+.macro-eyebrow { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:1.4px; margin-bottom:6px; }
+.macro-heading h2 { font-size:24px; letter-spacing:-.7px; line-height:1.4; }
+.macro-heading p { color:var(--text2); font-size:13px; margin-top:7px; }
+.macro-source-note { max-width:220px; font-size:12px; color:var(--text2); }
+.macro-section-label { font-size:12px; color:var(--text2); font-weight:700; letter-spacing:.3px; margin:26px 0 10px; }
+#page-macro .macro-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+#page-macro .kpi { padding:18px 20px; }
+#page-macro .kpi-label { font-size:12px; color:var(--text2); }
+#page-macro .kpi-value { font-size:25px !important; font-variant-numeric:tabular-nums; margin-top:6px; }
+#page-macro .kpi-sub { font-size:12px; margin-top:6px; }
+#page-macro .card { box-shadow:none; margin-bottom:16px; }
+#page-macro .card-hd { padding:18px 20px; align-items:flex-start; gap:16px; }
+#page-macro .card-title { font-size:15px; }
+#page-macro .card-sub { font-size:12px; line-height:1.7; max-width:760px; margin-top:5px; }
+#page-macro .card-body { padding:20px; }
+#pbMacroComment > div { font-size:13px !important; line-height:1.9 !important; }
+#page-macro .macro-row { grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr); gap:16px; margin-bottom:0; }
+#page-macro .rate-row { background:transparent; border-radius:0; border-bottom:1px solid var(--border); padding:12px 0; font-size:13px; }
+#page-macro .rate-ticker, #page-macro .crypto-sym { font-size:11px; }
+#page-macro .rate-val, #page-macro .crypto-price { font-size:17px; font-variant-numeric:tabular-nums; }
+#page-macro .fg-num { font-size:36px; }
+#page-macro .crypto-item { background:transparent; padding:14px 16px; }
+#page-macro .crypto-name { font-size:13px; }
+.macro-detail { border-top:1px solid var(--border); margin-top:20px; padding-top:12px; }
+.macro-detail summary, .macro-chart summary { cursor:pointer; font-size:13px; font-weight:600; color:var(--text2); padding:8px 0; }
+.macro-detail summary:focus-visible, .macro-chart summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.macro-chart summary { padding:18px 20px; color:var(--text); }
+.macro-chart summary small { font-size:11px; color:var(--text2); margin-left:12px; font-weight:400; }
+.macro-chart .tv-wrap { margin:0 20px 20px; border:none; }
+.macro-input-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+.macro-table-head, .macro-table-row { font-size:12px; }
+.macro-table-row > span { font-size:13px !important; }
+.macro-reading-note { padding:14px 0 0; margin-top:16px; border-top:1px solid var(--border); font-size:12px; line-height:1.8; color:var(--text2); }
+@media(max-width:1000px) { .macro-heading { display:block; } .macro-source-note { display:block; max-width:none; margin-top:10px; } #page-macro .macro-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) { #page-macro .macro-row { grid-template-columns:1fr; } #page-macro .crypto-grid { grid-template-columns:1fr; } #page-macro .card-hd { flex-wrap:wrap; } #page-macro .kpi { padding:14px; } #page-macro .kpi-value { font-size:21px !important; } }
+
 </style>
 </head>
 <body>
@@ -921,16 +961,18 @@ body {
 
   <!-- ══ MACRO ══ -->
   <div class="content page" id="page-macro">
-    <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
-      <div class="kpi"><div class="kpi-label">Bitcoin <span class="live-tag" style="font-size:8px"><span class="live-dot"></span>LIVE</span></div><div class="kpi-value" id="m-btc" style="font-size:17px;color:#d97706">—</div><div class="kpi-sub" id="m-btc-chg">—</div></div>
-      <div class="kpi"><div class="kpi-label">USD/KRW <span class="live-tag" style="font-size:8px"><span class="live-dot"></span>LIVE</span></div><div class="kpi-value" id="m-fx">—</div><div class="kpi-sub">환율</div></div>
-      <div class="kpi"><div class="kpi-label">Fear & Greed <span class="live-tag" style="font-size:8px"><span class="live-dot"></span>LIVE</span></div><div class="kpi-value" id="m-fg">—</div><div class="kpi-sub" id="m-fg-lbl">—</div></div>
-      <div class="kpi"><div class="kpi-label">미국채 10Y <span class="live-tag" style="font-size:8px"><span class="live-dot"></span>FRED</span></div><div class="kpi-value" id="m-t10">—</div><div class="kpi-sub" id="m-t10-sub">금리</div></div>
+    <header class="macro-heading"><div><div class="macro-eyebrow">MARKET OVERVIEW</div><h2>시장 환경 한눈에 보기</h2><p>핵심 지표를 확인하고, 자산별 판단과 근거를 차례로 살펴보세요.</p></div><span class="macro-source-note">시세와 분석 자료의 기준일은 서로 다를 수 있습니다.</span></header>
+    <div class="macro-section-label">01 · 핵심 지표</div>
+    <div class="kpi-row macro-kpis">
+      <div class="kpi"><div class="kpi-label">Bitcoin </div><div class="kpi-value" id="m-btc" style="font-size:17px;color:#d97706">—</div><div class="kpi-sub" id="m-btc-chg">—</div></div>
+      <div class="kpi"><div class="kpi-label">USD/KRW </div><div class="kpi-value" id="m-fx">—</div><div class="kpi-sub">환율</div></div>
+      <div class="kpi"><div class="kpi-label">암호화폐 심리 </div><div class="kpi-value" id="m-fg">—</div><div class="kpi-sub" id="m-fg-lbl">—</div></div>
+      <div class="kpi"><div class="kpi-label">미국채 10Y </div><div class="kpi-value" id="m-t10">—</div><div class="kpi-sub" id="m-t10-sub">금리</div></div>
     </div>
     <div class="card" style="margin-bottom:14px">
       <div class="card-hd">
         <div>
-          <div class="card-title">Private Banker 매크로 코멘트</div>
+          <div class="card-title">시장 해석</div>
           <div class="card-sub">시장 환경 해석 및 포트폴리오 시사점</div>
         </div>
       </div>
@@ -938,14 +980,27 @@ body {
         <div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">시장 데이터 로딩 시 코멘트가 표시됩니다</div>
       </div>
     </div>
+    <div class="macro-section-label">02 · 자산별 판단</div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">TAA 스코어카드</div>
+          <div class="card-sub">5개 축의 신호를 비교합니다. 장기 목표(SAA)는 유지하며 전술 판단에 참고합니다.</div>
+        </div>
+        <span id="taa-updated-badge" style="font-size:10px;color:var(--text3)">—</span>
+      </div>
+      <div class="card-body" id="taaSignalPanel"><div class="skel" style="height:120px"></div></div>
+    </div>
+
+    <div class="macro-section-label">03 · 시장 상세</div>
     <div class="macro-row">
       <div class="card">
-        <div class="card-hd"><div class="card-title">Fear & Greed Index</div></div>
+        <div class="card-hd"><div class="card-title">암호화폐 투자심리</div></div>
         <div class="card-body">
           <div class="fg-wrap">
             <svg width="180" height="100" id="fgArc"></svg>
             <div class="fg-num" id="fgNum">—</div>
-            <div class="fg-label" id="fgLbl">로딩 중...</div>
+            <div class="fg-label" id="fgLbl">데이터 대기</div>
             <div class="fg-hist" id="fgHist"></div>
           </div>
         </div>
@@ -955,8 +1010,12 @@ body {
         <div class="card-body"><div class="rate-list" id="rateList"><div class="skel" style="height:40px"></div><div class="skel" style="height:40px;margin-top:6px"></div></div></div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-hd"><div class="card-title">주요 지수 & 자산</div><span style="font-size:10px;color:var(--text3)">TradingView</span></div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">암호화폐 시장</div><span style="font-size:10px;color:var(--text3)">CoinGecko</span></div>
+      <div class="card-body"><div class="crypto-grid" id="cryptoGrid"><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div></div></div>
+    </div>
+    <details class="card macro-chart" open>
+      <summary><span>주요 지수·자산 차트</span><small>TradingView · 접기 / 펼치기</small></summary>
       <div class="tv-wrap">
         <div class="tradingview-widget-container">
           <div class="tradingview-widget-container__widget"></div>
@@ -965,21 +1024,7 @@ body {
           </script>
         </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-hd"><div class="card-title">암호화폐 시장</div><span style="font-size:10px;color:var(--text3)">CoinGecko</span></div>
-      <div class="card-body"><div class="crypto-grid" id="cryptoGrid"><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div></div></div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div class="card-hd">
-        <div>
-          <div class="card-title">TAA 스코어카드</div>
-          <div class="card-sub">밸류에이션·추세·신용·사이클·심리 5축 · 축별 점수 표시 · SAA 판단은 변경하지 않는 참고값</div>
-        </div>
-        <span id="taa-updated-badge" style="font-size:10px;color:var(--text3)">—</span>
-      </div>
-      <div class="card-body" id="taaSignalPanel"><div class="skel" style="height:120px"></div></div>
-    </div>
+    </details>
   </div>
 
 
@@ -2241,15 +2286,15 @@ function renderPBMacroComment() {
   const ma = P?.macro_assumptions || {};
   const house = P?.taa_house_view || {};
   const lines = [];
-  if (ma.note) lines.push(ma.note);
-  else {
+  {
     if (M.rates?.t10y?.value >= 4) lines.push('미국 10년 금리가 높은 수준에 있어 주식 밸류에이션 부담과 채권 매력도가 동시에 존재합니다.');
     if (M.fx >= 1450) lines.push('원/달러 환율이 높은 구간이면 달러 자산의 방어력은 유효하지만 변동성 관리가 필요합니다.');
     if (M.fg?.score <= 25) lines.push('극도의 공포 국면은 분할매수 관점에서는 유리할 수 있으나 비중 규율은 유지해야 합니다.');
   }
   if (house.macro_summary) lines.unshift(house.macro_summary);
-  if (!lines.length) lines.push('매크로 입력값이 없으면 해석 코멘트는 제한적입니다. portfolio.json의 macro_assumptions와 taa_house_view를 함께 갱신하는 것이 좋습니다.');
-  el.innerHTML = '<div style="font-size:12px;color:var(--text2);line-height:1.8">' + lines.slice(0,3).map(t => '<div style="margin-bottom:6px">• ' + t + '</div>').join('') + '</div>';
+  if (!lines.length) lines.push('자산별 판단은 아래 TAA 스코어카드에서 확인하세요. 지표의 기준일과 출처는 상세 근거에 표시됩니다.');
+  el.innerHTML = '<div style="font-size:12px;color:var(--text2);line-height:1.8">' + lines.slice(0,3).map(t => '<div style="margin-bottom:6px">' + escapeHtml(t) + '</div>').join('') + '</div>'
+    + (ma.note ? '<details class="macro-detail"><summary>데이터 기준·작성 메모' + (ma.updated_at ? ' · ' + escapeHtml(ma.updated_at) : '') + '</summary><p style="font-size:12px;line-height:1.8;margin-top:10px;color:var(--text2)">' + escapeHtml(ma.note) + '</p></details>' : '');
 }
 
 // ══════════════════════════════════════════
@@ -5132,7 +5177,7 @@ function renderTAASignalPanel() {
 
   const cols = '112px repeat(5, minmax(0,1fr)) 54px 46px 82px';
   html += '<div style="overflow-x:auto"><div style="min-width:660px">';
-  html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:6px;padding:0 8px 7px;'
+  html += '<div class="macro-table-head" style="display:grid;grid-template-columns:' + cols + ';gap:6px;padding:0 8px 7px;'
         + 'border-bottom:2px solid var(--border);font-size:10px;font-weight:800;color:var(--text3)">'
         + '<span>자산군</span>'
         + TAA_AXES.map(function(a) { return '<span style="text-align:center" title="' + a.desc + '">' + a.label + '</span>'; }).join('')
@@ -5144,7 +5189,7 @@ function renderTAASignalPanel() {
     if (!s) return;
     const col = CLS_COLOR[k] || '#9ca3af';
     const tCol = s.total > 0 ? 'var(--green)' : s.total < 0 ? 'var(--red)' : 'var(--text3)';
-    html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:6px;align-items:center;padding:8px;'
+    html += '<div class="macro-table-row" style="display:grid;grid-template-columns:' + cols + ';gap:6px;align-items:center;padding:8px;'
           + 'border-bottom:1px solid var(--border);background:' + (s.triggered ? 'var(--accent-l)' : 'transparent') + ';border-radius:6px">'
           + '<span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700">'
           + '<span style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></span>'
@@ -5156,6 +5201,8 @@ function renderTAASignalPanel() {
   });
   html += '</div></div>';
 
+  html += '<details class="macro-detail"><summary>판단 근거 자세히 보기 · 입력 지표와 추세, 참고 자료</summary>';
+
   const f = function(v, d, sfx) { return (v === null || v === undefined) ? '—' : Number(v).toFixed(d) + (sfx || ''); };
   const cards = [
     ['Forward ERP', f(inp.erp, 2, '%p')], ['CAPE', f(inp.cape, 1)], ['VIX', f(inp.vix, 1)],
@@ -5166,10 +5213,10 @@ function renderTAASignalPanel() {
   ];
   html += '<div style="margin-top:12px"><div style="font-size:10px;font-weight:800;color:var(--text3);'
         + 'text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">축 입력값 · 밸류/신용/사이클/심리</div>'
-        + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">'
+        + '<div class="macro-input-grid">'
         + cards.map(function(c) {
             return '<div style="padding:7px 9px;background:var(--bg);border-radius:7px">'
-                 + '<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:2px">' + c[0] + '</div>'
+                 + '<div style="font-size:12px;color:var(--text3);font-weight:700;margin-bottom:2px">' + c[0] + '</div>'
                  + '<div style="font-size:12px;font-weight:800">' + c[1] + '</div></div>';
           }).join('') + '</div></div>';
 
@@ -5182,16 +5229,16 @@ function renderTAASignalPanel() {
     var src = (traw[k] && traw[k].source) ? traw[k].source : '';
     var stale = (traw[k] && traw[k].is_stale) ? ' <span style="color:var(--yellow)">stale</span>' : '';
     return '<div style="padding:7px 9px;background:var(--bg);border-radius:7px">'
-         + '<div style="font-size:9px;color:var(--text3);font-weight:700;margin-bottom:2px">'
+         + '<div style="font-size:12px;color:var(--text3);font-weight:700;margin-bottom:2px">'
          + (ASSET_LABEL_KO[k] || k) + stale + '</div>'
          + '<div style="font-size:12px;font-weight:800;color:' + col + '">' + (v > 0 ? '+' : '') + v.toFixed(1) + '%</div>'
-         + (src ? '<div style="font-size:8px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + src + '</div>' : '')
+         + (src ? '<div style="font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + src + '</div>' : '')
          + '</div>';
   }).join('');
   if (trendCards) {
     html += '<div style="margin-top:10px"><div style="font-size:10px;font-weight:800;color:var(--text3);'
           + 'text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">축 입력값 · 추세 (200일선 대비)</div>'
-          + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">' + trendCards + '</div></div>';
+          + '<div class="macro-input-grid">' + trendCards + '</div></div>';
   }
 
   // 참고 지표 — 수집만 하고 스코어에는 반영하지 않는 항목 (IG OAS·NFCI·10y-2y 커브·12-1 모멘텀 등)
@@ -5209,14 +5256,13 @@ function renderTAASignalPanel() {
     html += '<div style="margin-top:14px">'
           + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
           + '<span style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.4px">참고 지표</span>'
-          + '<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;background:var(--bg);color:var(--text3)">스코어 미반영</span>'
+          + '<span style="font-size:12px;font-weight:800;padding:2px 7px;border-radius:10px;background:var(--bg);color:var(--text3)">스코어 미반영</span>'
           + '<span style="font-size:10px;color:var(--text3)">' + refs.length + '개 · 축 확장 및 교차검증용</span></div>'
           + '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 6px">' + refRows + '</div></div>';
   }
 
-  html += '<div style="margin-top:12px;padding:9px 13px;background:var(--yellow-l);border-radius:7px;'
-        + 'font-size:11px;color:var(--text2);line-height:1.7;border-left:3px solid var(--yellow)">'
-        + '<b>읽는 법</b> · 총점보다 축별 점수를 먼저 본다. 밸류에이션이 나빠도 추세·신용이 우호적이면 상충 구간이므로 '
+  html += '</details><div class="macro-reading-note">'
+    + '<b>읽는 법</b> · 총점보다 축별 점수를 먼저 본다. 밸류에이션이 나빠도 추세·신용이 우호적이면 상충 구간이므로 '
         + 'SAA를 그대로 유지한다. 발동(★)은 신규자금 배분 순서만 바꾸며 보유분 매도는 어떤 점수에서도 트리거하지 않는다. '
         + '추세 축은 -1~+1로 폭이 좁게 설계돼 있어 밸류에이션·심리(평균회귀)와 방향이 자주 엇갈린다.</div>';
 
