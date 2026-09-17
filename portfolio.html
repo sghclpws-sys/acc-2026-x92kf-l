@@ -965,20 +965,9 @@ body {
     <div class="macro-section-label">01 · 핵심 지표</div>
     <div class="kpi-row macro-kpis">
       <div class="kpi"><div class="kpi-label">Bitcoin </div><div class="kpi-value" id="m-btc" style="font-size:17px;color:#d97706">—</div><div class="kpi-sub" id="m-btc-chg">—</div></div>
-      <div class="kpi"><div class="kpi-label">USD/KRW </div><div class="kpi-value" id="m-fx">—</div><div class="kpi-sub">환율</div></div>
+      <div class="kpi"><div class="kpi-label">USD/KRW </div><div class="kpi-value" id="m-fx">—</div><div class="kpi-sub" id="m-fx-source">환율</div></div>
       <div class="kpi"><div class="kpi-label">암호화폐 심리 </div><div class="kpi-value" id="m-fg">—</div><div class="kpi-sub" id="m-fg-lbl">—</div></div>
       <div class="kpi"><div class="kpi-label">미국채 10Y </div><div class="kpi-value" id="m-t10">—</div><div class="kpi-sub" id="m-t10-sub">금리</div></div>
-    </div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-hd">
-        <div>
-          <div class="card-title">시장 해석</div>
-          <div class="card-sub">시장 환경 해석 및 포트폴리오 시사점</div>
-        </div>
-      </div>
-      <div class="card-body" id="pbMacroComment">
-        <div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">시장 데이터 로딩 시 코멘트가 표시됩니다</div>
-      </div>
     </div>
     <div class="macro-section-label">02 · 자산별 판단</div>
     <div class="card" style="margin-top:14px">
@@ -993,23 +982,6 @@ body {
     </div>
 
     <div class="macro-section-label">03 · 시장 상세</div>
-    <div class="macro-row">
-      <div class="card">
-        <div class="card-hd"><div class="card-title">암호화폐 투자심리</div></div>
-        <div class="card-body">
-          <div class="fg-wrap">
-            <svg width="180" height="100" id="fgArc"></svg>
-            <div class="fg-num" id="fgNum">—</div>
-            <div class="fg-label" id="fgLbl">데이터 대기</div>
-            <div class="fg-hist" id="fgHist"></div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-hd"><div class="card-title">금리 & 환율</div></div>
-        <div class="card-body"><div class="rate-list" id="rateList"><div class="skel" style="height:40px"></div><div class="skel" style="height:40px;margin-top:6px"></div></div></div>
-      </div>
-    </div>
     <div class="card">
       <div class="card-hd"><div class="card-title">암호화폐 시장</div><span style="font-size:10px;color:var(--text3)">CoinGecko</span></div>
       <div class="card-body"><div class="crypto-grid" id="cryptoGrid"><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div><div class="skel" style="height:70px"></div></div></div>
@@ -2280,23 +2252,40 @@ function renderPBRebalComment() {
   el.innerHTML = '<div style="font-size:12px;color:var(--text2);line-height:1.8">' + lines.map(t => '<div style="margin-bottom:6px">• ' + t + '</div>').join('') + '</div>';
 }
 
-function renderPBMacroComment() {
-  const el = document.getElementById('pbMacroComment');
-  if (!el) return;
-  const ma = P?.macro_assumptions || {};
-  const house = P?.taa_house_view || {};
-  const lines = [];
-  {
-    if (M.rates?.t10y?.value >= 4) lines.push('미국 10년 금리가 높은 수준에 있어 주식 밸류에이션 부담과 채권 매력도가 동시에 존재합니다.');
-    if (M.fx >= 1450) lines.push('원/달러 환율이 높은 구간이면 달러 자산의 방어력은 유효하지만 변동성 관리가 필요합니다.');
-    if (M.fg?.score <= 25) lines.push('극도의 공포 국면은 분할매수 관점에서는 유리할 수 있으나 비중 규율은 유지해야 합니다.');
-  }
-  if (house.macro_summary) lines.unshift(house.macro_summary);
-  if (!lines.length) lines.push('자산별 판단은 아래 TAA 스코어카드에서 확인하세요. 지표의 기준일과 출처는 상세 근거에 표시됩니다.');
-  el.innerHTML = '<div style="font-size:12px;color:var(--text2);line-height:1.8">' + lines.slice(0,3).map(t => '<div style="margin-bottom:6px">' + escapeHtml(t) + '</div>').join('') + '</div>'
-    + (ma.note ? '<details class="macro-detail"><summary>데이터 기준·작성 메모' + (ma.updated_at ? ' · ' + escapeHtml(ma.updated_at) : '') + '</summary><p style="font-size:12px;line-height:1.8;margin-top:10px;color:var(--text2)">' + escapeHtml(ma.note) + '</p></details>' : '');
+// Stored values are explicitly labelled; they are never promoted to live observations.
+let fredLoadState = 'idle';
+function getMacroReading(key) {
+  const live = key === 'us10y' ? numOrNull(M.rates?.t10y?.value) : key === 'usd_krw' ? numOrNull(M.fx) : key === 'crypto_fear_greed' ? numOrNull(M.fg?.score) : null;
+  if (live != null) return { value:live, source:key === 'us10y' ? 'FRED 관측값' : 'API 조회값', date:key === 'us10y' ? M.rates.t10y.date || '' : '', stored:false };
+  const ma = getMacroAssumptions();
+  const saved = numOrNull(ma[key]);
+  const score = numOrNull(TAA?.scorecard?.inputs?.[key]);
+  const scoreDate = (TAA?.updated_at || '').slice(0,10);
+  if (score != null && (saved == null || scoreDate > (ma.updated_at || ''))) return {value:score, source:'TAA 저장값',date:scoreDate,stored:true};
+  if (saved != null) return {value:saved, source:'포트폴리오 저장값',date:ma.updated_at || '',stored:true};
+  return null;
 }
-
+function macroReadingSource(reading) {
+  return reading ? reading.source + (reading.date ? ' · ' + reading.date : ' · 기준일 미상') : '데이터 없음';
+}
+function renderMacroReadings() {
+  const t10 = getMacroReading('us10y');
+  const rateEl = document.getElementById('m-t10');
+  if (rateEl) rateEl.textContent = t10 ? t10.value.toFixed(2) + '%' : '—';
+  const status = fredLoadState === 'missing-key' ? 'FRED 키 미설정' : fredLoadState === 'failed' ? 'FRED 조회 실패' : fredLoadState === 'loading' ? 'FRED 조회 중' : '';
+  const sub = document.getElementById('m-t10-sub');
+  if (sub) sub.textContent = macroReadingSource(t10) + (status ? ' · ' + status : '');
+  const fx = getMacroReading('usd_krw');
+  const fxEl = document.getElementById('m-fx');
+  if (fxEl) fxEl.textContent = fx ? Math.round(fx.value).toLocaleString() + '원' : '—';
+  const fxSource = document.getElementById('m-fx-source');
+  if (fxSource) fxSource.textContent = macroReadingSource(fx);
+  const fear = getMacroReading('crypto_fear_greed');
+  const fearEl = document.getElementById('m-fg');
+  if (fearEl) fearEl.textContent = fear ? String(fear.value) : '—';
+  const fearSub = document.getElementById('m-fg-lbl');
+  if (fearSub) fearSub.textContent = fear ? (fear.value <= 25 ? '공포' : fear.value >= 75 ? '탐욕' : '중간 구간') + ' · ' + macroReadingSource(fear) : '데이터 없음';
+}
 // ══════════════════════════════════════════
 // ACCOUNTS PAGE
 // ══════════════════════════════════════════
@@ -5098,10 +5087,11 @@ function syncTAAtoTargets() {
 // MACRO PAGE
 // ══════════════════════════════════════════
 function renderMacroPage() {
-  updateBTC(); updateFG(); renderRates(); renderCrypto(); renderPBMacroComment();
+  updateBTC(); updateFG(); renderCrypto(); renderMacroReadings();
+  if (fredLoadState === 'idle') fetchFRED();
   if (document.getElementById('taaSignalPanel')) {
     renderTAASignalPanel();
-    if (!TAA) loadTAAScorecard().then(function(ok) { if (ok) renderTAASignalPanel(); });
+    if (!TAA) loadTAAScorecard().then(function(ok) { if (ok) { renderTAASignalPanel(); renderMacroReadings(); } });
   }
 }
 
@@ -5391,8 +5381,9 @@ async function fetchFG() {
 
 async function fetchFRED() {
   const key = localStorage.getItem('fredApiKey')||'';
-  if(!key) return;
-  
+  if(!key) { fredLoadState = 'missing-key'; renderMacroReadings(); return false; }
+  fredLoadState = 'loading'; renderMacroReadings();
+  let loaded10y = false;
   const FRED_BASE = `https://api.stlouisfed.org/fred/series/observations`;
   const PROXIES = [
     u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
@@ -5407,20 +5398,22 @@ async function fetchFRED() {
   ];
 
   for(const s of series) {
-    const targetUrl = `${FRED_BASE}?series_id=${s.id}&api_key=${key}&file_type=json&limit=2&sort_order=desc`;
+    const targetUrl = `${FRED_BASE}?series_id=${s.id}&api_key=${key}&file_type=json&limit=14&sort_order=desc`;
     let parsed = null;
 
     for(const makeProxy of PROXIES) {
       try {
-        const r = await fetch(makeProxy(targetUrl));
+        const r = await fetch(makeProxy(targetUrl), { signal:AbortSignal.timeout(8000) });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const raw = await r.json();
         // allorigins는 { contents: "..." } 구조로 감쌈
         const d = raw.contents ? JSON.parse(raw.contents) : raw;
-        const obs = d.observations?.filter(o => o.value !== '.') || [];
-        if(obs.length >= 2) {
+        const obs = d.observations?.filter(o => o.value !== '.' && numOrNull(o.value) != null) || [];
+        if(obs.length >= 1) {
           parsed = {
             value:  parseFloat(obs[0].value),
-            change: parseFloat(obs[0].value) - parseFloat(obs[1].value),
+            change: obs[1] ? parseFloat(obs[0].value) - parseFloat(obs[1].value) : null,
+            date: obs[0].date,
             name:   s.name
           };
           break; // 성공하면 다음 프록시 시도 불필요
@@ -5430,15 +5423,12 @@ async function fetchFRED() {
       }
     }
 
-    if(parsed) M.rates[s.key] = parsed;
+    if(parsed) { M.rates[s.key] = parsed; if(s.key === 't10y') loaded10y = true; }
   }
 
-  renderRates();
-  const t10 = M.rates.t10y;
-  if(t10) {
-    document.getElementById('m-t10').textContent = t10.value.toFixed(2)+'%';
-    document.getElementById('m-t10-sub').textContent = t10.value > 4 ? '고금리 구간' : '중립 구간';
-  }
+  fredLoadState = loaded10y ? 'ready' : 'failed';
+  renderMacroReadings();
+  return loaded10y;
 }
 
 // fetchIndices removed — S&P500/NASDAQ 실시간 데이터 사용 안 함 (TradingView 위젯 참조)
@@ -5455,42 +5445,10 @@ function updateBTC() {
 function updateFXDisplay() {
   if(!M.fx) return;
   document.getElementById('m-fx').textContent = Math.round(M.fx).toLocaleString()+'원';
-  renderRates();
+  renderMacroReadings();
 }
 
-function updateFG() {
-  if(!M.fg) return;
-  const {score,label,color} = M.fg;
-  ['m-fg','fgNum'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=score;el.style.color=color;}});
-  ['m-fg-lbl','fgLbl'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=label;el.style.color=color;}});
-  // Arc
-  const svg=document.getElementById('fgArc'); if(!svg)return;
-  const cx=90,cy=90,r=70,sa=Math.PI,ea=2*Math.PI;
-  const sax=cx+r*Math.cos(sa),say=cy+r*Math.sin(sa),eax=cx+r*Math.cos(ea),eay=cy+r*Math.sin(ea);
-  const va=sa+(score/100)*(ea-sa),vx=cx+r*Math.cos(va),vy=cy+r*Math.sin(va);
-  svg.innerHTML=`<defs><linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#dc2626"/><stop offset="50%" stop-color="#d97706"/><stop offset="100%" stop-color="#059669"/></linearGradient></defs>
-    <path d="M ${sax} ${say} A ${r} ${r} 0 0 1 ${eax} ${eay}" fill="none" stroke="var(--bg)" stroke-width="12" stroke-linecap="round"/>
-    <path d="M ${sax} ${say} A ${r} ${r} 0 ${score>50?1:0} 1 ${vx} ${vy}" fill="none" stroke="url(#fg)" stroke-width="12" stroke-linecap="round" opacity=".9"/>
-    <circle cx="${vx}" cy="${vy}" r="5" fill="${color}"/>
-    <text x="${cx-r+5}" y="${cy-8}" font-size="9" fill="var(--text3)" font-family="Pretendard">공포</text>
-    <text x="${cx+r-30}" y="${cy-8}" font-size="9" fill="var(--text3)" font-family="Pretendard">탐욕</text>`;
-  if(M.fg.history?.length) {
-    document.getElementById('fgHist').innerHTML = M.fg.history.slice(0,2).map((h,i)=>`
-      <div class="fg-hi"><div class="fg-hi-lbl">${i===0?'1주 전':'1달 전'}</div><div class="fg-hi-val">${h.value}</div></div>`).join('');
-  }
-}
-
-function renderRates() {
-  const el = document.getElementById('rateList'); if(!el) return;
-  const items = [];
-  if(M.fx) items.push({name:'USD/KRW',ticker:'환율',value:Math.round(M.fx).toLocaleString()+'원',change:null,color:'var(--accent)'});
-  Object.values(M.rates).forEach(r => { items.push({name:r.name,ticker:'FRED',value:r.value.toFixed(2)+'%',change:r.change,color:r.value>4?'var(--red)':r.value>3?'var(--yellow)':'var(--green)'}); });
-  el.innerHTML = items.length ? items.map(item=>`
-    <div class="rate-row">
-      <div><div class="rate-name">${item.name}</div><div class="rate-ticker">${item.ticker}</div></div>
-      <div style="text-align:right"><div class="rate-val" style="color:${item.color}">${item.value}</div>${item.change!=null?`<div class="rate-chg ${item.change>=0?'pos':'neg'}">${(item.change>=0?'+':'')+item.change.toFixed(3)}</div>`:''}</div>
-    </div>`).join('') : '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">FRED API 키 설정 시 금리 데이터 표시</div>';
-}
+function updateFG() { renderMacroReadings(); }
 
 function renderCrypto() {
   const el = document.getElementById('cryptoGrid'); if(!el||!M.crypto?.length) return;

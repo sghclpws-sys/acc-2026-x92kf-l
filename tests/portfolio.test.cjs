@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-function app() {
+function app(globals = {}) {
   const html = fs.readFileSync(path.join(__dirname, '../portfolio.html'), 'utf8');
   const script = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script>'));
   new vm.Script(script);
@@ -13,7 +13,7 @@ function app() {
     if (!elements.has(id)) elements.set(id, { value:'', checked:false, textContent:'', innerHTML:'', style:{}, classList:{contains:()=>false}, addEventListener(){} });
     return elements.get(id);
   };
-  const context = vm.createContext({ document:{getElementById:element, querySelectorAll:()=>[]}, console });
+  const context = vm.createContext({ document:{getElementById:element, querySelectorAll:()=>[]}, console, ...globals });
   vm.runInContext(script.slice(0, script.lastIndexOf('loadSavedData();')), context);
   const run = code => vm.runInContext(code, context);
   for (const [id,value] of Object.entries({'an-lambda':'2.5','an-mu':'8','an-rf':'4.3','an-sigma':'17'})) element(id).value=value;
@@ -25,6 +25,35 @@ test('PB and headline USD exposure both respect hedged holdings', () => {
   run(`P={accounts:[{assets:[{asset_class:'bond_us',currency_exposure:'KRW',amount:40},{asset_class:'equity_global',currency_exposure:'USD',amount:60}]}]}`);
   assert.equal(run('usdExposure()'),60);
   assert.equal(run('getExpandedPortfolioMetrics().usdPct'),60);
+});
+
+test('10Y without a key shows stored data with provenance rather than blank', async () => {
+  const {run,element}=app({localStorage:{getItem:()=>null}});
+  run("P={accounts:[],macro_assumptions:{us10y:4.78,updated_at:'2026-09-03'}}");
+  assert.equal(await run('fetchFRED()'),false);
+  assert.equal(element('m-t10').textContent,'4.78%');
+  assert.match(element('m-t10-sub').textContent,/저장값.*2026-09-03.*키 미설정/);
+  run("TAA={updated_at:'2026-09-14',scorecard:{inputs:{us10y:4.5}}};renderMacroReadings()");
+  assert.equal(element('m-t10').textContent,'4.50%');
+  assert.match(element('m-t10-sub').textContent,/TAA 저장값/);
+});
+
+test('FRED accepts a single valid observation after holiday gaps', async () => {
+  const {run,element}=app({localStorage:{getItem:()=>'test-only'},AbortSignal,
+    fetch:async()=>({ok:true,json:async()=>({observations:[{date:'2026-09-15',value:'.'},{date:'2026-09-14',value:'4.21'}]})})});
+  assert.equal(await run('fetchFRED()'),true);
+  assert.equal(element('m-t10').textContent,'4.21%');
+  assert.match(element('m-t10-sub').textContent,/FRED 관측값.*2026-09-14/);
+  assert.equal(run('M.rates.t10y.change'),null);
+});
+
+test('failed FRED response retains stored value and labels failure', async () => {
+  const {run,element}=app({localStorage:{getItem:()=>'test-only'},AbortSignal,
+    console:{warn(){},error(){}},fetch:async()=>({ok:false,status:503})});
+  run("P={accounts:[],macro_assumptions:{us10y:4.78,updated_at:'2026-09-03'}}");
+  assert.equal(await run('fetchFRED()'),false);
+  assert.equal(element('m-t10').textContent,'4.78%');
+  assert.match(element('m-t10-sub').textContent,/조회 실패/);
 });
 
 test('ERP conversion preserves missing values and decimal ratios', () => {
