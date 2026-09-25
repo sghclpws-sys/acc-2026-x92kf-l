@@ -4015,8 +4015,11 @@ function renderTrendChart(monthlyData) {
   if (!svg || !labelsEl) return;
   if (!monthlyData.length) { svg.innerHTML = ''; labelsEl.innerHTML = ''; return; }
 
-  const W = 800, H = 200;
-  const pad = {top:20, right:20, bottom:10, left:60};
+  const isMobile = window.innerWidth <= 768 || document.body.classList.contains('mobile-app');
+  const W = isMobile ? (svg.getBoundingClientRect().width || 320) : 800, H = 200;
+  const axisFontSize = isMobile ? 14 : 10;
+  const maxLabel = Math.round(Math.max(...monthlyData.map(m => m.total), 1) / 10000) + '만';
+  const pad = {top:20, right:20, bottom:10, left:isMobile ? Math.max(60, maxLabel.length * axisFontSize + 8) : 60};
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
   const n = monthlyData.length;
@@ -4036,7 +4039,7 @@ function renderTrendChart(monthlyData) {
   for (let i=0; i<=4; i++) {
     const val = maxVal * i / 4;
     const y = pad.top + plotH - (val / maxVal * plotH);
-    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#8A7F74" font-family="Pretendard">${Math.round(val/10000)}만</text>`;
+    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="${axisFontSize}" font-weight="${isMobile ? 600 : 400}" fill="var(--text-muted)" font-family="Pretendard">${Math.round(val/10000)}만</text>`;
     yLabels += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
 
@@ -4052,7 +4055,7 @@ function renderTrendChart(monthlyData) {
     `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` +
     dots;
 
-  const showEvery = Math.max(1, Math.ceil(n / 12));
+  const showEvery = Math.max(1, Math.ceil(n / (isMobile ? Math.max(2, Math.floor(plotW / 48)) : 12)));
   labelsEl.style.position = 'relative';
   labelsEl.style.height = '20px';
   labelsEl.style.display = 'block';
@@ -5348,6 +5351,9 @@ async function _init() {
     }
     if (tabbar) tabbar.style.display = isMobile ? 'flex' : 'none';
     if (typeof syncMobileSummaryView === 'function') requestAnimationFrame(syncMobileSummaryView);
+    if (document.getElementById('page-trends')?.classList.contains('active')) {
+      requestAnimationFrame(renderTrendSection);
+    }
   }
   applyMobileLayout();
   window.addEventListener('resize', applyMobileLayout);
@@ -5393,7 +5399,7 @@ document.addEventListener('DOMContentLoaded', _init);
 // ===== PWA Service Worker 등록 =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
+    navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
       .then(() => console.log('Service Worker 등록 완료'))
       .catch((e) => console.warn('Service Worker 등록 실패:', e));
   });
