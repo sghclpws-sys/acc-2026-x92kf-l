@@ -1,6 +1,7 @@
 /* Shared visual language with Portfolio: neutral surfaces and blue actions. */
 :root{--bg:#f5f6f8;--surface:#fff;--surface2:#f8fafc;--border:#e8eaed;--text:#111827;--text-muted:#64748b;--accent:#2563eb;--accent-light:#eff6ff;--accent2:#2563eb;--accent2-light:#eff6ff;--danger:#dc2626;--success:#059669;--radius:14px;--shadow:0 1px 3px rgba(15,23,42,.05)}
 body{line-height:1.6;background:var(--bg)}
+.main{min-width:0}
 .sidebar{background:#fff;border-right:1px solid var(--border)}
 .sidebar-logo{border-bottom:1px solid var(--border)}
 .sidebar-logo small{color:var(--text-muted)}
@@ -10,17 +11,39 @@ body{line-height:1.6;background:var(--bg)}
 .mobile-tabbar{background:#fff;border-top:1px solid var(--border)}
 .mobile-tabbar-item{color:var(--text-muted)}
 .card,.stat-card{box-shadow:var(--shadow);border-color:var(--border)}
-#summaryStats{gap:14px;align-items:stretch}
-#summaryStats .stat-card{padding:22px;border-radius:16px;box-shadow:0 2px 6px rgba(15,23,42,.025);min-width:0;display:flex;flex-direction:column;gap:12px}
-#summaryStats .stat-card::before{display:none}
-#summaryStats .stat-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;font-size:12px;font-weight:600;color:var(--text-muted);flex-wrap:wrap}
-#summaryStats .stat-value{font-size:clamp(20px,1.6vw,30px);font-weight:700;letter-spacing:-1px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-#summaryStats .stat-sub{margin-top:auto;padding-top:2px;font-size:11px;line-height:1.6;color:var(--text-muted)}
-.stat-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:6px;background:var(--surface2);color:var(--text-muted);white-space:nowrap}
-.stat-card.red .stat-badge{background:#fef2f2;color:#b91c1c}
-.stat-card.green .stat-badge{background:#ecfdf5;color:#047857}
-#summaryStats .stat-card.red .stat-value{color:#b91c1c}
-#summaryStats .stat-card.green .stat-value{color:#047857}
+#summaryStats{display:block;margin-bottom:20px}
+.summary-overview{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:20px;align-items:start}
+.summary-overview>#summaryStats,.summary-overview>#smartInsightCard{min-width:0;margin-bottom:0!important}
+.summary-overview .simple-insight-list{grid-template-columns:1fr}
+@media(min-width:1200px){
+  .summary-overview{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+  .summary-overview .income-statement>div,.summary-overview .income-statement>table,.summary-overview .income-statement>details{max-width:none}
+  .summary-overview .statement-table th:first-child{width:34%}
+}
+.income-statement{padding:18px 24px;background:var(--surface);border-top:2px solid var(--text);border-bottom:1px solid var(--border)}
+.income-statement>div,.income-statement>table,.income-statement>details{max-width:960px;margin-left:auto;margin-right:auto}
+.statement-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.statement-heading h3{font-size:14px;letter-spacing:-.2px}
+.statement-heading>span{font-size:12px;color:var(--text-muted)}
+.statement-table{width:100%;table-layout:fixed;border-collapse:collapse}
+.income-statement .statement-table th,.income-statement .statement-table td{padding:9px 0;background:none;border-bottom:1px solid var(--border);text-align:right;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.income-statement .statement-table th:first-child{text-align:left;width:40%;font-size:13px;font-weight:500}
+.income-statement .statement-table thead th{font-size:11px;font-weight:500;color:var(--text-muted);padding:3px 0 7px}
+.income-statement .statement-table .statement-previous{color:var(--text-muted);font-size:13px;width:28%}
+.income-statement .statement-table .statement-profit th,.income-statement .statement-table .statement-profit td{font-weight:700;border-bottom:0;padding-top:11px;padding-bottom:11px}
+.statement-profit small{font-size:10px;font-weight:400;color:var(--text-muted);margin-left:6px}
+.income-statement .negative{color:#b91c1c!important}
+.income-statement .positive{color:#047857!important}
+.statement-change{display:flex;align-items:baseline;gap:10px;font-size:12px;padding:9px 0;border-top:1px solid var(--border)}
+.statement-change>span{color:var(--text-muted)}
+.statement-change strong{margin-left:auto;font-size:14px;font-variant-numeric:tabular-nums}
+.statement-details{border-top:1px solid var(--border);font-size:12px}
+.statement-details summary{cursor:pointer;color:var(--text-muted);padding-top:9px}
+.statement-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:12px}
+.statement-detail-grid dl>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0}
+.statement-detail-grid dt{color:var(--text-muted)}
+.statement-detail-grid dd{margin:0;font-variant-numeric:tabular-nums}
+.statement-details p{color:var(--text-muted);font-size:11px;margin-top:8px;line-height:1.7}
 #adviceCard{border-radius:16px}
 #adviceCard .card-title{font-size:16px;font-weight:700}
 #adviceBtn{border:1px solid var(--border);background:var(--surface);color:var(--accent);min-height:40px;padding:8px 14px;border-radius:9px}
@@ -117,11 +140,15 @@ body{line-height:1.6;background:var(--bg)}
 .review-comment>p{font-size:14px;margin-top:8px;white-space:pre-wrap}
 @media(max-width:768px){
   .page-header{flex-wrap:wrap!important;gap:12px!important}
-  #summaryStats{gap:10px}
-  body.mobile-app #summaryStats .stat-card{padding:16px 12px!important;gap:10px;border-radius:12px}
-  body.mobile-app #summaryStats .stat-value{font-size:19px!important;letter-spacing:-.7px}
-  #summaryStats .stat-label{font-size:11px;gap:5px}
-  .stat-badge{font-size:9px;padding:2px 5px}
+  .income-statement{padding:12px 14px}
+  .income-statement .statement-table thead{display:none}
+  .income-statement .statement-table .statement-previous{display:none}
+  .income-statement .statement-table th:first-child{width:43%;font-size:13px}
+  .income-statement .statement-table th,.income-statement .statement-table td{padding:7px 0;font-size:15px}
+  .income-statement .statement-table .statement-profit td{font-size:17px}
+  .statement-change{gap:6px;font-size:11px;padding:7px 0;flex-wrap:wrap}
+  .statement-change strong{font-size:13px}
+  .statement-detail-grid{grid-template-columns:1fr;gap:8px}
   .advice-grid{grid-template-columns:1fr;gap:10px}
   .advice-item{padding:16px}
   .page-header h2{font-size:22px}

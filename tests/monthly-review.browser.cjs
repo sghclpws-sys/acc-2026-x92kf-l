@@ -41,7 +41,7 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('.review-compare-table tbody tr').count(),12);
   assert.equal(await page.locator('[data-field^="note-"]').count(),0);
   assert.equal(await page.locator('[data-field="comment"]').count(),1);
-  for(const width of [320,390,768,1440,1920]){
+  for(const width of [320,390,768,1024,1200,1440,1920]){
    await page.setViewportSize({width,height:900});
    await page.evaluate(w=>document.body.classList.toggle('mobile-app',w<=768),width);
    const sizes=await page.locator('#monthlyReview').evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));
@@ -96,7 +96,7 @@ const assert=require('node:assert/strict');
    const tx=[];for(const m of ['06','07','08'])for(const c of cats)tx.push({id:m+c,date:`2026-${m}-02`,category:c,store:'테스트 '+c,amount:(cats.indexOf(c)+1)*100000,settlement:0,card:'테스트'});
    window._fbReady=true;window._fbAllowed=()=>true;window._fbUser=()=>({uid:'a',email:'test@example.invalid'});
    window._fbOnAuth=cb=>queueMicrotask(()=>cb(_fbUser()));window._reviewMembers=['a','b'];
-   window._fbLoadData=async()=>({transactions:tx,rules:[],cashData:{},incomeData:{}});
+   window._fbLoadData=async()=>({transactions:tx,rules:[],cashData:{},incomeData:{'2026-08':{yejin:3000000,gihyuk:2000000,interestExpense:100000},'2026-07':{yejin:2000000,gihyuk:2000000,interestExpense:50000}}});
    window._fbSaveData=async()=>{};
    window._fbListen=()=>()=>{};window._fbLoadHouseholdSummary=async()=>null;window._fbLoadAdvice=async()=>null;
    window._fbWatchReview=(month,cb)=>{queueMicrotask(()=>cb(null));return()=>{};};
@@ -122,20 +122,35 @@ const assert=require('node:assert/strict');
     {title:'다음 달에는 한 가지 목표에 집중하세요',body:'여러 항목을 동시에 줄이기보다 실천할 목표를 하나 정해보세요.',impact:'월 약 5만 원 · 외식 1회 기준',level:'info'}
    ],'2026-09-26',false);
   });
-  for(const width of [320,390,768,1440,1920]){
+  for(const width of [320,390,768,1024,1200,1440,1920]){
    await app.setViewportSize({width,height:900});
    for(const name of ['summary','trends','settings']){
     await app.evaluate(name=>showPage(name),name);
     const sizes=await app.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
     assert(sizes.scroll<=sizes.width+1,`app ${name} overflow at ${width}: ${JSON.stringify(sizes)}`);
     if(name==='summary'){
+     assert.equal(await app.locator('#summaryStats .stat-card').count(),0);
+     const amounts=await app.locator('.statement-table tbody td:nth-child(2)').allTextContents();
+     assert.deepEqual(amounts,['5,000,000원','2,200,000원','+2,800,000원']);
+     assert.equal(await app.locator('.statement-change strong').textContent(),'+50,000원');
+     if(width<=768) assert((await app.locator('.income-statement').boundingBox()).height<260,'mobile statement should remain compact');
      const aligned=await app.evaluate(()=>{
-      const a=document.querySelector('.review-card').getBoundingClientRect(),b=document.getElementById('summaryStats').getBoundingClientRect();
+      const a=document.querySelector('.review-card').getBoundingClientRect(),b=document.getElementById('summaryOverview').getBoundingClientRect();
       return Math.abs(a.left-b.left)<1 && Math.abs(a.right-b.right)<1;
      });assert(aligned,`review card alignment at ${width}`);
      assert.equal(await app.locator('#page-summary #householdSummaryCard').count(),0);
      assert.equal(await app.locator('#insightCards').count(),0);
-     assert(await app.evaluate(()=>document.getElementById('monthlyReview').previousElementSibling.id==='smartInsightCard'));
+     assert(await app.evaluate(()=>document.getElementById('monthlyReview').previousElementSibling.id==='summaryOverview'));
+     assert(await app.evaluate(width=>{
+      const statement=document.getElementById('summaryStats').getBoundingClientRect();
+      const insight=document.getElementById('smartInsightCard').getBoundingClientRect();
+      return width>=1200 ? Math.abs(statement.top-insight.top)<1 && statement.right<insight.left : statement.bottom<=insight.top;
+     },width),`summary arrangement at ${width}`);
+     if(width<=768) assert(await app.evaluate(()=>{
+      const review=document.getElementById('monthlyReview').getBoundingClientRect();
+      const charts=document.getElementById('mobileSummaryContent').getBoundingClientRect();
+      return review.bottom<=charts.top;
+     }),`mobile review must precede the charts at ${width}`);
      assert.equal(await app.locator('#smartInsightCard').count(),1);
      const heights=await app.locator('.review-compare-table tbody tr').evaluateAll(rows=>rows.slice(0,4).map(e=>e.getBoundingClientRect().height));
      assert(Math.max(...heights)-Math.min(...heights)<1,`superscript changed row height at ${width}: ${heights}`);
@@ -148,7 +163,7 @@ const assert=require('node:assert/strict');
      });
      assert(fonts.every(s=>Math.abs(s-12)<0.1),`chart effective font sizes at ${width}: ${fonts}`);
      assert.equal(await app.locator('#topCatAnalysis').count(),0);
-     assert.equal(await app.locator('[data-heatmap-top]').count(),5);
+     assert.equal(await app.locator('[data-heatmap-top]').count(),0);
      assert.equal(await app.locator('[data-heatmap-top="외식"]').count(),0);
      assert.equal(await app.locator('[data-heatmap-average="600000"]').count(),1);
      assert.equal(await app.locator('.advice-item').count(),3);
@@ -163,6 +178,9 @@ const assert=require('node:assert/strict');
   await app.locator('.rules-disclosure summary').click();assert.notEqual(await app.locator('.rules-disclosure').getAttribute('open'),null);
   assert.deepEqual(appErrors,[]);
   if(output){
+   await app.setViewportSize({width:390,height:844});
+   await app.evaluate(()=>{showPage('summary');window.scrollTo(0,0);});
+   await app.screenshot({path:output.replace('.png','-summary-mobile.png')});
    await app.setViewportSize({width:1920,height:1080});
    await app.evaluate(()=>{showPage('summary');window.scrollTo(0,0);});
    await app.screenshot({path:output.replace('.png','-desktop.png')});

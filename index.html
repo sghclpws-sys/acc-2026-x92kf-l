@@ -1111,10 +1111,9 @@ window.showPage = function(page) {
       </div>
 
 
-      <!-- KPI Stats -->
-      <div class="stats-row" id="summaryStats"></div>
-
-      <div id="mobileSummaryContent" class="mobile-summary-stack"></div>
+      <div class="summary-overview" id="summaryOverview">
+      <!-- 월간 손익과 소비 관리 인사이트 -->
+      <div id="summaryStats"></div>
 
       <!-- Row 2: 소비 관리 인사이트 (전체 너비) -->
       <div class="card" id="smartInsightCard" style="margin-bottom:20px">
@@ -1122,8 +1121,11 @@ window.showPage = function(page) {
         <a class="review-link" href="#monthlyReview">월평균 비교 · 다음 달 목표 · 부부 회고 →</a>
         <div id="smartInsights"></div>
       </div>
+      </div>
 
       <div id="monthlyReview"></div>
+
+      <div id="mobileSummaryContent" class="mobile-summary-stack"></div>
 
       <div id="desktopSummaryContent">
       <!-- Row 1: 도넛(대형) + 전월비교 -->
@@ -2051,29 +2053,30 @@ function renderSummary() {
   const diff = totalExpense - prevExpense;
   const avgPerTx = count > 0 ? Math.round(totalExpense / count) : 0;
 
-  // KPI cards
+  const previousKey = `${month === 1 ? Number(year)-1 : year}-${String(month === 1 ? 12 : month-1).padStart(2,'0')}`;
+  const previousIncome = getIncomeForMonth(previousKey);
+  const previousRevenue = (previousIncome.yejin || 0) + (previousIncome.gihyuk || 0) + (previousIncome.etc || 0);
+  const hasPrevious = transactions.some(t => String(t.date || '').startsWith(previousKey)) || !!incomeData[previousKey];
+  const previousMoney = value => hasPrevious ? fmt(value) + '원' : '—';
+  const profitTone = monthlyProfit < 0 ? 'negative' : monthlyProfit > 0 ? 'positive' : '';
+  const expenseTone = diff > 0 ? 'negative' : diff < 0 ? 'positive' : '';
   document.getElementById('summaryStats').innerHTML = `
-    <div class="stat-card ${monthlyProfit < 0 ? 'red' : 'green'}">
-      <div class="stat-label">월 손익 <span class="stat-badge">${monthlyProfit < 0 ? '적자' : monthlyProfit > 0 ? '흑자' : '균형'}</span></div>
-      <div class="stat-value">${fmtSignedWon(monthlyProfit)}</div>
-      <div class="stat-sub">이번 달 수입 − 지출</div>
-    </div>
-    <div class="stat-card blue">
-      <div class="stat-label">총 수익</div>
-      <div class="stat-value">${fmt(totalIncome)}원</div>
-      <div class="stat-sub">등록한 월 수입 합계</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">총 지출</div>
-      <div class="stat-value">${fmt(totalExpense)}원</div>
-      <div class="stat-sub" style="line-height:1.7">카드 ${fmt(cardExpense)}원${interestExpense > 0 ? `<br>이자 ${fmt(interestExpense)}원` : ''}</div>
-    </div>
-    <div class="stat-card ${diff > 0 ? 'red' : 'green'}">
-      <div class="stat-label">전월 대비 <span class="stat-badge">${diff > 0 ? '지출 증가' : diff < 0 ? '지출 감소' : '동일'}</span></div>
-      <div class="stat-value">${fmtSignedWon(diff)}</div>
-      <div class="stat-sub">전월 ${fmt(prevExpense)}원</div>
-    </div>
-  `;
+    <section class="income-statement" aria-labelledby="statementTitle">
+      <div class="statement-heading"><h3 id="statementTitle">월간 손익</h3><span>${year}년 ${month}월</span></div>
+      <table class="statement-table"><thead><tr><th scope="col">항목</th><th scope="col">이번 달</th><th scope="col" class="statement-previous">전월</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">총 수익</th><td>${fmt(totalIncome)}원</td><td class="statement-previous">${previousMoney(previousRevenue)}</td></tr>
+          <tr><th scope="row">총 비용</th><td>${fmt(totalExpense)}원</td><td class="statement-previous">${previousMoney(prevExpense)}</td></tr>
+          <tr class="statement-profit"><th scope="row">총 손익 <small>${monthlyProfit<0?'적자':monthlyProfit>0?'흑자':'균형'}</small></th><td class="${profitTone}">${fmtSignedWon(monthlyProfit)}</td><td class="statement-previous">${hasPrevious?fmtSignedWon(previousRevenue-prevExpense):'—'}</td></tr>
+        </tbody>
+      </table>
+      <div class="statement-change"><span>전월 대비 비용</span><strong class="${expenseTone}">${hasPrevious?fmtSignedWon(diff):'비교 내역 없음'}</strong></div>
+      <details class="statement-details"><summary>수입·비용 세부 내역</summary>
+        <div class="statement-detail-grid"><dl><div><dt>두 사람 수입</dt><dd>${fmt((income.yejin||0)+(income.gihyuk||0))}원</dd></div><div><dt>기타 수입</dt><dd>${fmt(income.etc||0)}원</dd></div></dl>
+        <dl><div><dt>등록 거래 (정산 후)</dt><dd>${fmt(cardExpense)}원</dd></div><div><dt>대출 이자</dt><dd>${fmt(interestExpense)}원</dd></div><div><dt>차감한 정산금</dt><dd>${fmt(totalSettlement)}원</dd></div></dl></div>
+        <p>손익 = 총 수익 − 총 비용 · 전월 대비는 비용의 증감입니다. 정산금은 등록 거래에서 이미 차감했습니다.</p>
+      </details>
+    </section>`;
 
   // Donut chart
   const breakdown = getCatBreakdown(txs).sort((a,b) => b.total-a.total).slice(0,8);
@@ -3660,11 +3663,9 @@ function renderHeatmap() {
   const allVals = grid.flat().filter(v => v > 0);
   const maxVal = allVals.length ? Math.max(...allVals) : 1;
   const averages = grid.map(values => Math.round(values.reduce((sum,value)=>sum+value,0) / allMonths.length));
-  const topFive = new Set(averages.map((value,index)=>({value,index})).filter(row=>row.value>0)
-    .sort((a,b)=>b.value-a.value).slice(0,5).map(row=>row.index));
 
   const cellH = 36;
-  const labelW = 125, averageW = 110, topH = 38;
+  const labelW = 105, averageW = 110, topH = 38;
   const monthStart = labelW + averageW;
   const W = Math.max(el.clientWidth, monthStart + allMonths.length * 64);
   const cellW = (W - monthStart) / allMonths.length;
@@ -3696,7 +3697,6 @@ function renderHeatmap() {
 
     // 카테고리 레이블
     svgHtml += `<text x="${labelW - 10}" y="${y + cellH / 2 + 5}" text-anchor="end" font-size="12" fill="var(--text)">${CAT_ICON[cat] || ''} ${cat}</text>`;
-    if (topFive.has(ci)) svgHtml += `<text data-heatmap-top="${cat}" x="4" y="${y+cellH/2+5}" font-size="12" font-weight="700" fill="var(--accent)"><title>월평균 지출 상위 5개</title>✓</text>`;
     svgHtml += `<rect x="${labelW}" y="${y+2}" width="${averageW-4}" height="${cellH-4}" rx="5" fill="var(--accent-light)"/>`;
     svgHtml += `<text data-heatmap-average="${averages[ci]}" x="${labelW+averageW/2-2}" y="${y+cellH/2+4}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">${averages[ci].toLocaleString('ko-KR')}원</text>`;
 
@@ -3722,7 +3722,7 @@ function renderHeatmap() {
   });
   legendSvg += '</svg>';
 
-  el.innerHTML = `<p class="heatmap-guide">✓ 월평균 지출 상위 5개 · 표시된 ${allMonths.length}개월 기준 (미등록 월 제외)</p>` + svgHtml + legendSvg;
+  el.innerHTML = `<p class="heatmap-guide">월평균: 표시된 ${allMonths.length}개월 기준 (미등록 월 제외)</p>` + svgHtml + legendSvg;
 }
 
 // ④ 연간 누적 추이: 연도별 카테고리 스택 바
