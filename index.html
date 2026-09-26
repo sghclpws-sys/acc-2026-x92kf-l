@@ -8,7 +8,7 @@
 <!-- PWA -->
 <script>
 (function() {
-  var m = {name:"우리 가계부",short_name:"가계부",start_url:"./",display:"standalone",background_color:"#F2F4F6",theme_color:"#C4793A",orientation:"portrait",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E",sizes:"any",type:"image/svg+xml"}]};
+  var m = {name:"우리 가계부",short_name:"가계부",start_url:"./",display:"standalone",background_color:"#f5f6f8",theme_color:"#2563eb",orientation:"portrait",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E",sizes:"any",type:"image/svg+xml"}]};
   try {
     var b = new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
     var l = document.createElement('link');
@@ -17,7 +17,7 @@
   } catch(e) {}
 })();
 </script>
-<meta name="theme-color" content="#C4793A">
+<meta name="theme-color" content="#2563eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="가계부">
@@ -29,7 +29,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -57,6 +57,47 @@
     }
   }
   window._fbAllowed = function() { return !!auth.currentUser && householdUsers.includes(auth.currentUser.uid); };
+  window._reviewMembers = householdUsers.slice();
+  function reviewRef(month) {
+    if (!window.MonthlyReviewCore.validMonth(month)) throw new Error('월 형식 오류');
+    return doc(db, 'advice', 'monthly-review-' + month);
+  }
+  window._fbWatchReview = function(month, callback, fail) {
+    requireHouseholdUser();
+    return onSnapshot(reviewRef(month), snap => callback(snap.exists() ? snap.data() : null), fail);
+  };
+  window._fbWriteReview = async function(month, change) {
+    requireHouseholdUser();
+    const uid = auth.currentUser.uid, ref = reviewRef(month), core = window.MonthlyReviewCore;
+    await runTransaction(db, async transaction => {
+      const snap = await transaction.get(ref);
+      const ledger = await transaction.get(doc(db, 'gaegebu', 'main'));
+      requireHouseholdUser();
+      if (auth.currentUser.uid !== uid) throw new Error('로그인 계정이 변경되었습니다.');
+      if (!ledger.exists()) throw new Error('가계부를 불러올 수 없습니다.');
+      const tx = JSON.parse(ledger.data().transactions || '[]');
+      const current = snap.exists() ? snap.data() : { revision:0, comments:{} };
+      if ((current.revision || 0) !== change.revision) throw new Error('다른 기기에서 수정했습니다. 최신 내용 불러오기 후 다시 저장해주세요.');
+      const now = new Date().toISOString();
+      if (change.kind === 'config') {
+        const config = change.config;
+        // The first budget uses server transactions; later edits preserve its saved reference.
+        const reference = current.config?.baseline || core.baseline(tx, month);
+        if (core.stable(config.baseline) !== core.stable(reference)) throw new Error('평균 기준이 변경되었습니다. 최신 내용 불러오기 후 다시 설정해주세요.');
+        core.validateConfig(config);
+        transaction.set(ref, {...current, schemaVersion:1, month, revision:(current.revision || 0)+1, config, updatedAt:now, updatedBy:uid});
+      } else if (change.kind === 'comment') {
+        const fp = core.fingerprint(tx,month);
+        const localMonth = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0');
+        if (month >= localMonth || !core.rows(tx,month).length) throw new Error('거래를 업로드한 지난달부터 결산할 수 있습니다.');
+        if (!current.config || fp !== change.fingerprint) throw new Error('거래가 변경되었습니다. 최신 내역을 확인한 뒤 다시 저장해주세요.');
+        const text = String(change.text || '').trim();
+        if (!text || text.length > 200 || /[\r\n]/.test(text)) throw new Error('코멘트를 한 줄, 200자 이내로 입력해주세요.');
+        const comments = {...current.comments, [uid]:{text, fingerprint:fp, revision:current.revision, savedAt:now}};
+        transaction.set(ref, {...current, comments, updatedAt:now});
+      } else throw new Error('지원하지 않는 저장 요청입니다.');
+    });
+  };
   window._fbSaveHouseholdSummary = async function(payload) {
     requireHouseholdUser();
     const policy = await getDoc(doc(db, 'security', 'householdSummary'));
@@ -981,6 +1022,7 @@ window.showPage = function(page) {
   #detailBulkActions { padding:8px; background:var(--surface2); border-radius:8px; }
 }
 </style>
+<link rel="stylesheet" href="./household-modern.css">
 </head>
 <body>
 <!-- ===== 로그인 게이트 ===== -->
@@ -1068,23 +1110,20 @@ window.showPage = function(page) {
         </div>
       </div>
 
-      <section class="card" id="householdSummaryCard" aria-labelledby="householdSummaryTitle" style="margin-bottom:20px">
-        <div class="card-title" id="householdSummaryTitle">분석용 요약 보관</div>
-        <p style="font-size:13px;color:var(--text-muted);line-height:1.7">위에서 선택한 월의 수입·지출·카테고리 합계를 우리 가구 전용으로 보관합니다. 통합 Advisor의 자동 연결은 아직 제공되지 않습니다. 기존 AI의 가맹점 분석은 그대로 유지됩니다.</p>
-        <input type="hidden" id="householdSummaryMonth">
-        <div id="householdSummarySavedState" role="status" aria-live="polite">저장 상태 확인 중…</div>
-        <div class="summary-actions">
-          <button class="btn btn-ghost" onclick="previewHouseholdSummary()">내용 확인</button>
-          <button class="btn btn-action" id="householdSummarySave" onclick="saveHouseholdSummary()" disabled>요약 저장</button>
-          <button class="btn btn-ghost" onclick="showPage('trends')">AI 소비 조언 보기</button>
-        </div>
-        <pre id="householdSummaryPreview" style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto"></pre>
-        <div id="householdSummaryStatus" role="status" style="font-size:12px"></div>
-      </section>
+
       <!-- KPI Stats -->
       <div class="stats-row" id="summaryStats"></div>
 
       <div id="mobileSummaryContent" class="mobile-summary-stack"></div>
+
+      <!-- Row 2: 소비 관리 인사이트 (전체 너비) -->
+      <div class="card" id="smartInsightCard" style="margin-bottom:20px">
+        <div class="card-title">소비 관리 인사이트</div>
+        <a class="review-link" href="#monthlyReview">월평균 비교 · 다음 달 목표 · 부부 회고 →</a>
+        <div id="smartInsights"></div>
+      </div>
+
+      <div id="monthlyReview"></div>
 
       <div id="desktopSummaryContent">
       <!-- Row 1: 도넛(대형) + 전월비교 -->
@@ -1110,14 +1149,7 @@ window.showPage = function(page) {
         </div>
       </div>
 
-      <!-- Row 2: 소비 관리 인사이트 (전체 너비) -->
-      <div class="card" id="smartInsightCard" style="margin-bottom:20px">
-        <div class="card-title">💡 소비 관리 인사이트</div>
-        <div id="smartInsights"></div>
-      </div>
 
-      <!-- Row 3: 인사이트 카드 -->
-      <div id="insightCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
       </div>
     </div>
 
@@ -1205,7 +1237,7 @@ window.showPage = function(page) {
       <!-- AI 조언 -->
       <div class="card" id="adviceCard" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-          <div class="card-title" style="margin-bottom:0">🤖 AI 소비 조언</div>
+          <div class="card-title" style="margin-bottom:0">AI 소비 조언</div>
           <button class="btn btn-ghost btn-sm" id="adviceBtn" onclick="requestAdvice()" style="white-space:nowrap">조언 받기</button>
         </div>
         <div id="adviceMeta" style="font-size:11px;color:var(--text-muted);margin-bottom:10px"></div>
@@ -1247,12 +1279,6 @@ window.showPage = function(page) {
         <div id="budgetAlert"></div>
       </div>
 
-      <!-- 카테고리별 집중 분석 (절감 시뮬 없이) -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">카테고리별 지출 비중</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">지출 상위 카테고리 · 월평균 및 최근 트렌드</p>
-        <div id="topCatAnalysis"></div>
-      </div>
 
     </div>
 
@@ -1408,15 +1434,31 @@ window.showPage = function(page) {
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">현재 규칙 목록</div>
+      <details class="card rules-disclosure">
+        <summary class="card-title">현재 규칙 목록 <span>펼치기 / 접기</span></summary>
         <div class="table-wrap">
           <table>
             <thead><tr><th>키워드</th><th>카테고리</th><th>적용 건수</th><th>작업</th></tr></thead>
             <tbody id="rulesBody"></tbody>
           </table>
         </div>
-      </div>
+      </details>
+
+      <section class="card" id="householdSummaryCard" aria-labelledby="householdSummaryTitle" style="margin-bottom:20px">
+        <div class="card-title" id="householdSummaryTitle">분석용 요약 보관</div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7">아래에서 선택한 월의 수입·지출·카테고리 합계를 우리 가구 전용으로 보관합니다. 통합 Advisor의 자동 연결은 아직 제공되지 않습니다. 기존 AI의 가맹점 분석은 그대로 유지됩니다.</p>
+        <label class="summary-month-label" for="householdSummarySelect">보관할 월</label>
+        <input type="month" id="householdSummarySelect" onchange="refreshHouseholdSummaryState()" aria-label="분석용 요약 보관 월">
+        <input type="hidden" id="householdSummaryMonth">
+        <div id="householdSummarySavedState" role="status" aria-live="polite">저장 상태 확인 중…</div>
+        <div class="summary-actions">
+          <button class="btn btn-ghost" onclick="previewHouseholdSummary()">내용 확인</button>
+          <button class="btn btn-action" id="householdSummarySave" onclick="saveHouseholdSummary()" disabled>요약 저장</button>
+          <button class="btn btn-ghost" onclick="showPage('trends')">AI 소비 조언 보기</button>
+        </div>
+        <pre id="householdSummaryPreview" style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto"></pre>
+        <div id="householdSummaryStatus" role="status" style="font-size:12px"></div>
+      </section>
 
       <div class="card" style="margin-top:20px">
         <div class="card-title">AI 조언 설정</div>
@@ -1641,6 +1683,8 @@ window.showPage = function(page) {
 // ===== DATA =====
 </script>
 <script src="./household-summary.js"></script>
+<script src="./monthly-review-core.js"></script>
+<script src="./monthly-review.js"></script>
 <script id="txDataScript">
 window._INIT_TX = [];
 </script>
@@ -1768,7 +1812,7 @@ function _startRealtimeSync() {
       const pageId = activePage.id;
       if (pageId === 'page-summary') renderSummary();
       else if (pageId === 'page-detail') applyDetailFilter();
-      else if (pageId === 'page-trend') renderTrend();
+      else if (pageId === 'page-trends') renderTrends();
       else if (pageId === 'page-cash') renderCash();
     }
   });
@@ -1957,10 +2001,6 @@ function syncMobileSummaryView() {
   const donutLegend = document.getElementById('donutLegend');
   const topItems = document.getElementById('topItems');
   const monthCompareChart = document.getElementById('monthCompareChart');
-  const smartInsights = document.getElementById('smartInsights');
-  const insightCards = document.getElementById('insightCards');
-
-  const insightHtml = insightCards ? Array.from(insightCards.children).map(el => el.outerHTML).join('') : '';
   const donutSvgHtml = donutSvg ? donutSvg.outerHTML.replace(/ id="donutSvg"/g, '').replace(/<svg /, '<svg aria-hidden="true" ') : '';
 
   mobileRoot.innerHTML = `
@@ -1982,12 +2022,6 @@ function syncMobileSummaryView() {
       <div class="mobile-compare-wrap">${monthCompareChart ? monthCompareChart.innerHTML : ''}</div>
     </div>
 
-    <div class="card mobile-summary-section">
-      <div class="card-title">스마트 인사이트</div>
-      <div class="mobile-smart-insights">${smartInsights ? smartInsights.innerHTML : ''}</div>
-    </div>
-
-    <div class="mobile-insight-stack">${insightHtml}</div>
   `;
 
   mobileRoot.querySelectorAll('.mobile-compare-wrap > div:first-child').forEach(el => el.classList.add('compare-legend'));
@@ -2003,6 +2037,7 @@ function renderSummary() {
   const month = parseInt(document.getElementById('summaryMonth').value);
   const txs = getMonthlyTx(year, month);
   const key = `${year}-${String(month).padStart(2,'0')}`;
+  if (window.MonthlyReview) window.MonthlyReview.refresh(key);
   const income = getIncomeForMonth(key);
   const interestExpense = (income.interestExpense || 0);
   const totalIncome = (income.yejin || 0) + (income.gihyuk || 0) + (income.etc || 0);
@@ -2019,14 +2054,14 @@ function renderSummary() {
   // KPI cards
   document.getElementById('summaryStats').innerHTML = `
     <div class="stat-card ${monthlyProfit < 0 ? 'red' : 'green'}">
-      <div class="stat-label">월 손익</div>
+      <div class="stat-label">월 손익 <span class="stat-badge">${monthlyProfit < 0 ? '적자' : monthlyProfit > 0 ? '흑자' : '균형'}</span></div>
       <div class="stat-value">${fmtSignedWon(monthlyProfit)}</div>
-
+      <div class="stat-sub">이번 달 수입 − 지출</div>
     </div>
     <div class="stat-card blue">
       <div class="stat-label">총 수익</div>
       <div class="stat-value">${fmt(totalIncome)}원</div>
-
+      <div class="stat-sub">등록한 월 수입 합계</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">총 지출</div>
@@ -2034,7 +2069,7 @@ function renderSummary() {
       <div class="stat-sub" style="line-height:1.7">카드 ${fmt(cardExpense)}원${interestExpense > 0 ? `<br>이자 ${fmt(interestExpense)}원` : ''}</div>
     </div>
     <div class="stat-card ${diff > 0 ? 'red' : 'green'}">
-      <div class="stat-label">전월 대비</div>
+      <div class="stat-label">전월 대비 <span class="stat-badge">${diff > 0 ? '지출 증가' : diff < 0 ? '지출 감소' : '동일'}</span></div>
       <div class="stat-value">${fmtSignedWon(diff)}</div>
       <div class="stat-sub">전월 ${fmt(prevExpense)}원</div>
     </div>
@@ -2064,43 +2099,6 @@ function renderSummary() {
 
   // 스마트 인사이트
   renderSmartInsights(txs, totalExpense, prevExpense, year, month, totalIncome);
-
-  const _prevY = month > 1 ? Number(year) : Number(year) - 1;
-  const _prevM = month > 1 ? month - 1 : 12;
-
-  // 하단 인사이트 카드 3개: 고정지출 · 건당 평균 · 저축률
-  const fixedCats = ['관리비', '통신/렌탈'];
-  const fixedTotal = txs.filter(t => fixedCats.includes(t.category)).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-  const fixedPct = totalExpense > 0 ? (fixedTotal/totalExpense*100).toFixed(1) : 0;
-
-  const avgPerTxVal = count > 0 ? Math.round(totalExpense / count) : 0;
-  const prevAvgPerTx = (() => {
-    const pTxs = getMonthlyTx(String(_prevY), _prevM);
-    const pCount = pTxs.length;
-    const pExp = pTxs.reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-    return pCount > 0 ? Math.round(pExp / pCount) : 0;
-  })();
-  const avgDiff = avgPerTxVal - prevAvgPerTx;
-
-  const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome * 100) : null;
-
-  document.getElementById('insightCards').innerHTML = `
-    <div class="insight-card">
-      <div class="insight-label">🏠 고정 지출</div>
-      <div class="insight-value">${fmt(fixedTotal)}원</div>
-      <div class="insight-sub">관리비·통신/렌탈 · 전체의 ${fixedPct}%</div>
-    </div>
-    <div class="insight-card blue">
-      <div class="insight-label">🧾 건당 평균 지출</div>
-      <div class="insight-value">${fmt(avgPerTxVal)}원</div>
-      <div class="insight-sub">전월 대비 ${avgDiff >= 0 ? '+' : ''}${fmt(avgDiff)}원 · ${count}건</div>
-    </div>
-    <div class="insight-card ${savingsRate !== null && savingsRate >= 20 ? 'green' : ''}">
-      <div class="insight-label">💰 저축률</div>
-      <div class="insight-value">${savingsRate !== null ? savingsRate.toFixed(1) + '%' : ''}</div>
-      <div class="insight-sub">${savingsRate !== null ? `저축 가능액 ${fmt(totalIncome - totalExpense)}원` : '내역 업로드 탭에서 수익 입력'}</div>
-    </div>
-  `;
 
   syncMobileSummaryView();
 }
@@ -2334,17 +2332,10 @@ function renderSmartInsights(txs, totalExpense, prevExpense, year, month, totalI
     });
   }
 
-  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">` +
-    insights.map(ins => `
-      <div style="display:flex;gap:14px;padding:14px 16px;background:var(--surface2);border-radius:10px;border-left:3px solid ${ins.color}">
-        <div style="font-size:22px;flex-shrink:0;line-height:1.3">${ins.icon}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:${ins.color}">${ins.title}</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">${ins.body}</div>
-          ${ins.action ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;padding:6px 10px;background:var(--surface);border-radius:6px">→ ${ins.action}</div>` : ''}
-        </div>
-      </div>
-    `).join('') + `</div>`;
+  el.innerHTML = '<div class="simple-insight-list">' + insights.map(ins => `
+    <div class="simple-insight"><h4>${ins.title}</h4><p>${ins.body}</p>
+      ${ins.action ? `<small>${ins.action}</small>` : ''}
+    </div>`).join('') + '</div>';
 }
 
 function getTopIncreasedCat(bdMap, prevBdMap) {
@@ -3473,7 +3464,6 @@ function renderTrends() {
   try { renderTrendSection(); } catch(e) { console.error('renderTrendSection', e); }
   try { renderBudgetAlert(); } catch(e) { console.error('renderBudgetAlert', e); }
   try { renderHeatmap(); } catch(e) { console.error('renderHeatmap', e); }
-  try { renderTopCatAnalysis(); } catch(e) { console.error('renderTopCatAnalysis', e); }
 }
 
 // 월별 손익 차트
@@ -3669,26 +3659,32 @@ function renderHeatmap() {
   );
   const allVals = grid.flat().filter(v => v > 0);
   const maxVal = allVals.length ? Math.max(...allVals) : 1;
+  const averages = grid.map(values => Math.round(values.reduce((sum,value)=>sum+value,0) / allMonths.length));
+  const topFive = new Set(averages.map((value,index)=>({value,index})).filter(row=>row.value>0)
+    .sort((a,b)=>b.value-a.value).slice(0,5).map(row=>row.index));
 
-  const cellW = 52, cellH = 34;
-  const labelW = 100, topH = 38;
-  const W = labelW + allMonths.length * cellW;
+  const cellH = 36;
+  const labelW = 125, averageW = 110, topH = 38;
+  const monthStart = labelW + averageW;
+  const W = Math.max(el.clientWidth, monthStart + allMonths.length * 64);
+  const cellW = (W - monthStart) / allMonths.length;
   const H = topH + activeCats.length * cellH;
 
   let svgHtml = `<svg width="${W}" height="${H}" style="min-width:${W}px;display:block;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">`;
+  svgHtml += `<text x="${labelW+averageW/2}" y="14" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">월평균</text>`;
 
   // 월 레이블
   allMonths.forEach(({year, month}, i) => {
-    const x = labelW + i * cellW + cellW / 2;
+    const x = monthStart + i * cellW + cellW / 2;
     const isJan = month === 1;
-    svgHtml += `<text x="${x}" y="14" text-anchor="middle" font-size="10" fill="${isJan ? 'var(--accent)' : '#8A7F74'}" font-weight="${isJan ? 700 : 400}" font-family="Malgun Gothic, 맑은 고딕, Pretendard, sans-serif">${String(month).padStart(2,'0')}월</text>`;
+    svgHtml += `<text x="${x}" y="14" text-anchor="middle" font-size="12" fill="${isJan ? 'var(--accent)' : 'var(--text-muted)'}" font-weight="600">${String(month).padStart(2,'0')}월</text>`;
   });
 
   // 연도 구분선
   let prevYear = null;
   allMonths.forEach(({year}, i) => {
     if (year !== prevYear && prevYear !== null) {
-      const x = labelW + i * cellW;
+      const x = monthStart + i * cellW;
       svgHtml += `<line x1="${x}" y1="20" x2="${x}" y2="${H}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.5"/>`;
     }
     prevYear = year;
@@ -3699,15 +3695,18 @@ function renderHeatmap() {
     const color = CAT_COLORS[cat] || '#aaa';
 
     // 카테고리 레이블
-    svgHtml += `<text x="${labelW - 10}" y="${y + cellH / 2 + 5}" text-anchor="end" font-size="12" fill="#555">${CAT_ICON[cat] || ''} ${cat}</text>`;
+    svgHtml += `<text x="${labelW - 10}" y="${y + cellH / 2 + 5}" text-anchor="end" font-size="12" fill="var(--text)">${CAT_ICON[cat] || ''} ${cat}</text>`;
+    if (topFive.has(ci)) svgHtml += `<text data-heatmap-top="${cat}" x="4" y="${y+cellH/2+5}" font-size="12" font-weight="700" fill="var(--accent)"><title>월평균 지출 상위 5개</title>✓</text>`;
+    svgHtml += `<rect x="${labelW}" y="${y+2}" width="${averageW-4}" height="${cellH-4}" rx="5" fill="var(--accent-light)"/>`;
+    svgHtml += `<text data-heatmap-average="${averages[ci]}" x="${labelW+averageW/2-2}" y="${y+cellH/2+4}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">${averages[ci].toLocaleString('ko-KR')}원</text>`;
 
     allMonths.forEach(({year, month}, mi) => {
       const val = grid[ci][mi];
       const opacity = val > 0 ? 0.1 + (val / maxVal) * 0.82 : 0.1;
-      const x = labelW + mi * cellW;
+      const x = monthStart + mi * cellW;
       svgHtml += `<rect x="${x + 2}" y="${y + 2}" width="${cellW - 4}" height="${cellH - 4}" rx="5" fill="${color}" fill-opacity="${opacity.toFixed(2)}"/>`;
       const label = val === 0 ? '0만' : (val >= 10000 ? `${Math.round(val/10000)}만` : `${(val/10000).toFixed(1)}만`);
-      svgHtml += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 4}" text-anchor="middle" font-size="10" fill="${opacity > 0.55 ? '#fff' : '#444'}" font-family="Pretendard" font-weight="600">${label}</text>`;
+      svgHtml += `<text x="${x + cellW / 2}" y="${y + cellH / 2 + 4}" text-anchor="middle" font-size="12" fill="${opacity > 0.55 ? '#fff' : '#444'}" font-weight="600">${label}</text>`;
     });
   });
 
@@ -3716,14 +3715,14 @@ function renderHeatmap() {
   // 범례 (색상 농도 설명)
   const legendSteps = [0.1, 0.3, 0.55, 0.7, 0.92];
   const legendLabels = ['최소', '', '중간', '', '최대'];
-  let legendSvg = `<svg width="200" height="40" style="margin-top:14px;display:block"><text x="0" y="16" font-size="10" fill="#8A7F74">지출 강도:</text>`;
+  let legendSvg = `<svg width="224" height="44" style="margin-top:14px;display:block;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif"><text x="0" y="16" font-size="12" fill="var(--text-muted)">지출 강도:</text>`;
   legendSteps.forEach((op, i) => {
-    legendSvg += `<rect x="${55 + i * 26}" y="4" width="22" height="14" rx="3" fill="var(--accent)" fill-opacity="${op}"/>`;
-    if (legendLabels[i]) legendSvg += `<text x="${55 + i * 26 + 11}" y="30" text-anchor="middle" font-size="9" fill="#8A7F74">${legendLabels[i]}</text>`;
+    legendSvg += `<rect x="${66 + i * 30}" y="4" width="26" height="14" rx="3" fill="var(--accent)" fill-opacity="${op}"/>`;
+    if (legendLabels[i]) legendSvg += `<text x="${66 + i * 30 + 13}" y="34" text-anchor="middle" font-size="12" fill="var(--text-muted)">${legendLabels[i]}</text>`;
   });
   legendSvg += '</svg>';
 
-  el.innerHTML = svgHtml + legendSvg;
+  el.innerHTML = `<p class="heatmap-guide">✓ 월평균 지출 상위 5개 · 표시된 ${allMonths.length}개월 기준 (미등록 월 제외)</p>` + svgHtml + legendSvg;
 }
 
 // ④ 연간 누적 추이: 연도별 카테고리 스택 바
@@ -3782,66 +3781,6 @@ function renderYearlyTrend() {
 }
 
 // ⑤ 상위 카테고리 집중 분석
-function renderTopCatAnalysis() {
-  const el = document.getElementById('topCatAnalysis');
-  if (!el) return;
-  const allMonths = getMonthRange();
-  if (allMonths.length < 3) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">3개월 이상 데이터가 필요합니다</div>'; return; }
-
-  const monthCount = allMonths.length;
-  const catTotals = CATEGORIES.map(cat => {
-    const total = transactions.filter(t => t.category === cat).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-    const avg = Math.round(total / monthCount);
-    return { cat, total, avg };
-  }).filter(x => x.total > 0).sort((a,b) => b.total - a.total).slice(0, 5);
-
-  const grandTotal = transactions.reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
-      ${catTotals.map(({cat, total, avg}) => {
-        const pct = grandTotal > 0 ? (total/grandTotal*100).toFixed(1) : 0;
-        const color = CAT_COLORS[cat] || '#aaa';
-        // 월별 트렌드 (최근 6개월)
-        const recentMonths = allMonths.slice(-6);
-        const recentVals = recentMonths.map(({year, month}) =>
-          getMonthlyTx(year, month).filter(t => t.category === cat).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0)
-        );
-        const maxV = Math.max(...recentVals, 1);
-        const barW = 14, gap = 4, totalBars = recentVals.length;
-        const svgW = totalBars * (barW + gap) - gap;
-        const sparkline = recentVals.map((v, i) => {
-          const x = i * (barW + gap);
-          const h = Math.max(Math.round(v / maxV * 30), v > 0 ? 2 : 0);
-          const y = 30 - h;
-          return `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="2" fill="${color}" opacity="0.8"/>`;
-        }).join('');
-        const monthLabels = recentMonths.map((m, i) => {
-          const x = i * (barW + gap) + barW / 2;
-          return `<text x="${x}" y="44" text-anchor="middle" font-size="9" fill="#8A7F74">${m.month}월</text>`;
-        }).join('');
-
-        const last3 = recentVals.slice(-3);
-        const trend = last3.length >= 2
-          ? (last3[last3.length-1] > last3[0] ? '📈' : last3[last3.length-1] < last3[0] ? '📉' : '➡️')
-          : '';
-
-        return `
-          <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;border-top:3px solid ${color}">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div>
-                <div style="font-size:13px;font-weight:700">${CAT_ICON[cat]||''} ${cat} ${trend}</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">전체의 ${pct}% · 월평균 ${fmt(avg)}원</div>
-              </div>
-            </div>
-            <svg width="${svgW}" height="48" style="display:block;overflow:visible">
-              ${sparkline}${monthLabels}
-            </svg>
-          </div>`;
-      }).join('')}
-    </div>`;
-}
-
 function renderYearlyChart() {
   const el = document.getElementById('yearlyChart');
   if (!el) return;
@@ -4016,10 +3955,10 @@ function renderTrendChart(monthlyData) {
   if (!monthlyData.length) { svg.innerHTML = ''; labelsEl.innerHTML = ''; return; }
 
   const isMobile = window.innerWidth <= 768 || document.body.classList.contains('mobile-app');
-  const W = isMobile ? (svg.getBoundingClientRect().width || 320) : 800, H = 200;
-  const axisFontSize = isMobile ? 14 : 10;
+  const W = svg.getBoundingClientRect().width || 320, H = isMobile ? 200 : 260;
+  const axisFontSize = 12;
   const maxLabel = Math.round(Math.max(...monthlyData.map(m => m.total), 1) / 10000) + '만';
-  const pad = {top:20, right:20, bottom:10, left:isMobile ? Math.max(60, maxLabel.length * axisFontSize + 8) : 60};
+  const pad = {top:20, right:24, bottom:10, left:Math.max(60, maxLabel.length * axisFontSize + 8)};
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
   const n = monthlyData.length;
@@ -4039,7 +3978,7 @@ function renderTrendChart(monthlyData) {
   for (let i=0; i<=4; i++) {
     const val = maxVal * i / 4;
     const y = pad.top + plotH - (val / maxVal * plotH);
-    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="${axisFontSize}" font-weight="${isMobile ? 600 : 400}" fill="var(--text-muted)" font-family="Pretendard">${Math.round(val/10000)}만</text>`;
+    yLabels += `<text x="${pad.left-8}" y="${y+4}" text-anchor="end" font-size="${axisFontSize}" font-weight="600" fill="var(--text-muted)">${Math.round(val/10000)}만</text>`;
     yLabels += `<line x1="${pad.left}" y1="${y}" x2="${pad.left+plotW}" y2="${y}" stroke="#E4DDD0" stroke-width="0.5"/>`;
   }
 
@@ -4049,6 +3988,7 @@ function renderTrendChart(monthlyData) {
   ).join('');
 
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.fontFamily = "'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif";
   svg.style.width = '100%'; svg.style.display = 'block';
   svg.innerHTML = yLabels +
     (areaD ? `<path d="${areaD}" fill="${color}" opacity="0.1"/>` : '') +
@@ -4062,7 +4002,7 @@ function renderTrendChart(monthlyData) {
   labelsEl.innerHTML = monthlyData.map((m, i) => {
     if (i % showEvery !== 0) return '';
     const leftPct = ((pad.left + i * step) / W * 100).toFixed(2);
-    return `<span style="position:absolute;left:${leftPct}%;transform:translateX(-50%);font-size:10px;color:var(--text-muted);white-space:nowrap">${m.label}</span>`;
+    return `<span style="position:absolute;left:${leftPct}%;transform:translateX(-50%);font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">${m.label}</span>`;
   }).join('');
 }
 
@@ -5086,21 +5026,16 @@ async function requestAdvice() {
 function _paintAdvice(items, generatedAt, stale) {
   const body = document.getElementById('adviceBody');
   const meta = document.getElementById('adviceMeta');
-  const colors = { warn: 'var(--danger)', good: 'var(--success)', info: 'var(--accent2)' };
-  const icons = { warn: '⚠️', good: '✅', info: '💡' };
-
-  body.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">'
-    + items.map(function(it) {
-        const c = colors[it.level] || 'var(--text-muted)';
-        return '<div style="display:flex;gap:12px;padding:13px 15px;background:var(--surface2);border-radius:10px;border-left:3px solid ' + c + '">'
-          + '<div style="font-size:18px;flex-shrink:0;line-height:1.4">' + (icons[it.level] || '💡') + '</div>'
-          + '<div style="flex:1;min-width:0">'
-          + '<div style="font-size:13px;font-weight:700;margin-bottom:3px;color:' + c + '">' + (it.title || '') + '</div>'
-          + '<div style="font-size:13px;line-height:1.65">' + (it.body || '') + '</div>'
-          + (it.impact ? '<div style="font-size:11px;color:var(--text-muted);margin-top:7px;padding:6px 10px;background:var(--surface);border-radius:6px">💰 절감 여력: ' + it.impact + '</div>' : '')
-          + '</div></div>';
-      }).join('')
-    + '</div>';
+  const labels = {warn:'점검할 소비', good:'좋은 흐름', info:'소비 제안'};
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  body.innerHTML = '<div class="advice-grid">' + items.map(function(it, index) {
+    const level = Object.hasOwn(labels,it.level) ? it.level : 'info';
+    return `<article class="advice-item">
+      <div class="advice-item-meta"><span class="advice-number">${String(index+1).padStart(2,'0')}</span><span class="advice-tag ${level}">${labels[level]}</span></div>
+      <h3>${escape(it.title)}</h3><p>${escape(it.body)}</p>
+      ${it.impact ? `<div class="advice-impact"><span>예상 절감 여력</span><strong>${escape(it.impact)}</strong></div>` : ''}
+    </article>`;
+  }).join('') + '</div>';
 
   if (meta) {
     const d = generatedAt ? new Date(generatedAt) : null;
@@ -5138,8 +5073,10 @@ let _summaryStateRequest = 0;
 let _summarySaving = false;
 async function refreshHouseholdSummaryState() {
   const request = ++_summaryStateRequest;
-  const month = document.getElementById('summaryYear').value + '-' +
-    document.getElementById('summaryMonth').value.padStart(2, '0');
+  const selector = document.getElementById('householdSummarySelect');
+  const month = selector.value || (document.getElementById('summaryYear').value + '-' +
+    document.getElementById('summaryMonth').value.padStart(2, '0'));
+  selector.value = month;
   document.getElementById('householdSummaryMonth').value = month;
   document.getElementById('householdSummaryTitle').textContent = month + ' 분석용 요약 보관';
   _summaryPreview = null;
@@ -5238,6 +5175,7 @@ async function saveHouseholdSummary() {
 let _appBooted = false;
 
 function showAuthGate() {
+  if (window.MonthlyReview) window.MonthlyReview.reset();
   ++_summaryStateRequest;
   _summaryPreview = null;
   const g = document.getElementById('authGate');
@@ -5353,6 +5291,7 @@ async function _init() {
     if (typeof syncMobileSummaryView === 'function') requestAnimationFrame(syncMobileSummaryView);
     if (document.getElementById('page-trends')?.classList.contains('active')) {
       requestAnimationFrame(renderTrendSection);
+      requestAnimationFrame(renderHeatmap);
     }
   }
   applyMobileLayout();

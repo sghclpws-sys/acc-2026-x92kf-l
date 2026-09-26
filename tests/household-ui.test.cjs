@@ -7,13 +7,13 @@ const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html
 
 test('private rendered containers are empty in public HTML', () => {
   for (const id of ['summaryStats', 'donutSvg', 'donutLegend', 'topItems', 'monthCompareChart',
-    'smartInsights', 'insightCards', 'detailBody', 'detailPagination', 'uploadCardTotals',
+    'smartInsights', 'detailBody', 'detailPagination', 'uploadCardTotals',
     'incomeGrid', 'catModalStore', 'txDetailTitle', 'txDetailDate', 'txDetailAmount', 'toast']) {
     assert.match(html, new RegExp('id="' + id + '"[^>]*>\\s*</'), id);
   }
   assert.match(html, /id="authGate"[^>]*display:flex/);
   const card = html.indexOf('id="householdSummaryCard"');
-  assert(card > html.indexOf('id="page-summary"') && card < html.indexOf('id="page-detail"'));
+  assert(card > html.indexOf('id="page-settings"'));
   assert.match(html, /id="detailBulkActions"[^>]*hidden/);
 });
 
@@ -45,7 +45,7 @@ test('summary states compare saved data and invalidate preview on month changes'
   c.transactions.push({ date: '2026-08-01', amount: 100, category: '기타' });
   await c.refreshHouseholdSummaryState();
   assert.match(get('householdSummarySavedState').textContent, /변경사항 있음/);
-  get('summaryMonth').value = '9';
+  get('householdSummarySelect').value = '2026-09';
   await c.refreshHouseholdSummaryState();
   assert.equal(get('householdSummaryMonth').value, '2026-09');
   assert.equal(get('householdSummarySave').disabled, true);
@@ -74,10 +74,23 @@ test('late state responses cannot overwrite a newly selected month', async () =>
   c.window._fbLoadHouseholdSummary = () => new Promise(r => { resolve = r; });
   const oldRequest = c.refreshHouseholdSummaryState();
   c.window._fbLoadHouseholdSummary = async () => null;
-  get('summaryMonth').value = '9';
+  get('householdSummarySelect').value = '2026-09';
   await c.refreshHouseholdSummaryState();
   resolve(HouseholdSummary.build({ month: '2026-08', transactions: [], income: null }));
   await oldRequest;
   assert.match(get('householdSummarySavedState').textContent, /미저장/);
   assert.equal(get('householdSummaryMonth').value, '2026-09');
+});
+
+test('settings summary month stays independent of the dashboard month', async () => {
+  const { context:c, get } = setup();
+  await c.refreshHouseholdSummaryState();
+  assert.equal(get('householdSummarySelect').value, '2026-08');
+  get('summaryMonth').value = '9';
+  await c.refreshHouseholdSummaryState();
+  assert.equal(get('householdSummaryMonth').value, '2026-08');
+  get('householdSummarySelect').value = '2026-07';
+  await c.refreshHouseholdSummaryState();
+  c.previewHouseholdSummary();
+  assert.match(get('householdSummaryPreview').textContent, /2026-07/);
 });
