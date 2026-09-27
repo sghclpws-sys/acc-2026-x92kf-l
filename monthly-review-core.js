@@ -34,12 +34,13 @@
     const sums = months.map(m => totals(tx,m));
     const average = Object.fromEntries(CATS.map(c => [c, sums.length ? Math.floor(sums.reduce((s,r)=>s+r[c],0)/sums.length) : 0]));
     const max = Object.fromEntries(CATS.filter(c=>c!=='여행').map(c=>[c,Math.max(0,average[c])]));
-    const sum = Object.values(max).reduce((a,b)=>a+b,0), ratio = sum > CAP ? CAP / sum : 1;
-    const budget = Object.fromEntries(Object.entries(max).map(([c,v])=>[c,Math.floor(v*ratio)]));
+    const automaticMax = Object.fromEntries(Object.entries(max).map(([c,v])=>[c,['세금','기타','미분류'].includes(c)?0:v]));
+    const sum = Object.values(automaticMax).reduce((a,b)=>a+b,0), ratio = sum > CAP ? CAP / sum : 1;
+    const budget = Object.fromEntries(Object.entries(automaticMax).map(([c,v])=>[c,Math.floor(v*ratio)]));
     if (sum > CAP) {
       let remainder = CAP - Object.values(budget).reduce((a,b)=>a+b,0);
-      const order = Object.keys(max).sort((a,b)=>(max[b]*ratio-budget[b])-(max[a]*ratio-budget[a]));
-      for (const c of order) if (remainder>0 && budget[c]<max[c]) { budget[c]++;remainder--; }
+      const order = Object.keys(automaticMax).sort((a,b)=>(automaticMax[b]*ratio-budget[b])-(automaticMax[a]*ratio-budget[a]));
+      for (const c of order) if (remainder>0 && budget[c]<automaticMax[c]) { budget[c]++;remainder--; }
     }
     for (const c of Object.keys(budget)) budget[c] = roundBudget(budget[c]);
     return { months, initial, average, max, budget };

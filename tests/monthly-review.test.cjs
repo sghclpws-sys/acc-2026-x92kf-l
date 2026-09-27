@@ -11,6 +11,19 @@ const tx=[
   {date:'2026-08-02',category:'외식',amount:100000,store:'식당'},
 ];
 function config(month='2026-08') {const b=C.baseline(tx,month);return {baseline:b,budget:b.budget,reasons:{},goals:[]};}
+test('automatic budgets leave tax, other and uncategorized at zero without reducing other allocations',()=>{
+  for(const amount of [100000,3000000]) {
+    const base=[{date:'2026-07-01',category:'외식',amount}];
+    const excluded=['세금','기타','미분류'];
+    const b=C.baseline([...base,...excluded.map(category=>({date:'2026-07-02',category,amount:9000000}))],'2026-08');
+    assert.deepEqual(b.budget,C.baseline(base,'2026-08').budget);
+    for(const cat of excluded) {
+      assert.equal(b.budget[cat],0);
+      assert.equal(b.average[cat],9000000);
+    }
+    C.validateConfig({baseline:b,budget:b.budget,goals:[]});
+  }
+});
 test('budgets drop amounts below ten thousand won without exceeding maxima',()=>{
   assert.equal(C.roundBudget(392091),390000);
   assert.equal(C.roundBudget(9999),0);

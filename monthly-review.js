@@ -101,7 +101,7 @@
         <p class="review-note">+는 평균보다 더 사용, −는 덜 사용한 금액입니다.${hasData?'':' 아직 거래가 없어 비교를 표시하지 않습니다.'}</p>
       </section>
       <details class="review-details" data-budget-editor><summary>월 예산 조정 <span>${current?.config?'저장한 예산 수정':'자동 배정한 초안 확인·수정'}</span></summary>
-        <p class="review-note">각 항목은 위 월평균 이하, 여행 제외 총합은 200만 원 이하로 설정합니다. 만원 미만은 버립니다 (392,091 → 390,000원). 저장한 평균 기준은 고정됩니다.</p>
+        <p class="review-note">각 항목은 위 월평균 이하, 여행 제외 총합은 200만 원 이하로 설정합니다. 자동 배분 시 세금·기타·미분류는 0원으로 시작합니다. 만원 미만은 버립니다 (392,091 → 390,000원). 저장한 평균 기준은 고정됩니다.</p>
         <div class="review-budget-grid">${C.CATS.map((c,i)=>c==='여행'?'':`<label>${esc(c)}<input type="text" inputmode="numeric" data-field="budget-${i}" data-budget="${esc(c)}" value="${C.roundBudget(config.budget[c]).toLocaleString('ko-KR')}" aria-label="${esc(c)} 월 예산"><small>최대 ${won(C.roundBudget(b.max[c]))}</small></label>`).join('')}</div>
         <div class="review-total" data-total></div>
       </details>
