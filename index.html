@@ -1634,9 +1634,9 @@ window.showPage = function(page) {
           <div style="font-size:13px" id="txDetailCard">-</div>
         </div>
       </div>
-      <div id="txDetailNoteRow" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: none;">
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">메모</div>
-        <div style="font-size:13px" id="txDetailNote"></div>
+      <div id="txDetailNoteRow" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+        <label for="txDetailNote" style="display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px">메모</label>
+        <input type="text" id="txDetailNote" placeholder="메모 입력..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:16px;font-family:inherit;color:var(--text);background:var(--surface)">
       </div>
     </div>
 
@@ -3198,14 +3198,8 @@ function openTxDetailModal(id) {
   const catSelectEl = document.getElementById('txDetailCatSelect');
   if (catSelectEl) catSelectEl.value = t.category || '미분류';
 
-  const noteRow = document.getElementById('txDetailNoteRow');
   const noteEl = document.getElementById('txDetailNote');
-  if (t.note) {
-    noteRow.style.display = '';
-    noteEl.textContent = t.note;
-  } else {
-    noteRow.style.display = 'none';
-  }
+  noteEl.value = t.note || '';
 
   const settlementInput = document.getElementById('settlementInput');
   settlementInput.value = t.settlement > 0 ? t.settlement : '';
@@ -3273,6 +3267,7 @@ function saveSettlementFromModal() {
 
   t.settlement = val > 0 ? Math.min(val, Math.max(t.amount, 0)) : 0;
   t.category = nextCategory;
+  t.note = document.getElementById('txDetailNote').value;
 
   try { saveData(); } catch (e) { console.error('상세 팝업 저장 오류:', e); }
   try { if (typeof applyDetailFilter === 'function') applyDetailFilter(); else renderDetailPage(); } catch (e) { console.error(e); }
