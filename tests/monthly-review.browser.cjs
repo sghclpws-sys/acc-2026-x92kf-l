@@ -49,17 +49,17 @@ const assert=require('node:assert/strict');
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.body.classList.add('mobile-app'));
   await page.locator('[data-field="goal-cat-0"]').evaluate(e=>e.closest('details').open=true);
-  await page.locator('[data-field="goal-cat-0"]').selectOption('외식');
+  await page.locator('[data-field="goal-cat-0"]').selectOption('외식·카페');
   await page.locator('[data-field="goal-limit-0"]').fill('200000');
-  assert.equal(await page.locator('[data-field="goal-cat-0"]').inputValue(),'외식');
+  assert.equal(await page.locator('[data-field="goal-cat-0"]').inputValue(),'외식·카페');
   await page.locator('[data-action="save-config"]').click();
   await page.waitForFunction(()=>!!testDocs['2026-08']?.config);
-  await page.locator('[data-field="comment"]').fill('이번 달 외식은 다음 달에 조금 줄여보자.');
+  await page.locator('[data-field="comment"]').fill('이번 달 외식·카페 지출은 다음 달에 조금 줄여보자.');
   await page.locator('[data-field="confirmed"]').check();
   await page.evaluate(()=>failSave=true);
   await page.locator('[data-action="comment"]').click();
   await page.waitForFunction(()=>document.querySelector('[data-message]').textContent.includes('실패'));
-  assert.equal(await page.locator('[data-field="comment"]').inputValue(),'이번 달 외식은 다음 달에 조금 줄여보자.');
+  assert.equal(await page.locator('[data-field="comment"]').inputValue(),'이번 달 외식·카페 지출은 다음 달에 조금 줄여보자.');
   await page.evaluate(()=>failSave=false);
   await page.locator('[data-action="comment"]').click();
   await page.waitForFunction(()=>!!testDocs['2026-08']?.comments.a);
@@ -92,7 +92,7 @@ const assert=require('node:assert/strict');
   const app=await browser.newPage({viewport:{width:390,height:844}}), appErrors=[];
   app.on('pageerror',e=>appErrors.push(e.message));
   await app.addInitScript(()=>{
-   const cats=['외식','생활비','여행','쇼핑','관리비','주유'];
+   const cats=['외식·카페','생활비','여행','쇼핑','관리비','주유'];
    const tx=[];for(const m of ['06','07','08'])for(const c of cats)tx.push({id:m+c,date:`2026-${m}-02`,category:c,store:'테스트 '+c,amount:(cats.indexOf(c)+1)*100000,settlement:0,card:'테스트'});
    window._fbReady=true;window._fbAllowed=()=>true;window._fbUser=()=>({uid:'a',email:'test@example.invalid'});
    window._fbOnAuth=cb=>queueMicrotask(()=>cb(_fbUser()));window._reviewMembers=['a','b'];
@@ -119,7 +119,7 @@ const assert=require('node:assert/strict');
    _paintAdvice([
     {title:'반복되는 지출부터 확인해보세요',body:'매달 반복되는 결제를 살펴보고 사용 빈도가 낮은 항목부터 정리해보세요. 다음 달 실적과 비교하면 변화가 보입니다.',impact:'월 약 3만 원 · 월 구독료 기준',level:'warn'},
     {title:'계획한 소비는 잘 유지하고 있어요',body:'지난달과 비슷한 수준을 유지했습니다. 계속 유지할 습관을 한 가지 정해보세요.',impact:null,level:'good'},
-    {title:'다음 달에는 한 가지 목표에 집중하세요',body:'여러 항목을 동시에 줄이기보다 실천할 목표를 하나 정해보세요.',impact:'월 약 5만 원 · 외식 1회 기준',level:'info'}
+    {title:'다음 달에는 한 가지 목표에 집중하세요',body:'여러 항목을 동시에 줄이기보다 실천할 목표를 하나 정해보세요.',impact:'월 약 5만 원 · 외식·카페 1회 기준',level:'info'}
    ],'2026-09-26',false);
   });
   for(const width of [320,390,768,1024,1200,1440,1920]){
@@ -164,7 +164,7 @@ const assert=require('node:assert/strict');
      assert(fonts.every(s=>Math.abs(s-12)<0.1),`chart effective font sizes at ${width}: ${fonts}`);
      assert.equal(await app.locator('#topCatAnalysis').count(),0);
      assert.equal(await app.locator('[data-heatmap-top]').count(),0);
-     assert.equal(await app.locator('[data-heatmap-top="외식"]').count(),0);
+     assert.equal(await app.locator('[data-heatmap-top="외식·카페"]').count(),0);
      assert.equal(await app.locator('[data-heatmap-average="600000"]').count(),1);
      assert.equal(await app.locator('.advice-item').count(),3);
     }

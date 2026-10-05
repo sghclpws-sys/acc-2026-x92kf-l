@@ -49,13 +49,13 @@
     };
     unsubscribe.push(window._fbWatchReview(month, doc=>{
       if(id!==token || !window._fbAllowed?.()) return;
-      current=doc; ready=true;
+      current=doc ? {...doc, config:C.normalizeConfig(doc.config)} : doc; ready=true;
       if (dirty || busy) { message('저장 내용이 갱신되었습니다. 입력 중인 내용은 유지됩니다.'); return; }
       render();
     },fail));
     unsubscribe.push(window._fbWatchReview(C.shift(month,-1),doc=>{
       if(id!==token || !window._fbAllowed?.()) return;
-      previous=doc; priorReady=true;
+      previous=doc ? {...doc, config:C.normalizeConfig(doc.config)} : doc; priorReady=true;
       if(!dirty && !busy && ready) render();
     },()=>{ if(id===token) { priorReady=false; message('지난달 목표를 불러오지 못했습니다. 다시 불러와주세요.',true); } }));
   }

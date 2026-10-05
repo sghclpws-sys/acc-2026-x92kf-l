@@ -82,7 +82,7 @@
       if (change.kind === 'config') {
         const config = change.config;
         // The first budget uses server transactions; later edits preserve its saved reference.
-        const reference = current.config?.baseline || core.baseline(tx, month);
+        const reference = core.normalizeConfig(current.config)?.baseline || core.baseline(tx, month);
         if (core.stable(config.baseline) !== core.stable(reference)) throw new Error('평균 기준이 변경되었습니다. 최신 내용 불러오기 후 다시 설정해주세요.');
         core.validateConfig(config);
         transaction.set(ref, {...current, schemaVersion:1, month, revision:(current.revision || 0)+1, config, updatedAt:now, updatedBy:uid});
@@ -211,7 +211,7 @@
     --accent2-light: #EBF3FC;
     --danger: #C43A3A;
     --success: #3AA87D;
-    --cat-외식: #E8734A;
+    --cat-외식·카페: #E8734A;
     --cat-여행: #7B62B8;
     --cat-쇼핑: #E8A84A;
     --cat-관계비용: #4ABCE8;
@@ -415,7 +415,8 @@
     cursor: pointer;
   }
 
-  .cat-외식 { background: #FDE8E0; color: #C4462A; }
+  .cat-culture { background: #E5EFFB; color: #34679F; }
+  .cat-외식·카페 { background: #FDE8E0; color: #C4462A; }
   .cat-생필품 { background: #DDE8F5; color: #2A5CA4; }
   .cat-생활비 { background: #D6F2F0; color: #1A8A82; }
   .cat-여행 { background: #EAE0F5; color: #6240A8; }
@@ -1111,6 +1112,19 @@ window.showPage = function(page) {
       </div>
 
 
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">함께 결산하기</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">위에서 선택한 월의 작업을 마친 뒤, 다음 단계를 공유해주세요.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('settlement')">1. 정산 입력 요청 공유</button>
+          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('review')">2. 회고 작성 요청 공유</button>
+        </div>
+        <div id="monthlyShareFallback" hidden style="margin-top:12px">
+          <label for="monthlyShareText" style="display:block;font-size:13px;margin-bottom:6px">아래 내용을 복사해서 카카오톡에 보내주세요.</label>
+          <textarea id="monthlyShareText" readonly rows="5" style="width:100%;box-sizing:border-box;font-size:16px"></textarea>
+        </div>
+      </div>
+
       <div class="summary-overview" id="summaryOverview">
       <!-- 월간 손익과 소비 관리 인사이트 -->
       <div id="summaryStats"></div>
@@ -1179,7 +1193,7 @@ window.showPage = function(page) {
       <!-- 필터: 카테고리+카드사 한 줄 -->
       <div class="filter-bar" style="margin-bottom:8px;gap:8px;align-items:center">
         <span style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap">🔽 필터</span>
-        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식">🍽 외식</option><option value="생활비">🛒 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금">📄 세금</option><option value="기타">🗂 기타</option><option value="미분류">❓ 미분류</option></select>
+        <select id="detailCat" onchange="applyDetailFilter()"><option value="">전체 카테고리</option><option value="외식·카페">🍽 외식·카페</option><option value="문화·여가">🎬 문화·여가</option><option value="생활비">🛒 생활비</option><option value="여행">✈️ 여행</option><option value="쇼핑">🛍 쇼핑</option><option value="관계비용">🎁 관계비용</option><option value="교육/놀이">📚 교육/놀이</option><option value="관리비">🏠 관리비</option><option value="통신/렌탈">📡 통신/렌탈</option><option value="주유">⛽ 주유</option><option value="세금">📄 세금</option><option value="기타">🗂 기타</option><option value="미분류">❓ 미분류</option></select>
         <select id="detailCard" onchange="applyDetailFilter()"><option value="">전체 카드사</option><option value="__NO_CARD__">카드사 미지정</option><option value="삼성카드">삼성카드</option><option value="우리카드">우리카드</option><option value="현대백화점카드">현대백화점카드</option><option value="SC현대카드">SC현대카드</option><option value="국민카드">국민카드</option><option value="BC카드">BC카드</option></select>
       </div>
       <!-- 검색과 일괄 작업을 분리해 좁은 화면에서도 사용할 수 있습니다. -->
@@ -1420,7 +1434,7 @@ window.showPage = function(page) {
         <div class="filter-bar">
           <input type="text" id="ruleKeyword" placeholder="가맹점명에 포함된 단어 (예: 쿠팡)" style="width:200px;height:38px">
           <select id="ruleCat" style="height:38px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border)">
-            <option value="외식">🍽 외식</option>
+            <option value="외식·카페">🍽 외식·카페</option><option value="문화·여가">🎬 문화·여가</option>
             <option value="생활비">🛒 생활비</option>
             <option value="여행">✈️ 여행</option>
             <option value="쇼핑">🛍 쇼핑</option>
@@ -1495,7 +1509,7 @@ window.showPage = function(page) {
     <h3>카테고리 변경</h3>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px" id="catModalStore"></p>
     <select id="catModalSelect" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif">
-      <option value="외식">🍽 외식</option>
+      <option value="외식·카페">🍽 외식·카페</option><option value="문화·여가">🎬 문화·여가</option>
       <option value="생활비">🛒 생활비</option>
       <option value="여행">✈️ 여행</option>
       <option value="쇼핑">🛍 쇼핑</option>
@@ -1557,7 +1571,7 @@ window.showPage = function(page) {
       <div class="input-group">
         <div class="input-label">카테고리 <span id="addCatHint" style="color:var(--accent);font-size:11px;margin-left:6px"></span></div>
         <select id="addCat" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:&#39;Pretendard&#39;,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--surface);color:var(--text)">
-          <option value="외식">🍽 외식</option>
+          <option value="외식·카페">🍽 외식·카페</option><option value="문화·여가">🎬 문화·여가</option>
           <option value="생활비">🛒 생활비</option>
           <option value="여행">✈️ 여행</option>
           <option value="쇼핑">🛍 쇼핑</option>
@@ -1611,7 +1625,7 @@ window.showPage = function(page) {
           <div id="txDetailCat" style="margin-bottom:8px"><span class="cat-badge cat-미분류">❓ 미분류</span></div>
           <select id="txDetailCatSelect" class="cat-select" style="width:100%;max-width:180px"
             onchange="handleTxDetailCategoryChange(this.value)">
-            <option value="외식">🍽 외식</option>
+            <option value="외식·카페">🍽 외식·카페</option><option value="문화·여가">🎬 문화·여가</option>
             <option value="생활비">🛒 생활비</option>
             <option value="여행">✈️ 여행</option>
             <option value="쇼핑">🛍 쇼핑</option>
@@ -1728,7 +1742,13 @@ function mergeAuthoritativeJanFeb(storedTx) {
 
 
 // 카테고리 통합 마이그레이션 (v1: 생필품→생활비, 가스비→관리비, 세금/기타→세금)
+function normalizeFoodCategories() {
+  transactions.forEach(t => { if (t.category === '외식') t.category = '외식·카페'; });
+  rules.forEach(r => { if (r.category === '외식') r.category = '외식·카페'; });
+}
+
 function _applyCatMigration() {
+  normalizeFoodCategories();
   const catMigKey = 'gaegebu_cat_migration_v1';
   if (localStorage.getItem(catMigKey) === 'done') return;
   const catMap = {'생필품': '생활비', '가스비': '관리비', '세금/기타': '세금'};
@@ -1805,6 +1825,7 @@ function _startRealtimeSync() {
     if (Date.now() - _lastSaveTime < 2000) return;
     transactions = fbData.transactions || transactions;
     rules = fbData.rules || rules;
+    normalizeFoodCategories();
     cashData = fbData.cashData || cashData;
     incomeData = fbData.incomeData || incomeData;
     // 현재 활성 페이지 새로고침
@@ -1821,20 +1842,20 @@ function _startRealtimeSync() {
 }
 
 // ===== CONSTANTS =====
-const CATEGORIES = ['외식','생활비','여행','쇼핑','관계비용','교육/놀이','관리비','통신/렌탈','주유','세금','기타','미분류'];
+const CATEGORIES = ['외식·카페','문화·여가','생활비','여행','쇼핑','관계비용','교육/놀이','관리비','통신/렌탈','주유','세금','기타','미분류'];
 const CAT_COLORS = {
-  '외식': '#E8734A', '생활비': '#3ABFB3', '여행': '#7B62B8', '쇼핑': '#E8A84A',
+  '외식·카페': '#E8734A', '문화·여가': '#4D85C5', '생활비': '#3ABFB3', '여행': '#7B62B8', '쇼핑': '#E8A84A',
   '관계비용': '#4ABCE8', '교육/놀이': '#4AB87B', '관리비': '#8DD95B',
   '통신/렌탈': '#B87B4A', '주유': '#E07B2A', '세금': '#9B9B9B', '기타': '#C8B89A', '미분류': '#CCCCCC'
 };
 const CAT_CLASS = {
-  '외식': 'cat-외식', '생활비': 'cat-생활비', '여행': 'cat-여행', '쇼핑': 'cat-쇼핑',
+  '외식·카페': 'cat-외식·카페', '문화·여가': 'cat-culture', '생활비': 'cat-생활비', '여행': 'cat-여행', '쇼핑': 'cat-쇼핑',
   '관계비용': 'cat-관계비용', '교육/놀이': 'cat-교육놀이',
   '관리비': 'cat-관리비', '통신/렌탈': 'cat-통신렌탈', '주유': 'cat-주유',
   '세금': 'cat-세금', '기타': 'cat-기타', '미분류': 'cat-미분류'
 };
 const CAT_ICON = {
-  '외식':'🍽','생활비':'🛒','여행':'✈️','쇼핑':'🛍','관계비용':'🎁',
+  '외식·카페':'🍽', '문화·여가':'🎬','생활비':'🛒','여행':'✈️','쇼핑':'🛍','관계비용':'🎁',
   '교육/놀이':'📚','관리비':'🏠','통신/렌탈':'📡','주유':'⛽',
   '세금':'📄','기타':'🗂','미분류':'❓'
 };
@@ -1972,6 +1993,65 @@ function applyRules(store, note) {
 }
 
 // ===== SUMMARY PAGE =====
+function buildMonthlyShare(step, year, month, href) {
+  if (!['settlement', 'review'].includes(step)) throw new Error('잘못된 공유 단계');
+  const label = `${year}년 ${Number(month)}월`;
+  const url = new URL(href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('shareStep', step);
+  url.searchParams.set('shareMonth', `${year}-${String(month).padStart(2, '0')}`);
+  return {
+    title: `${label} 우리 가계부`,
+    text: step === 'settlement'
+      ? `${label} 데이터 반영이 완료되었어요. 정산내역을 입력해주세요.`
+      : `${label} 정산내역 입력이 완료되었어요. 이번 달 소비를 돌아보고 한 줄 회고를 작성해주세요.`,
+    url: url.href
+  };
+}
+
+async function shareMonthlyStep(step) {
+  const payload = buildMonthlyShare(step, document.getElementById('summaryYear').value,
+    document.getElementById('summaryMonth').value, window.location.href);
+  const fallback = document.getElementById('monthlyShareFallback');
+  fallback.hidden = true;
+  if (navigator.share) {
+    try { await navigator.share(payload); return; }
+    catch (error) { if (error.name === 'AbortError') return; }
+  }
+  const text = `${payload.title}\n${payload.text}\n${payload.url}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('요청 메시지를 복사했어요. 카카오톡에 붙여넣어 주세요.');
+  } catch (error) {
+    fallback.hidden = false;
+    const field = document.getElementById('monthlyShareText');
+    field.value = text;
+    field.focus();
+    field.select();
+  }
+}
+
+function openMonthlyShareLink() {
+  const params = new URLSearchParams(window.location.search);
+  const step = params.get('shareStep'), month = params.get('shareMonth');
+  if (!['settlement', 'review'].includes(step) || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) return;
+  const [year, number] = month.split('-');
+  const yearSelect = document.getElementById('summaryYear');
+  if (![...yearSelect.options].some(option => option.value === year)) return;
+  yearSelect.value = year;
+  document.getElementById('summaryMonth').value = String(Number(number));
+  if (step === 'settlement') {
+    showPage('detail');
+    document.getElementById('detailYear').value = year;
+    document.getElementById('detailMonth').value = String(Number(number));
+    applyDetailFilter();
+  } else {
+    showPage('summary');
+    document.getElementById('monthlyReview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function initSummaryFilters() {
   const years = getYears();
   const yearSel = document.getElementById('summaryYear');
@@ -2253,15 +2333,15 @@ function renderSmartInsights(txs, totalExpense, prevExpense, year, month, totalI
     });
   }
 
-  // 외식비 비중
-  const food = bdMap['외식'] || 0;
+  // 외식·카페 지출 비중
+  const food = bdMap['외식·카페'] || 0;
   const foodPct = totalExpense > 0 ? food / totalExpense * 100 : 0;
   if (foodPct > 25) {
     insights.push({
       icon: '🍽',
       color: '#E8734A',
-      title: '외식비 비중이 높아요',
-      body: `외식비가 총 지출의 <strong>${foodPct.toFixed(1)}%</strong> (${fmt(food)}원)를 차지하고 있어요. 한 달에 외식 횟수가 ${txs.filter(t=>t.category==='외식').length}건입니다. 주 1~2회 홈쿡으로 전환하면 월 ${fmt(Math.round(food * 0.2))}원 이상 절감 가능해요.`,
+      title: '외식·카페 지출 비중이 높아요',
+      body: `외식·카페 지출가 총 지출의 <strong>${foodPct.toFixed(1)}%</strong> (${fmt(food)}원)를 차지하고 있어요. 한 달에 외식·카페 결제가 ${txs.filter(t=>t.category==='외식·카페').length}건입니다. 주 1~2회 홈쿡으로 전환하면 월 ${fmt(Math.round(food * 0.2))}원 이상 절감 가능해요.`,
       action: null
     });
   }
@@ -2320,7 +2400,7 @@ function renderSmartInsights(txs, totalExpense, prevExpense, year, month, totalI
       icon: '🗓',
       color: 'var(--accent2)',
       title: '주말 집중 소비 패턴',
-      body: `이번 달 지출의 <strong>${weekendPct.toFixed(1)}%</strong> (${fmt(weekendTotal)}원)가 주말에 발생했어요. 주말 외식·쇼핑 계획을 미리 세우면 충동 지출을 줄일 수 있어요.`,
+      body: `이번 달 지출의 <strong>${weekendPct.toFixed(1)}%</strong> (${fmt(weekendTotal)}원)가 주말에 발생했어요. 주말 외식·카페·쇼핑 계획을 미리 세우면 충동 지출을 줄일 수 있어요.`,
       action: null
     });
   }
@@ -2501,7 +2581,8 @@ function initClaimControls() {
 
 const CLAIM_CAT_OPTIONS = [
   {value:'생활비', label:'🛒 생활비'},
-  {value:'외식',   label:'🍽 외식'},
+  {value:'외식·카페',   label:'🍽 외식·카페'},
+  {value:'문화·여가', label:'🎬 문화·여가'},
   {value:'쇼핑',   label:'🛍 쇼핑'},
   {value:'여행',   label:'✈️ 여행'},
   {value:'관계비용',label:'🎁 관계비용'},
@@ -4560,7 +4641,7 @@ function importData() {
 
 function autoCategory(store, note) {
   const noteRules = {
-    '외식':'외식','가스비':'관리비','관리비':'관리비','통신/렌탈':'통신/렌탈',
+    '외식':'외식·카페','카페':'외식·카페','문화·여가':'문화·여가','영화':'문화·여가','도서구입':'문화·여가','도서구매':'문화·여가','가스비':'관리비','관리비':'관리비','통신/렌탈':'통신/렌탈',
     '교육비':'교육/놀이','놀이방':'교육/놀이','문센':'교육/놀이',
     '생필품':'생활비','커피캡슐':'생활비','영양제':'생활비','화장품':'생활비',
     '생활비':'생활비','주차':'생활비','택시':'생활비','버스':'생활비','지하철':'생활비',
@@ -4570,11 +4651,13 @@ function autoCategory(store, note) {
   };
 
   const storeRules = {
+    'CGV':'문화·여가','씨지브이':'문화·여가','롯데시네마':'문화·여가','메가박스':'문화·여가','교보문고':'문화·여가','영풍문고':'문화·여가',
+    '스타벅스':'외식·카페','투썸':'외식·카페','메가커피':'외식·카페','컴포즈커피':'외식·카페','카페':'외식·카페','쿠팡이츠':'외식·카페',
     '가스':'관리비','도시가스':'관리비','예스코':'관리비','관리비':'관리비',
     '코웨이':'통신/렌탈','SK매직':'통신/렌탈',
     '쿠팡':'생활비','컬리':'생활비','이마트':'생활비','GS수퍼':'생활비',
     '올리브영':'생활비','iHerb':'생활비','IHERB':'생활비',
-    '우아한형제':'외식','배달':'외식','쿠팡이츠':'외식',
+    '우아한형제':'외식·카페','배달':'외식·카페','쿠팡이츠':'외식·카페',
     '호텔':'여행','리조트':'여행','항공':'여행','철도':'여행','렌터카':'여행',
     '백화점':'쇼핑','아울렛':'쇼핑','신세계':'쇼핑',
     '문화센터':'교육/놀이','학원':'교육/놀이',
@@ -4904,7 +4987,7 @@ function _advicePrompt(data) {
     '',
     '=== 반드시 지킬 것 ===',
     '1. 가맹점 이름과 실제 숫자를 근거로 제시하세요. 카테고리 단위 뭉뚱그린 조언은 금지입니다.',
-    '2. "외식을 줄이세요", "충동구매를 조심하세요" 같은 누구나 아는 말은 절대 쓰지 마세요.',
+    '2. "외식·카페 지출을 줄이세요", "충동구매를 조심하세요" 같은 누구나 아는 말은 절대 쓰지 마세요.',
     '3. "쇼핑이 전월 대비 늘었다" 같은 증감 통보도 금지입니다. 앱이 이미 보여주고 있습니다.',
     '4. 절감 여력을 제시할 때는 계산 근거를 밝히세요.',
     '   예: "A가맹점 월 6회 x 건당 12,000원 중 절반을 줄이면 월 36,000원"',
@@ -5234,6 +5317,7 @@ async function _bootApp() {
   initDetailFilters();
   renderRules();
   showPage('summary');
+  openMonthlyShareLink();
 }
 
 document.addEventListener('keydown', function(e) {

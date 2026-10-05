@@ -6,7 +6,25 @@
   'use strict';
   const CAP = 2000000;
   function roundBudget(value) { return Math.floor(value / 10000) * 10000; }
-  const CATS = ['외식','생활비','여행','쇼핑','관계비용','교육/놀이','관리비','통신/렌탈','주유','세금','기타','미분류'];
+  const CATS = ['외식·카페','문화·여가','생활비','여행','쇼핑','관계비용','교육/놀이','관리비','통신/렌탈','주유','세금','기타','미분류'];
+  function normalizeConfig(config) {
+    if (!config) return config;
+    const copy = JSON.parse(JSON.stringify(config));
+    const rename = map => {
+      if (!map) return;
+      if (Object.hasOwn(map, '외식')) {
+        if (!Object.hasOwn(map, '외식·카페')) map['외식·카페'] = map['외식'];
+        delete map['외식'];
+      }
+    };
+    for (const map of [copy.budget, copy.baseline?.average, copy.baseline?.max, copy.baseline?.budget]) {
+      rename(map);
+      if (map && !Object.hasOwn(map, '문화·여가')) map['문화·여가'] = 0;
+    }
+    rename(copy.reasons);
+    for (const goal of copy.goals || []) if (goal.category === '외식') goal.category = '외식·카페';
+    return copy;
+  }
   const REASONS = ['', '일회성', '계절성', '반복 지출', '줄일 소비'];
   function validMonth(month) { return /^\d{4}-(0[1-9]|1[0-2])$/.test(month); }
   function shift(month, offset) {
@@ -20,7 +38,7 @@
     if (!Number.isFinite(amount) || !Number.isFinite(settlement)) throw new Error('거래 금액을 확인해주세요.');
     return amount - settlement;
   }
-  function category(t) { return CATS.includes(t.category) ? t.category : '미분류'; }
+  function category(t) { return t.category === '외식' ? '외식·카페' : CATS.includes(t.category) ? t.category : '미분류'; }
   function totals(tx, month) {
     const result = Object.fromEntries(CATS.map(c => [c,0]));
     rows(tx,month).forEach(t => { result[category(t)] += net(t); });
@@ -50,7 +68,8 @@
     if (value && typeof value === 'object') return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
     return JSON.stringify(value);
   }
-  function fingerprint(tx, month) { return rows(tx,month).map(stable).sort().join('\n'); }
+  // A label-only rename must preserve existing review acknowledgements.
+  function fingerprint(tx, month) { return rows(tx,month).map(t => stable(t.category === '외식·카페' ? {...t, category:'외식'} : t)).sort().join('\n'); }
   function validateConfig(config) {
     if (!config || !config.baseline || !config.budget) throw new Error('예산 기준을 확인해주세요.');
     let sum = 0;
@@ -70,7 +89,7 @@
     return sum;
   }
   function measure(tx, month, goal) {
-    const matches = rows(tx,month).filter(t=>category(t)===goal.category && (!goal.store || String(t.store || '').toLocaleLowerCase().includes(goal.store.toLocaleLowerCase())));
+    const matches = rows(tx,month).filter(t=>category(t)===category(goal) && (!goal.store || String(t.store || '').toLocaleLowerCase().includes(goal.store.toLocaleLowerCase())));
     return goal.type === 'amount' ? matches.reduce((s,t)=>s+net(t),0) : matches.filter(t=>net(t)>0).length;
   }
   function median(tx, month, goal) {
@@ -84,5 +103,5 @@
       return c?.text?.trim() && c.revision===doc.revision && c.fingerprint===fp;
     });
   }
-  return { CAP, CATS, REASONS, validMonth, shift, rows, totals, baseline, fingerprint, validateConfig, measure, median, completion, stable, roundBudget };
+  return { CAP, CATS, REASONS, normalizeConfig, validMonth, shift, rows, totals, baseline, fingerprint, validateConfig, measure, median, completion, stable, roundBudget };
 });
