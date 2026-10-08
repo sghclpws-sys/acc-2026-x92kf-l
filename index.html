@@ -1827,6 +1827,7 @@ async function loadData() {
 
 function saveData() {
   if (!window._fbAllowed || !window._fbAllowed()) return;
+  window.MonthlyReview?.dataChanged();
   refreshHouseholdSummaryState();
   // Firebase 저장
   if (window._fbReady) {
@@ -1860,6 +1861,7 @@ function _startRealtimeSync() {
     cashData = fbData.cashData || cashData;
     incomeData = fbData.incomeData || incomeData;
     recurringItems = fbData.recurring || recurringItems;
+    window.MonthlyReview?.dataChanged();
     // 현재 활성 페이지 새로고침
     _showSyncStatus('🔄 동기화됨', '#3A7DC4');
     const activePage = document.querySelector('.page.active');

@@ -25,6 +25,7 @@
     if (selected===month && ready) {
       if (!dirty && !busy) render();
       else {
+        refreshComparison();
         const badge=root().querySelector('.review-badge');
         if(badge && !C.completion(current,C.fingerprint(data(),month),window._reviewMembers || [])) {
           badge.textContent='두 분의 확인 필요';badge.classList.remove('is-done');
@@ -75,9 +76,31 @@
       <p class="review-note" data-hint="${i}"></p>
     </div>`;
   }
+  function comparisonMarkup(b, actual, hasData) {
+    const avgTotal=C.CATS.filter(c=>c!=='여행').reduce((s,c)=>s+(b.average[c]||0),0);
+    const total=C.CATS.filter(c=>c!=='여행').reduce((s,c)=>s+actual[c],0);
+    return `      <section class="review-comparison" aria-label="카테고리별 월평균 비교">
+        <div class="review-table-heading"><h4>월평균과 이번 달 비교</h4><span class="review-note"><span class="review-wide">단위: 원</span><span class="review-narrow">단위: 만원 · 소수 첫째 자리 반올림</span></span></div>
+        <p class="review-note">${b.initial?'이전 달 데이터가 없어 첫 등록 월을 초기 기준으로 사용합니다.':'선택 월 이전 등록 '+b.months.length+'개월 기준입니다. 미등록 월은 제외합니다. 과거 거래를 수정하면 월평균도 갱신됩니다.'} ${b.months.length?esc(b.months[0])+' ~ '+esc(b.months[b.months.length-1]):'기준 데이터 없음'}</p>
+        <table class="review-compare-table"><thead><tr><th scope="col">항목</th><th scope="col">월평균</th><th scope="col">이번 달</th><th scope="col">평균 대비</th></tr></thead><tbody>
+        ${C.CATS.map(c=>{const avg=b.average[c]||0, diff=actual[c]-avg;return `<tr><th scope="row">${esc(c)}${c==='여행'?'<sup class="review-excluded">예산 제외</sup>':''}</th><td>${tableMoney(avg)}</td><td>${hasData?tableMoney(actual[c]):'—'}</td><td class="${!hasData||diff===0?'':diff>0?'review-increase':'review-decrease'}">${hasData?tableMoney(diff,true):'—'}</td></tr>`;}).join('')}
+        </tbody><tfoot><tr><th scope="row">여행 제외</th><td>${tableMoney(avgTotal)}</td><td>${hasData?tableMoney(total):'—'}</td><td class="${!hasData||total===avgTotal?'':total>avgTotal?'review-increase':'review-decrease'}">${hasData?tableMoney(total-avgTotal,true):'—'}</td></tr></tfoot></table>
+        <p class="review-note">+는 평균보다 더 사용, −는 덜 사용한 금액입니다.${hasData?'':' 아직 거래가 없어 비교를 표시하지 않습니다.'}</p>
+      </section>`;
+  }
+  function refreshComparison() {
+    const el=root()?.querySelector('.review-comparison');
+    if (!ready || !el) return;
+    const tx=data(), b=C.baseline(tx,month), actual=C.totals(tx,month), hasData=C.rows(tx,month).length>0;
+    el.outerHTML=comparisonMarkup(b,actual,hasData);
+    const total=C.CATS.filter(c=>c!=='여행').reduce((s,c)=>s+actual[c],0);
+    const avgTotal=C.CATS.filter(c=>c!=='여행').reduce((s,c)=>s+(b.average[c]||0),0);
+    const delta=root().querySelector('[data-average-delta]');
+    if(delta) delta.textContent=hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요';
+  }
   function render() {
     if(!ready || !root()) return;
-    const tx=data(), config=current?.config || defaultConfig(), b=config.baseline, actual=C.totals(tx,month);
+    const tx=data(), config=current?.config || defaultConfig(), b=C.baseline(tx,month), actual=C.totals(tx,month);
     revision=current?.revision || 0;
     const total=C.CATS.filter(c=>c!=='여행').reduce((s,c)=>s+actual[c],0);
     const sum=Object.values(config.budget).reduce((s,v)=>s+v,0);
@@ -90,19 +113,12 @@
       <div class="review-heading"><div><div class="review-eyebrow">MONTHLY REVIEW</div><h3>우리의 월말 결산</h3></div><span class="review-badge ${complete?'is-done':''}">${status}</span></div>
       <div class="review-toolbar"><label>결산·예산 월<input type="month" data-action="month" value="${month}" aria-label="결산·예산 월"></label><button type="button" class="btn btn-ghost" data-action="next">다음 달 예산 →</button></div>
       <p class="review-note">카드 결제액에서 정산금을 뺀 실지출 기준입니다. 여행은 별도 표시하며, 이자는 이 예산에 포함하지 않습니다.</p>
-      <div class="review-stats"><div><span>여행 제외 실적</span><strong>${hasData?won(total):'업로드 전'}</strong><small>${hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요'}</small></div><div><span>${current?.config?'저장한 월 예산':'월 예산 초안'}</span><strong>${won(sum)}</strong><small class="${hasData&&current?.config&&total>sum?'review-error':''}">${comparison}</small></div></div>
+      <div class="review-stats"><div><span>여행 제외 실적</span><strong>${hasData?won(total):'업로드 전'}</strong><small data-average-delta>${hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요'}</small></div><div><span>${current?.config?'저장한 월 예산':'월 예산 초안'}</span><strong>${won(sum)}</strong><small class="${hasData&&current?.config&&total>sum?'review-error':''}">${comparison}</small></div></div>
       <p class="review-note">여행 ${hasData?won(actual['여행']):'업로드 전'} · 여행 포함 카드 실적 ${hasData?won(total+actual['여행']):'업로드 전'}</p>
-      <section class="review-comparison" aria-label="카테고리별 월평균 비교">
-        <div class="review-table-heading"><h4>월평균과 이번 달 비교</h4><span class="review-note"><span class="review-wide">단위: 원</span><span class="review-narrow">단위: 만원 · 소수 첫째 자리 반올림</span></span></div>
-        <p class="review-note">${b.initial?'이전 달 데이터가 없어 첫 등록 월을 초기 기준으로 사용합니다.':'선택 월 이전 등록 '+b.months.length+'개월 기준입니다. 미등록 월은 제외합니다.'} ${b.months.length?esc(b.months[0])+' ~ '+esc(b.months[b.months.length-1]):'기준 데이터 없음'}</p>
-        <table class="review-compare-table"><thead><tr><th scope="col">항목</th><th scope="col">월평균</th><th scope="col">이번 달</th><th scope="col">평균 대비</th></tr></thead><tbody>
-        ${C.CATS.map(c=>{const avg=b.average[c]||0, diff=actual[c]-avg;return `<tr><th scope="row">${esc(c)}${c==='여행'?'<sup class="review-excluded">예산 제외</sup>':''}</th><td>${tableMoney(avg)}</td><td>${hasData?tableMoney(actual[c]):'—'}</td><td class="${!hasData||diff===0?'':diff>0?'review-increase':'review-decrease'}">${hasData?tableMoney(diff,true):'—'}</td></tr>`;}).join('')}
-        </tbody><tfoot><tr><th scope="row">여행 제외</th><td>${tableMoney(avgTotal)}</td><td>${hasData?tableMoney(total):'—'}</td><td class="${!hasData||total===avgTotal?'':total>avgTotal?'review-increase':'review-decrease'}">${hasData?tableMoney(total-avgTotal,true):'—'}</td></tr></tfoot></table>
-        <p class="review-note">+는 평균보다 더 사용, −는 덜 사용한 금액입니다.${hasData?'':' 아직 거래가 없어 비교를 표시하지 않습니다.'}</p>
-      </section>
+      ${comparisonMarkup(b,actual,hasData)}
       <details class="review-details" data-budget-editor><summary>월 예산 조정 <span>${current?.config?'저장한 예산 수정':'자동 배정한 초안 확인·수정'}</span></summary>
-        <p class="review-note">각 항목은 위 월평균 이하, 여행 제외 총합은 200만 원 이하로 설정합니다. 자동 배분 시 세금·기타·미분류는 0원으로 시작합니다. 만원 미만은 버립니다 (392,091 → 390,000원). 저장한 평균 기준은 고정됩니다.</p>
-        <div class="review-budget-grid">${C.CATS.map((c,i)=>c==='여행'?'':`<label>${esc(c)}<input type="text" inputmode="numeric" data-field="budget-${i}" data-budget="${esc(c)}" value="${C.roundBudget(config.budget[c]).toLocaleString('ko-KR')}" aria-label="${esc(c)} 월 예산"><small>최대 ${won(C.roundBudget(b.max[c]))}</small></label>`).join('')}</div>
+        <p class="review-note">각 항목은 예산을 처음 저장할 때의 월평균 상한 이하, 여행 제외 총합은 200만 원 이하로 설정합니다. 자동 배분 시 세금·기타·미분류는 0원으로 시작합니다. 만원 미만은 버립니다 (392,091 → 390,000원). 비교표의 월평균은 거래 수정 시 갱신되며, 저장한 예산·상한·목표는 유지됩니다.</p>
+        <div class="review-budget-grid">${C.CATS.map((c,i)=>c==='여행'?'':`<label>${esc(c)}<input type="text" inputmode="numeric" data-field="budget-${i}" data-budget="${esc(c)}" value="${C.roundBudget(config.budget[c]).toLocaleString('ko-KR')}" aria-label="${esc(c)} 월 예산"><small>최대 ${won(C.roundBudget(config.baseline.max[c]))}</small></label>`).join('')}</div>
         <div class="review-total" data-total></div>
       </details>
       <details class="review-details" open><summary>지난 계획의 결과 <span>${month} 실적</span></summary>
@@ -220,5 +236,5 @@
 
   });
   window.addEventListener('beforeunload',e=>{if(dirty || drafts.size){e.preventDefault();e.returnValue='';}});
-  window.MonthlyReview={refresh,reset};
+  window.MonthlyReview={refresh,reset,dataChanged:()=>{if(month)refresh(month);}};
 })();
