@@ -41,6 +41,33 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('[data-field="comment"]').inputValue(),'작성 중인 회고');
   assert.equal(await page.evaluate(()=>JSON.stringify(saved)===initialSaved),true);
   assert.equal(await page.locator('[data-field="goal-limit-0"]').inputValue(),'100000');
+  await page.evaluate(()=>{
+   transactions=[
+    {date:'2026-06-01',category:'생활비',amount:100000},
+    {date:'2026-07-01',category:'세금',amount:900000,irregular:true},
+    {date:'2026-08-01',category:'생활비',amount:150000},
+    {date:'2026-08-02',category:'생활비',amount:50000,settlement:10000,irregular:true},
+    {date:'2026-08-03',category:'여행',amount:200000},
+    {date:'2026-08-04',category:'세금',amount:100000,irregular:true}
+   ];MonthlyReview.dataChanged();
+  });
+  assert.equal(await average(),'50,000');
+  assert.equal(await page.locator('[data-regular-total]').textContent(),'350,000원');
+  const life=page.locator('.review-compare-table tbody tr').filter({has:page.locator('th',{hasText:'생활비'})});
+  assert.equal(await life.locator('td').nth(1).locator('.review-wide').first().textContent(),'150,000');
+  assert.match(await life.locator('.review-irregular').textContent(),/40,000/);
+  const tax=page.locator('.review-compare-table tbody tr').filter({has:page.locator('th',{hasText:'세금'})});
+  assert.equal(await tax.locator('td').nth(1).locator('.review-wide').first().textContent(),'0');
+  assert.match(await tax.locator('.review-irregular').textContent(),/100,000/);
+  assert.equal(await page.locator('.review-excluded').count(),0);
+  assert.equal(await page.locator('tfoot td').nth(1).locator('.review-wide').textContent(),'350,000');
+  assert.equal(await page.locator('[data-field="comment"]').inputValue(),'작성 중인 회고');
+  await page.evaluate(()=>{MonthlyReview.reset();MonthlyReview.refresh('2026-08');});
+  assert.equal(await page.locator('[data-regular-total]').textContent(),'350,000원');
+  assert.match(await page.locator('[data-irregular-total]').textContent(),/140,000원.*490,000원/);
+  for(const width of [320,390,1440]) {
+   await page.setViewportSize({width,height:900});
+  }
   assert.deepEqual(errors,[]);
   console.log('PASS: live averages after amount, settlement, category, deletion and month changes; saved budget, limits, goals and draft preserved');
  } finally {await browser.close();}

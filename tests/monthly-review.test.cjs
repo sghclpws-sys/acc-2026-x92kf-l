@@ -121,3 +121,11 @@ test('transaction saves preserve spouse comments, reject stale config and change
   a.docs.set('gaegebu/main',{transactions:JSON.stringify([...tx,{date:'2026-08-03',amount:1}])});
   await assert.rejects(a.write('2026-08',change),/거래가 변경/);
 });
+
+test('regular comparison average excludes irregular amounts but retains registered zero months',()=>{
+ const tx=[{date:'2026-06-01',category:'생활비',amount:100000},{date:'2026-07-01',category:'세금',amount:900000,irregular:true},{date:'2026-08-01',category:'여행',amount:200000}];
+ const b=C.baseline(tx,'2026-08',true);
+ assert.equal(b.average['생활비'],50000);assert.equal(b.average['세금'],0);
+ assert.equal(b.months.length,2);
+ assert.equal(C.baseline(tx,'2026-08').average['세금'],450000);
+});

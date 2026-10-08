@@ -44,12 +44,12 @@
     rows(tx,month).forEach(t => { result[category(t)] += net(t); });
     return result;
   }
-  function baseline(tx, month) {
+  function baseline(tx, month, excludeIrregular = false) {
     const months = [...new Set(tx.map(t => String(t.date || '').slice(0,7)).filter(m => validMonth(m) && m < month))].sort();
     // First imported month provides an explicitly labelled initial reference.
     const initial = !months.length;
     if (initial && rows(tx,month).length) months.push(month);
-    const sums = months.map(m => totals(tx,m));
+    const sums = months.map(m => totals(excludeIrregular ? tx.filter(t=>!t.irregular) : tx,m));
     const average = Object.fromEntries(CATS.map(c => [c, sums.length ? Math.floor(sums.reduce((s,r)=>s+r[c],0)/sums.length) : 0]));
     const max = Object.fromEntries(CATS.filter(c=>c!=='여행').map(c=>[c,Math.max(0,average[c])]));
     const automaticMax = Object.fromEntries(Object.entries(max).map(([c,v])=>[c,['세금','기타','미분류'].includes(c)?0:v]));
