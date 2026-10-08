@@ -178,3 +178,11 @@ body{line-height:1.6;background:var(--bg)}
   .review-details>summary span{display:block;margin-left:18px;margin-top:3px}
 }
 @media(max-width:359px){.review-stats,.review-goal{grid-template-columns:1fr}.review-heading{align-items:flex-start}.review-badge{font-size:11px}}
+
+.comparison-guide{font-size:11px;color:var(--text-muted);line-height:1.6;margin-bottom:14px}
+.comparison-category{margin-bottom:16px;min-width:0}
+.comparison-category h4{font-size:13px;margin:0 0 7px}
+.comparison-series{display:grid;grid-template-columns:42px minmax(0,1fr) 90px;align-items:center;gap:8px;margin:5px 0;font-size:11px;color:var(--text-muted)}
+.comparison-series strong{text-align:right;font-size:11px;font-weight:500;white-space:nowrap}
+.comparison-track{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.comparison-track>div{height:100%;border-radius:3px}

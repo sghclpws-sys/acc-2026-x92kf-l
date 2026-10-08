@@ -83,8 +83,15 @@ test('late advice cache response cannot overwrite the newly selected scope',asyn
   pending['month-2026-09']({items:'[{"title":"September"}]'});await first;
   assert.equal(get('adviceBody').innerHTML,'October');
 });
-test('average comparison excludes irregular-only current spending and explains the exclusion',()=>{
-  const {c,get}=adviceSetup();c.transactions=c.transactions.filter(t=>t.date<'2026-10'||t.irregular);
-  vm.runInContext(html.slice(html.indexOf('function renderBudgetAlert'),html.indexOf('function renderHeatmap')),c);
-  c.renderBudgetAlert();assert.match(get('budgetAlert').innerHTML,/19,000원은 비교에서 제외/);
+test('merged comparison uses selected month, five categories and three regular-only series',()=>{
+  const {c,get}=adviceSetup();c.MonthlyReviewCore=require('../monthly-review-core.js');
+  c.transactions.push({date:'2026-11-01',store:'future',category:'생활비',amount:900000});
+  vm.runInContext(html.slice(html.indexOf('function renderMonthCompare'),html.indexOf('// ── 주차별 소비 리듬')),c);
+  c.renderMonthCompare('2026',10,c.getMonthlyTx(2026,10));
+  const rendered=get('monthCompareChart').innerHTML;
+  assert.equal((rendered.match(/data-compare-category=/g)||[]).length,5);
+  assert.equal((rendered.match(/class="comparison-series"/g)||[]).length,15);
+  assert.match(rendered,/200원/);assert.match(rendered,/300원/);assert.match(rendered,/400원/);
+  assert.doesNotMatch(rendered,/900,000원|19,000원/);
+  assert.match(rendered,/전월 2026-09 · 이번 달 2026-10/);
 });

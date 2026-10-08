@@ -45,3 +45,11 @@ test('clipboard failure exposes selectable text and shared links route to select
   c.openMonthlyShareLink();
   assert.equal(c.page, 'summary'); assert.equal(get('summaryMonth').value, '7'); assert.equal(get('monthlyReview').scrolled, true);
 });
+
+test('settings share month overrides the dashboard selection', async()=>{
+  const {c,get}=setup();
+  get('monthlyShareMonth').value='2026-05';
+  let shared;c.navigator.share=async payload=>{shared=payload;};
+  await c.shareMonthlyStep('review');
+  assert.match(shared.url,/shareMonth=2026-05/);
+});

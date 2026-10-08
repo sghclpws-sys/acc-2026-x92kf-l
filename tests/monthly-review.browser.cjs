@@ -38,7 +38,7 @@ const assert=require('node:assert/strict');
   await page.locator('[data-budget]').first().waitFor({state:'attached'});
   assert.equal(await page.locator('[data-field^="reason-"]').count(),0);
   assert.equal(await page.locator('[data-budget-editor]').getAttribute('open'),null);
-  assert.equal(await page.locator('.review-compare-table tbody tr').count(),12);
+  assert.equal(await page.locator('.review-compare-table tbody tr').count(),13);
   assert.equal(await page.locator('[data-field^="note-"]').count(),0);
   assert.equal(await page.locator('[data-field="comment"]').count(),1);
   for(const width of [320,390,768,1024,1200,1440,1920]){
@@ -140,7 +140,7 @@ const assert=require('node:assert/strict');
      });assert(aligned,`review card alignment at ${width}`);
      assert.equal(await app.locator('#page-summary #householdSummaryCard').count(),0);
      assert.equal(await app.locator('#insightCards').count(),0);
-     assert(await app.evaluate(()=>document.getElementById('monthlyReview').previousElementSibling.id==='summaryOverview'));
+     assert(await app.evaluate(()=>document.getElementById('monthlyReview').previousElementSibling.id==='desktopSummaryContent'));
      assert(await app.evaluate(width=>{
       const statement=document.getElementById('summaryStats').getBoundingClientRect();
       const insight=document.getElementById('smartInsightCard').getBoundingClientRect();
@@ -149,8 +149,8 @@ const assert=require('node:assert/strict');
      if(width<=768) assert(await app.evaluate(()=>{
       const review=document.getElementById('monthlyReview').getBoundingClientRect();
       const charts=document.getElementById('mobileSummaryContent').getBoundingClientRect();
-      return review.bottom<=charts.top;
-     }),`mobile review must precede the charts at ${width}`);
+      return charts.bottom<=review.top;
+     }),`mobile charts must precede the review at ${width}`);
      assert.equal(await app.locator('#smartInsightCard').count(),1);
      const heights=await app.locator('.review-compare-table tbody tr').evaluateAll(rows=>rows.slice(0,4).map(e=>e.getBoundingClientRect().height));
      assert(Math.max(...heights)-Math.min(...heights)<1,`superscript changed row height at ${width}: ${heights}`);
@@ -176,6 +176,17 @@ const assert=require('node:assert/strict');
   await app.locator('#householdSummarySelect').dispatchEvent('change');
   assert((await app.locator('#householdSummaryTitle').textContent()).includes('2026-07'));
   await app.locator('.rules-disclosure summary').click();assert.notEqual(await app.locator('.rules-disclosure').getAttribute('open'),null);
+  await app.evaluate(()=>showPage('settings'));
+  assert.equal(await app.locator('#page-settings h2').textContent(),'설정');
+  assert.equal(await app.locator('#page-settings > .card').first().locator('.card-title').textContent(),'함께 결산하기');
+  assert.equal(await app.locator('#page-settings #recName').count(),1);
+  assert.equal(await app.locator('#page-upload #recName').count(),0);
+  assert.equal(await app.locator('#recStart').inputValue(),await app.evaluate(()=>monthKeyNow()));
+  assert(await app.locator('#recCat option').count()>0);
+  assert.equal(await app.locator('#page-trends #budgetAlert').count(),0);
+  await app.evaluate(()=>showPage('summary'));
+  assert.deepEqual(await app.locator('#monthCompareChart [data-compare-category]').evaluateAll(es=>es.map(e=>e.dataset.compareCategory)),['생활비','외식·카페','쇼핑','관계비용','교육/놀이']);
+  assert.equal(await app.locator('#monthCompareChart .comparison-series').count(),15);
   assert.deepEqual(appErrors,[]);
   if(output){
    await app.setViewportSize({width:390,height:844});

@@ -53,6 +53,8 @@ const assert=require('node:assert/strict');
   });
   assert.equal(await average(),'50,000');
   assert.equal(await page.locator('[data-regular-total]').textContent(),'350,000원');
+  assert.equal(await page.locator('[data-budget-comparison]').textContent(),'150,000원 초과 (비정기 제외)');
+  assert.match(await page.locator('[data-budget-comparison]').getAttribute('class'),/review-error/);
   const life=page.locator('.review-compare-table tbody tr').filter({has:page.locator('th',{hasText:'생활비'})});
   assert.equal(await life.locator('td').nth(1).locator('.review-wide').first().textContent(),'150,000');
   assert.match(await life.locator('.review-irregular').textContent(),/40,000/);
@@ -64,6 +66,8 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('[data-field="comment"]').inputValue(),'작성 중인 회고');
   await page.evaluate(()=>{MonthlyReview.reset();MonthlyReview.refresh('2026-08');});
   assert.equal(await page.locator('[data-regular-total]').textContent(),'350,000원');
+  assert.equal(await page.locator('[data-budget-comparison]').textContent(),'150,000원 초과 (비정기 제외)');
+  assert.match(await page.locator('[data-budget-comparison]').getAttribute('class'),/review-error/);
   assert.match(await page.locator('[data-irregular-total]').textContent(),/140,000원.*490,000원/);
   for(const width of [320,390,1440]) {
    await page.setViewportSize({width,height:900});

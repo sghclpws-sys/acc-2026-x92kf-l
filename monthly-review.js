@@ -100,6 +100,12 @@
     const extra=root().querySelector('[data-irregular-total]');
     const irregularTotal=Object.values(irregular).reduce((s,v)=>s+v,0);
     if(extra) extra.textContent='비정기 '+(hasData?won(irregularTotal):'업로드 전')+' · 비정기 포함 실적 '+(hasData?won(total+irregularTotal):'업로드 전');
+    const budgetComparison=root().querySelector('[data-budget-comparison]');
+    const sum=Object.values(current?.config?.budget || defaultConfig().budget).reduce((s,v)=>s+v,0);
+    if(budgetComparison) {
+      budgetComparison.textContent=!hasData?'업로드 전 · 판정 대기':!current?.config?'예산 저장 후 비교':total>sum?won(total-sum)+' 초과 (비정기 제외)':won(sum-total)+' 여유 (비정기 제외)';
+      budgetComparison.classList.toggle('review-error',!!(hasData && current?.config && total>sum));
+    }
     const delta=root().querySelector('[data-average-delta]');
     if(delta) delta.textContent=hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요';
   }
@@ -113,13 +119,13 @@
     const hasData=C.rows(tx,month).length>0, closedMonth=month<localMonth();
     const status=!hasData?'예산 계획 중':complete?'결산 완료':current?.comments && Object.keys(current.comments).length?'두 분의 확인 필요':'결산 대기';
     const avgTotal=C.CATS.reduce((s,c)=>s+(b.average[c]||0),0);
-    const budgetActual=total-actual['여행'];
-    const comparison = !hasData ? '업로드 전 · 판정 대기' : !current?.config ? '예산 저장 후 비교' : budgetActual>sum ? won(budgetActual-sum)+' 초과 (여행 제외)' : won(sum-budgetActual)+' 여유 (여행 제외)';
+    const budgetActual=total;
+    const comparison = !hasData ? '업로드 전 · 판정 대기' : !current?.config ? '예산 저장 후 비교' : budgetActual>sum ? won(budgetActual-sum)+' 초과 (비정기 제외)' : won(sum-budgetActual)+' 여유 (비정기 제외)';
     root().innerHTML=`<section class="card review-card" aria-label="소비 관리 인사이트와 월말 결산">
       <div class="review-heading"><div><div class="review-eyebrow">MONTHLY REVIEW</div><h3>우리의 월말 결산</h3></div><span class="review-badge ${complete?'is-done':''}">${status}</span></div>
       <div class="review-toolbar"><label>결산·예산 월<input type="month" data-action="month" value="${month}" aria-label="결산·예산 월"></label><button type="button" class="btn btn-ghost" data-action="next">다음 달 예산 →</button></div>
       <p class="review-note">결제액에서 정산금과 비정기 지출을 뺀 실적입니다. 여행을 포함하며, 대출이자는 포함하지 않습니다.</p>
-      <div class="review-stats"><div><span>비정기 제외 실적</span><strong data-regular-total>${hasData?won(total):'업로드 전'}</strong><small data-average-delta>${hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요'}</small></div><div><span>${current?.config?'저장한 월 예산':'월 예산 초안'}</span><strong>${won(sum)}</strong><small class="${hasData&&current?.config&&budgetActual>sum?'review-error':''}">${comparison}</small></div></div>
+      <div class="review-stats"><div><span>비정기 제외 실적</span><strong data-regular-total>${hasData?won(total):'업로드 전'}</strong><small data-average-delta>${hasData?'기준 월평균 대비 '+(total>=avgTotal?'+':'')+won(total-avgTotal):'거래가 없으면 달성으로 판정하지 않아요'}</small></div><div><span>${current?.config?'저장한 월 예산':'월 예산 초안'}</span><strong>${won(sum)}</strong><small data-budget-comparison class="${hasData&&current?.config&&budgetActual>sum?'review-error':''}">${comparison}</small></div></div>
       <p class="review-note" data-irregular-total>비정기 ${hasData?won(Object.values(irregular).reduce((s,v)=>s+v,0)):'업로드 전'} · 비정기 포함 실적 ${hasData?won(total+Object.values(irregular).reduce((s,v)=>s+v,0)):'업로드 전'}</p>
       ${comparisonMarkup(b,actual,hasData,irregular)}
       <details class="review-details" data-budget-editor><summary>월 예산 조정 <span>${current?.config?'저장한 예산 수정':'자동 배정한 초안 확인·수정'}</span></summary>

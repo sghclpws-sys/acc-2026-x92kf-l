@@ -1093,7 +1093,7 @@ window.showPage = function(page) {
       <span class="icon">📥</span> 내역 업로드
     </div>
     <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
-      <span class="icon">⚙️</span> 카테고리 설정
+      <span class="icon">⚙️</span> 설정
     </div>
   </nav>
 
@@ -1117,19 +1117,6 @@ window.showPage = function(page) {
       </div>
 
 
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">함께 결산하기</div>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">위에서 선택한 월의 작업을 마친 뒤, 다음 단계를 공유해주세요.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('settlement')">1. 정산 입력 요청 공유</button>
-          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('review')">2. 회고 작성 요청 공유</button>
-        </div>
-        <div id="monthlyShareFallback" hidden style="margin-top:12px">
-          <label for="monthlyShareText" style="display:block;font-size:13px;margin-bottom:6px">아래 내용을 복사해서 카카오톡에 보내주세요.</label>
-          <textarea id="monthlyShareText" readonly rows="5" style="width:100%;box-sizing:border-box;font-size:16px"></textarea>
-        </div>
-      </div>
-
       <div class="summary-overview" id="summaryOverview">
       <!-- 월간 손익과 소비 관리 인사이트 -->
       <div id="summaryStats"></div>
@@ -1141,8 +1128,6 @@ window.showPage = function(page) {
         <div id="smartInsights"></div>
       </div>
       </div>
-
-      <div id="monthlyReview"></div>
 
       <div id="mobileSummaryContent" class="mobile-summary-stack"></div>
 
@@ -1165,13 +1150,14 @@ window.showPage = function(page) {
         </div>
         <!-- 전월 비교 -->
         <div class="card">
-          <div class="card-title">전월 대비 상세 비교</div>
+          <div class="card-title">평균·전월·이번 달 비교</div>
           <div id="monthCompareChart"></div>
         </div>
       </div>
 
 
       </div>
+      <div id="monthlyReview"></div>
     </div>
 
     <!-- ===== 거래 내역 ===== -->
@@ -1295,12 +1281,6 @@ window.showPage = function(page) {
         <div style="overflow-x:auto"><div id="heatmapChart"></div></div>
       </div>
 
-      <!-- 평균 대비 이번 달 초과/절약 -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">이번 달 vs 평균</div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">카테고리별 과거 평균 대비 이번 달 증감</p>
-        <div id="budgetAlert"></div>
-      </div>
 
 
     </div>
@@ -1427,6 +1407,30 @@ window.showPage = function(page) {
 
         <div id="recentClaimTx" style="margin-top:14px"></div>
       </div>
+    </div>
+
+    <!-- ===== 카테고리 설정 ===== -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h2>설정</h2>
+        <p>결산 공유, 고정 지출과 카테고리 규칙을 관리하세요</p>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">함께 결산하기</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">아래에서 선택한 월의 작업을 마친 뒤, 다음 단계를 공유해주세요.</p>
+        <label for="monthlyShareMonth">공유할 월</label>
+        <input type="month" id="monthlyShareMonth" style="margin:0 0 12px 8px" onchange="document.getElementById('monthlyShareFallback').hidden=true">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('settlement')">1. 정산 입력 요청 공유</button>
+          <button type="button" class="btn btn-ghost" onclick="shareMonthlyStep('review')">2. 회고 작성 요청 공유</button>
+        </div>
+        <div id="monthlyShareFallback" hidden style="margin-top:12px">
+          <label for="monthlyShareText" style="display:block;font-size:13px;margin-bottom:6px">아래 내용을 복사해서 카카오톡에 보내주세요.</label>
+          <textarea id="monthlyShareText" readonly rows="5" style="width:100%;box-sizing:border-box;font-size:16px"></textarea>
+        </div>
+      </div>
+
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">고정 현금지출 자동 반영</div>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">시작 월부터 매달 말일자 현금거래로 1건씩 자동 추가됩니다. 금액을 바꾸면 아직 만들어지지 않은 달부터 적용됩니다.</p>
@@ -1443,14 +1447,7 @@ window.showPage = function(page) {
         </div>
         <div id="recurringList" style="margin-top:14px"></div>
       </div>
-    </div>
 
-    <!-- ===== 카테고리 설정 ===== -->
-    <div class="page" id="page-settings">
-      <div class="page-header">
-        <h2>카테고리 설정</h2>
-        <p>가맹점별 자동 카테고리 규칙을 관리하세요</p>
-      </div>
 
       <div class="card" style="margin-bottom:20px">
         <div class="card-title">새 규칙 추가</div>
@@ -1871,7 +1868,8 @@ function _startRealtimeSync() {
       else if (pageId === 'page-detail') applyDetailFilter();
       else if (pageId === 'page-trends') renderTrends();
       else if (pageId === 'page-cash') renderCash();
-      else if (pageId === 'page-upload') { renderRecurring(); renderRecentCashTx(currentUploadKey()); }
+      else if (pageId === 'page-upload') renderRecentCashTx(currentUploadKey());
+      else if (pageId === 'page-settings') { renderRules(); renderRecurring(); }
     }
   });
 }
@@ -1917,10 +1915,12 @@ function showPage(page) {
     renderUploadCardTotals();
     initClaimControls();
     renderRecentClaimTx();
-    initRecurringForm();
-    renderRecurring();
   }
-  if (page === 'settings') renderRules();
+  if (page === 'settings') {
+    renderRules(); initRecurringForm(); renderRecurring();
+    const shareMonth = document.getElementById('monthlyShareMonth');
+    if (!shareMonth.value) shareMonth.value = document.getElementById('summaryYear').value + '-' + document.getElementById('summaryMonth').value.padStart(2,'0');
+  }
 }
 
 // ===== HELPERS =====
@@ -2048,8 +2048,10 @@ function buildMonthlyShare(step, year, month, href) {
 }
 
 async function shareMonthlyStep(step) {
-  const payload = buildMonthlyShare(step, document.getElementById('summaryYear').value,
-    document.getElementById('summaryMonth').value, window.location.href);
+  const selected = document.getElementById('monthlyShareMonth')?.value;
+  const year = selected ? selected.slice(0,4) : document.getElementById('summaryYear').value;
+  const month = selected ? selected.slice(5,7) : document.getElementById('summaryMonth').value;
+  const payload = buildMonthlyShare(step, year, month, window.location.href);
   const fallback = document.getElementById('monthlyShareFallback');
   fallback.hidden = true;
   if (navigator.share) {
@@ -2137,17 +2139,13 @@ function syncMobileSummaryView() {
     </div>
 
     <div class="card mobile-summary-section">
-      <div class="card-title">전월 대비 상세 비교</div>
+      <div class="card-title">평균·전월·이번 달 비교</div>
       <div class="mobile-compare-wrap">${monthCompareChart ? monthCompareChart.innerHTML : ''}</div>
     </div>
 
   `;
 
-  mobileRoot.querySelectorAll('.mobile-compare-wrap > div:first-child').forEach(el => el.classList.add('compare-legend'));
-  mobileRoot.querySelectorAll('.mobile-compare-wrap > div').forEach((el, idx) => { if (idx > 0) el.classList.add('compare-row'); });
-  mobileRoot.querySelectorAll('.mobile-compare-wrap span[style*="font-size:12px;font-weight:600"]').forEach(el => el.classList.add('compare-title'));
-  mobileRoot.querySelectorAll('.mobile-compare-wrap span[style*="font-size:11px;font-weight:700"]').forEach(el => el.classList.add('compare-diff'));
-  mobileRoot.querySelectorAll('.mobile-compare-wrap div[style*="width:64px;font-size:10px"]').forEach(el => el.classList.add('compare-amount'));
+
 }
 
 function renderSummary() {
@@ -2233,61 +2231,21 @@ function renderSummary() {
 function renderMonthCompare(year, month, txs) {
   const el = document.getElementById('monthCompareChart');
   if (!el) return;
-  const prevY = month > 1 ? Number(year) : Number(year) - 1;
-  const prevM = month > 1 ? month - 1 : 12;
-  const prevTxs = getMonthlyTx(String(prevY), prevM);
-
-  const thisMap = {}, prevMap = {};
-  for (const t of txs) thisMap[t.category] = (thisMap[t.category] || 0) + (t.amount - (t.settlement||0));
-  for (const t of prevTxs) prevMap[t.category] = (prevMap[t.category] || 0) + (t.amount - (t.settlement||0));
-
-  const allCats = [...new Set([...Object.keys(thisMap), ...Object.keys(prevMap)])];
-  const rows = allCats.map(cat => ({
-    cat,
-    cur: thisMap[cat] || 0,
-    prev: prevMap[cat] || 0,
-    diff: (thisMap[cat] || 0) - (prevMap[cat] || 0)
-  })).filter(r => r.cur > 0 || r.prev > 0).sort((a, b) => b.cur - a.cur);
-
-  const maxVal = Math.max(...rows.map(r => Math.max(r.cur, r.prev)), 1);
-  const prevLabel = `${prevY}년 ${prevM}월`;
-  const curLabel = `${year}년 ${month}월`;
-
-  el.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;gap:16px;font-size:11px;color:var(--text-muted);margin-bottom:12px">
-      <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:3px;background:var(--border);border-radius:2px"></span>${prevLabel}</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:3px;background:var(--accent);border-radius:2px"></span>${curLabel}</span>
-    </div>
-    ${rows.map(r => {
-      const diffColor = r.diff > 0 ? 'var(--danger)' : r.diff < 0 ? 'var(--success)' : 'var(--text-muted)';
-      const diffIcon = r.diff > 0 ? '▲' : r.diff < 0 ? '▼' : '─';
-      const diffStr = r.diff !== 0 ? `${diffIcon}${fmt(Math.abs(r.diff))}원` : '동일';
-      return `
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-            <span style="font-size:12px;font-weight:600">${CAT_ICON[r.cat]||''} ${r.cat}</span>
-            <span style="font-size:11px;font-weight:700;color:${diffColor}">${diffStr}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--text-muted);text-align:right">${prevM}월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${(r.prev/maxVal*100).toFixed(1)}%;background:var(--border);border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;color:var(--text-muted);text-align:right;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${r.prev > 0 ? fmt(r.prev)+'원' : '-'}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="width:32px;font-size:9px;color:var(--accent);text-align:right;font-weight:600">${month}월</div>
-              <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-                <div style="height:100%;width:${(r.cur/maxVal*100).toFixed(1)}%;background:${CAT_COLORS[r.cat]||'var(--accent)'};border-radius:3px"></div>
-              </div>
-              <div style="width:64px;font-size:10px;font-weight:600;text-align:right;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif">${r.cur > 0 ? fmt(r.cur)+'원' : '-'}</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('')}
-  `;
+  const key = year + '-' + String(month).padStart(2,'0');
+  const cats = ['생활비','외식·카페','쇼핑','관계비용','교육/놀이'];
+  const previousKey = MonthlyReviewCore.shift(key,-1);
+  const base = MonthlyReviewCore.baseline(transactions,key,true);
+  const previous = MonthlyReviewCore.totals(transactions.filter(t=>!t.irregular),previousKey);
+  const current = MonthlyReviewCore.totals(txs.filter(t=>!t.irregular),key);
+  const hasPrevious = transactions.some(t=>String(t.date||'').startsWith(previousKey));
+  const hasCurrent = txs.length>0;
+  const max = Math.max(1,...cats.flatMap(c=>[base.average[c],previous[c],current[c]]));
+  el.innerHTML = '<p class="comparison-guide">비정기 제외 · 평균은 '+(base.initial?'첫 등록 월 기준':base.months.length+'개 과거 등록 월 기준')+' · 전월 '+previousKey+' · 이번 달 '+key+'</p>' + cats.map(cat=>{
+    const series=[['평균',base.average[cat],base.months.length>0,'#94a3b8'],['전월',previous[cat],hasPrevious,'#60a5fa'],['이번 달',current[cat],hasCurrent,'var(--accent)']];
+    return '<section class="comparison-category" data-compare-category="'+cat+'"><h4>'+CAT_ICON[cat]+' '+cat+'</h4>'+series.map(([label,value,available,color])=>
+      '<div class="comparison-series"><span>'+label+'</span><div class="comparison-track"><div style="width:'+Math.max(0,value/max*100).toFixed(1)+'%;background:'+color+'"></div></div><strong>'+(available?fmt(value)+'원':'—')+'</strong></div>'
+    ).join('')+'</section>';
+  }).join('');
 }
 
 // ── 주차별 소비 리듬
@@ -3727,7 +3685,6 @@ function renderTrends() {
   try { renderMonthlyPnl(); } catch(e) { console.error('renderMonthlyPnl', e); }
   try { _loadTrendFilter(); } catch(e) { console.error('_loadTrendFilter', e); }
   try { renderTrendSection(); } catch(e) { console.error('renderTrendSection', e); }
-  try { renderBudgetAlert(); } catch(e) { console.error('renderBudgetAlert', e); }
   try { renderHeatmap(); } catch(e) { console.error('renderHeatmap', e); }
 }
 
@@ -3837,75 +3794,6 @@ function renderMonthlyPnl() {
 
   html += '</div></div>';
   el.innerHTML = html;
-}
-
-// ② 예산 초과 탐지: 전체 평균 대비 최근 달 초과 항목
-function renderBudgetAlert() {
-  const el = document.getElementById('budgetAlert');
-  if (!el) return;
-  const allMonths = getMonthRange();
-  if (allMonths.length < 2) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">데이터가 2개월 이상 필요합니다</div>'; return; }
-
-  const recentM = allMonths[allMonths.length - 1];
-  const recentKey = `${recentM.year}-${String(recentM.month).padStart(2,'0')}`;
-  const recentAll = getMonthlyTx(recentM.year, recentM.month);
-  const recentTxs = recentAll.filter(t => !t.irregular);
-  const irregularSum = recentAll.filter(t => t.irregular).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0);
-
-  // 카테고리별 전체 평균 (최근 달 제외)
-  const pastMonths = allMonths.slice(0, -1);
-  const catAvg = {};
-  for (const cat of CATEGORIES) {
-    const vals = pastMonths.map(({year, month}) =>
-      getMonthlyTx(year, month).filter(t => t.category === cat && !t.irregular).reduce((s,t) => s+(t.amount-(t.settlement||0)), 0)
-    );
-    catAvg[cat] = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0) / vals.length) : 0;
-  }
-
-  const recentBd = {};
-  for (const t of recentTxs) recentBd[t.category] = (recentBd[t.category]||0) + (t.amount-(t.settlement||0));
-
-  const alerts = CATEGORIES.filter(cat => (recentBd[cat]||0) > 0 || catAvg[cat] > 0).map(cat => ({
-    cat, cur: recentBd[cat]||0, avg: catAvg[cat],
-    diff: (recentBd[cat]||0) - catAvg[cat],
-    ratio: catAvg[cat] > 0 ? ((recentBd[cat]||0) / catAvg[cat]) : null
-  })).filter(a => a.cur > 0).sort((a,b) => b.diff - a.diff);
-
-  if (!alerts.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:13px">비교할 정기 지출 데이터가 없습니다</div>' + (irregularSum > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">비정기 지출 ${fmt(irregularSum)}원은 비교에서 제외했어요</div>` : ''); return; }
-  const maxBar = Math.max(...alerts.map(a => Math.max(a.cur, a.avg)), 1);
-
-  el.innerHTML = alerts.slice(0, 8).map(a => {
-    const isOver = a.diff > 0 && a.avg > 0;
-    const isNew = a.avg === 0 && a.cur > 0;
-    const pctText = a.ratio !== null ? `(평균 대비 ${a.ratio >= 1 ? '+' : ''}${Math.round((a.ratio-1)*100)}%)` : '(신규)';
-    const diffColor = isOver ? 'var(--danger)' : isNew ? 'var(--accent2)' : 'var(--success)';
-    const badge = isOver ? `<span style="font-size:10px;background:rgba(196,58,58,.12);color:var(--danger);padding:1px 6px;border-radius:4px;font-weight:700">초과</span>`
-                : isNew ? `<span style="font-size:10px;background:rgba(58,125,196,.12);color:var(--accent2);padding:1px 6px;border-radius:4px;font-weight:700">신규</span>`
-                : `<span style="font-size:10px;background:rgba(58,168,125,.12);color:var(--success);padding:1px 6px;border-radius:4px;font-weight:700">절약</span>`;
-    return `
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <span style="font-size:12px;font-weight:600">${CAT_ICON[a.cat]||''} ${a.cat} ${badge}</span>
-          <span style="font-size:11px;color:${diffColor};font-weight:700">${isOver?'+':''}${fmt(a.diff)}원 ${pctText}</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:36px;font-size:10px;color:var(--text-muted);text-align:right">평균</div>
-            <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${(a.avg/maxBar*100).toFixed(1)}%;background:var(--border);border-radius:3px"></div>
-            </div>
-            <div style="width:72px;font-size:10px;color:var(--text-muted);text-align:right">${a.avg>0?fmt(a.avg)+'원':'-'}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:36px;font-size:10px;color:${diffColor};text-align:right;font-weight:600">이번</div>
-            <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${(a.cur/maxBar*100).toFixed(1)}%;background:${CAT_COLORS[a.cat]||'var(--accent)'};border-radius:3px"></div>
-            </div>
-            <div style="width:72px;font-size:10px;font-weight:600;text-align:right">${fmt(a.cur)}원</div>
-          </div>
-        </div>
-      </div>`;
-  }).join('') + (irregularSum > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">비정기 지출 ${fmt(irregularSum)}원은 비교에서 제외했어요</div>` : '');
 }
 
 // ③ 분기별 히트맵: 월 × 카테고리 격자 (대형)
