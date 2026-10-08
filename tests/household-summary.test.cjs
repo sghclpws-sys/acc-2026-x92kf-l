@@ -50,7 +50,7 @@ test('in-app advisor preserves merchant detail while sharing monthly arithmetic'
   const html = fs.readFileSync('index.html','utf8');
   const functions = html.slice(html.indexOf('function _netAmt'), html.indexOf('function _advicePrompt'));
   const ctx = { HouseholdSummary: {build}, transactions, incomeData:{'2026-08':income}, CATEGORIES:['외식','여행'],
-    getMonthRange:()=>[{year:2026,month:8}], getMonthlyTx:()=>transactions.filter(t=>t.date.startsWith('2026-08')) };
+    getAdviceScope:()=>'', getMonthRange:()=>[{year:2026,month:8}], getMonthlyTx:()=>transactions.filter(t=>t.date.startsWith('2026-08')) };
   vm.createContext(ctx); vm.runInContext(functions,ctx);
   const payload=ctx.buildAdvicePayload();
   assert.equal(payload.월별요약[0].카드지출,350);
